@@ -112,3 +112,5 @@ linters:
     rules:
       - path: '(_test\.go|/testdata/|/bench/|/internal/)'
         linters: [forbidigo, depguard, errcheck]
+      - linters: [revive]
+        text: 'package-comments'
