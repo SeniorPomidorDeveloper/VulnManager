@@ -1,0 +1,28 @@
+name: pr-size
+
+on:
+  workflow_call:
+    inputs:
+      max_lines:
+        type: string
+        default: "500"
+  workflow_dispatch:
+    inputs:
+      max_lines:
+        type: string
+        default: "500"
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+jobs:
+  pr-size:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+      - run: ci/pr-size.sh
+        env:
+          PR_MAX_LINES: ${{ inputs.max_lines || '500' }}
+          BASE_REF: origin/${{ github.event.repository.default_branch }}
+          SIZE_EXEMPT: ${{ contains(github.event.pull_request.labels.*.name, 'size-exempt') && '1' || '0' }}

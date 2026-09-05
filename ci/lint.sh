@@ -30,7 +30,9 @@ if [ -n "$out" ]; then
 fi
 
 step "golangci-lint"
-if need golangci-lint; then
+if [ -z "$(find . -name go.mod -not -path './vendor/*' 2>/dev/null | head -1)" ]; then
+  skip "Go-модулей ещё нет" structural
+elif need golangci-lint; then
   golangci-lint run ./... || fail=1
 else
   skip "golangci-lint не установлен"
@@ -102,8 +104,14 @@ if [ -n "$bad" ]; then
 fi
 
 step "YAML"
-if need yamllint; then
-  yamllint -s data deploy .github 2>/dev/null || fail=1
+yaml_paths=()
+for d in data deploy .github; do
+  [ -d "$d" ] && yaml_paths+=("$d")
+done
+if [ "${#yaml_paths[@]}" -eq 0 ]; then
+  skip "нет каталогов для проверки YAML" structural
+elif need yamllint; then
+  yamllint -s "${yaml_paths[@]}" || fail=1
 else
   skip "yamllint не установлен"
 fi

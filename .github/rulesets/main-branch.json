@@ -3,10 +3,16 @@
   "target": "branch",
   "enforcement": "active",
   "conditions": {
-    "ref_name": { "include": ["refs/heads/main"], "exclude": [] }
+    "ref_name": {
+      "include": [
+        "refs/heads/main"
+      ],
+      "exclude": []
+    }
   },
   "rules": [
-    { "type": "pull_request",
+    {
+      "type": "pull_request",
       "parameters": {
         "required_approving_review_count": 0,
         "dismiss_stale_reviews_on_push": false,
@@ -15,17 +21,29 @@
         "required_review_thread_resolution": true
       }
     },
-    { "type": "required_status_checks",
+    {
+      "type": "required_status_checks",
       "parameters": {
         "strict_required_status_checks_policy": true,
         "required_status_checks": [
-          { "context": "lint" },
-          { "context": "naming" }
+          {
+            "context": "lint"
+          },
+          {
+            "context": "naming"
+          },
+          {
+            "context": "pr-size"
+          }
         ]
       }
     },
-    { "type": "non_fast_forward" },
-    { "type": "required_linear_history" }
+    {
+      "type": "non_fast_forward"
+    },
+    {
+      "type": "required_linear_history"
+    }
   ],
   "bypass_actors": []
 }
