@@ -1,0 +1,27 @@
+{
+  "name": "branch-naming-convention",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["~ALL"],
+      "exclude": [
+        "refs/heads/main",
+        "refs/heads/feat/**",
+        "refs/heads/fix/**",
+        "refs/heads/perf/**",
+        "refs/heads/refactor/**",
+        "refs/heads/test/**",
+        "refs/heads/docs/**",
+        "refs/heads/build/**",
+        "refs/heads/ci/**",
+        "refs/heads/chore/**",
+        "refs/heads/revert/**",
+        "refs/heads/release/**",
+        "refs/heads/hotfix/**"
+      ]
+    }
+  },
+  "rules": [{ "type": "creation" }],
+  "bypass_actors": []
+}

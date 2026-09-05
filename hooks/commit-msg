@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+COMMIT_MSG_FILE="$1" BRANCH="$(git rev-parse --abbrev-ref HEAD)" \
+  exec "$(git rev-parse --show-toplevel)/ci/naming.sh"

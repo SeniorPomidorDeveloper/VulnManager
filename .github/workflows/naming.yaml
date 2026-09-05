@@ -1,0 +1,20 @@
+name: naming
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  naming:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+      - run: ci/naming.sh
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          BASE_REF: origin/${{ github.event.repository.default_branch }}

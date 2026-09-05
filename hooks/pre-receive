@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+TYPES='feat|fix|perf|refactor|test|docs|build|ci|chore|revert'
+ZERO='0000000000000000000000000000000000000000'
+fail=0
+
+while read -r old new ref; do
+  case "$ref" in refs/heads/*) ;; *) continue ;; esac
+  [ "$new" = "$ZERO" ] && continue
+  b="${ref#refs/heads/}"
+  case "$b" in
+    main|master) continue ;;
+    release/*) [[ "$b" =~ ^release/[0-9]+\.[0-9]+$ ]] && continue ;;
+    hotfix/*) [[ "$b" =~ ^hotfix/[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9-]+$ ]] && continue ;;
+  esac
+  if [[ ! "$b" =~ ^($TYPES)/([0-9]+|adr-[0-9]{4})-[a-z0-9]+(-[a-z0-9]+)*$ ]] || [ "${#b}" -gt 50 ]; then
+    echo "отклонено: имя ветки '$b' не соответствует конвенции"
+    echo "формат: <type>/<issue>-<slug>, например feat/142-dedup-simhash-blocking"
+    echo "type: ${TYPES//|/, }"
+    fail=1
+  fi
+done
+
+exit "$fail"

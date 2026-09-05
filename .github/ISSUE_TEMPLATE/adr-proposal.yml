@@ -1,0 +1,30 @@
+name: Предложение ADR
+description: Архитектурное решение, требующее обсуждения перед реализацией
+labels: ["type:docs", "adr-proposal"]
+body:
+  - type: input
+    id: number
+    attributes:
+      label: Предполагаемый номер ADR
+      placeholder: "0013"
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Контекст
+      description: Какая проблема требует решения
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Рассмотренные варианты
+    validations:
+      required: false
+  - type: textarea
+    id: leaning
+    attributes:
+      label: Предпочитаемый вариант и почему
+    validations:
+      required: false

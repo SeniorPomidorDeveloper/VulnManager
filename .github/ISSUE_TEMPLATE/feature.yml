@@ -1,0 +1,60 @@
+name: Задача
+description: Функциональность, модуль, сервис — единица работы по плану
+labels: ["type:feat"]
+body:
+  - type: input
+    id: branch
+    attributes:
+      label: Ветка(и)
+      description: Например feat/16-fingerprint-levels — можно несколько через запятую
+    validations:
+      required: false
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - model
+        - normalize
+        - fingerprint
+        - dedup
+        - correlate
+        - lifecycle
+        - enrich
+        - risk
+        - parsers
+        - pipeline
+        - ingest
+        - processing
+        - feeds
+        - reachability
+        - assets
+        - api
+        - collectors
+        - migrations
+        - deploy
+        - observability
+        - bench
+        - ci
+        - docs
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: Что сделать
+    validations:
+      required: true
+  - type: textarea
+    id: dod
+    attributes:
+      label: Definition of Done
+      description: Критерий готовности
+    validations:
+      required: true
+  - type: textarea
+    id: adr
+    attributes:
+      label: Связанный ADR (если есть)
+    validations:
+      required: false

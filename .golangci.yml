@@ -1,0 +1,114 @@
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+
+formatters:
+  enable:
+    - gofumpt
+    - gci
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(vulnmanager)
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - revive
+    - gocritic
+    - errorlint
+    - exhaustive
+    - bodyclose
+    - unconvert
+    - nolintlint
+    - depguard
+    - forbidigo
+
+  settings:
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+
+    exhaustive:
+      default-signifies-exhaustive: false
+
+    forbidigo:
+      analyze-types: true
+      forbid:
+        - pattern: '^time\.Now$'
+          msg: 'инвариант 1: часы инжектируются, а не берутся из time.Now()'
+        - pattern: '^rand\.'
+          msg: 'инвариант 2: детерминизм — источник случайности инжектируется'
+        - pattern: '^fmt\.Print.*$'
+          msg: 'вывод только через логгер сервиса'
+        - pattern: '^panic$'
+          msg: 'библиотека не паникует — возвращай ошибку'
+
+    depguard:
+      rules:
+        core-no-io:
+          files:
+            - '**/modules/normalize/**'
+            - '**/modules/fingerprint/**'
+            - '**/modules/dedup/**'
+            - '**/modules/correlate/**'
+            - '**/modules/lifecycle/**'
+            - '**/modules/risk/**'
+            - '**/modules/model/**'
+          deny:
+            - pkg: net/http
+              desc: 'инвариант 1: ядро без I/O — внешние данные через интерфейс потребителя'
+            - pkg: database/sql
+              desc: 'инвариант 1: ядро без I/O'
+            - pkg: os
+              desc: 'инвариант 1: ядро не читает файлы и окружение'
+            - pkg: github.com/jackc/pgx
+              desc: 'инвариант 1: драйвер БД в ядре недопустим'
+
+        pipeline-order-normalize:
+          files: ['**/modules/normalize/**']
+          deny:
+            - pkg: vulnmanager/modules/dedup
+            - pkg: vulnmanager/modules/correlate
+            - pkg: vulnmanager/modules/lifecycle
+            - pkg: vulnmanager/modules/risk
+            - pkg: vulnmanager/modules/enrich
+        pipeline-order-fingerprint:
+          files: ['**/modules/fingerprint/**']
+          deny:
+            - pkg: vulnmanager/modules/dedup
+            - pkg: vulnmanager/modules/correlate
+            - pkg: vulnmanager/modules/lifecycle
+            - pkg: vulnmanager/modules/risk
+        pipeline-order-dedup:
+          files: ['**/modules/dedup/**']
+          deny:
+            - pkg: vulnmanager/modules/correlate
+            - pkg: vulnmanager/modules/lifecycle
+            - pkg: vulnmanager/modules/risk
+            - pkg: vulnmanager/modules/enrich
+        pipeline-order-correlate:
+          files: ['**/modules/correlate/**']
+          deny:
+            - pkg: vulnmanager/modules/lifecycle
+            - pkg: vulnmanager/modules/risk
+
+        model-zero-deps:
+          files: ['**/modules/model/**']
+          deny:
+            - pkg: vulnmanager/modules
+              desc: 'model — ZERO deps: он не знает об остальных модулях'
+
+  exclusions:
+    rules:
+      - path: '(_test\.go|/testdata/|/bench/|/internal/)'
+        linters: [forbidigo, depguard, errcheck]
