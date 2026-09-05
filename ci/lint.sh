@@ -30,10 +30,14 @@ if [ -n "$out" ]; then
 fi
 
 step "golangci-lint"
-if [ -z "$(find . -name go.mod -not -path './vendor/*' 2>/dev/null | head -1)" ]; then
+gomods=$(find . -name go.mod -not -path './vendor/*' 2>/dev/null | sort)
+if [ -z "$gomods" ]; then
   skip "Go-модулей ещё нет" structural
 elif need golangci-lint; then
-  golangci-lint run ./... || fail=1
+  while IFS= read -r gomod; do
+    moddir=$(dirname "$gomod")
+    (cd "$moddir" && golangci-lint run ./...) || fail=1
+  done <<< "$gomods"
 else
   skip "golangci-lint не установлен"
 fi
