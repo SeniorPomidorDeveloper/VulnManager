@@ -34,6 +34,9 @@
           },
           {
             "context": "pr-size"
+          },
+          {
+            "context": "unit"
           }
         ]
       }
