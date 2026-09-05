@@ -24,6 +24,7 @@ gh label create "adr-proposal"   --color "5319e7" --description "Требует 
 gh label create "good-first-issue" --color "7057ff" --force >/dev/null
 gh label create "blocked"        --color "b60205" --description "Ждёт внешнего решения" --force >/dev/null
 gh label create "full-ci"        --color "fbca04" --description "Требует полного прогона CI перед мержем" --force >/dev/null
+gh label create "size-exempt"    --color "c5def5" --description "Неделимое изменение — пропустить лимит строк в PR" --force >/dev/null
 
 echo "== milestones: фазы плана"
 declare -A MS=(
