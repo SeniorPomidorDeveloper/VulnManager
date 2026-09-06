@@ -9,6 +9,8 @@ formatters:
     - gofumpt
     - gci
   settings:
+    gofumpt:
+      module-path: vulnmanager
     gci:
       sections:
         - standard
