@@ -1,0 +1,65 @@
+name: vulnmanager
+
+services:
+  postgres:
+    image: postgres:16.6-alpine3.20
+    profiles: ["infra", "full"]
+    restart: unless-stopped
+    env_file:
+      - deploy/local/postgres.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3.13.7-management-alpine
+    profiles: ["infra", "full"]
+    restart: unless-stopped
+    env_file:
+      - deploy/local/rabbitmq.env
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:RELEASE.2024-06-13T22-53-53Z
+    profiles: ["infra", "full"]
+    restart: unless-stopped
+    env_file:
+      - deploy/local/minio.env
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+
+  minio-init:
+    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
+    profiles: ["infra", "full"]
+    depends_on:
+      - minio
+    env_file:
+      - deploy/local/minio.env
+    entrypoint: ["/bin/sh", "/init/create-bucket.sh"]
+    volumes:
+      - ./deploy/local/minio-init.sh:/init/create-bucket.sh:ro
+    restart: "no"
+
+volumes:
+  postgres-data:
+  rabbitmq-data:
+  minio-data:
