@@ -114,5 +114,8 @@ linters:
         linters: [forbidigo, depguard, errcheck]
       - linters: [revive]
         text: '(package-comments|exported)'
+      - path: 'modules/pipeline/'
+        linters: [forbidigo]
+        text: 'time\.Now'
       - linters: [revive]
         text: 'package-comments'
