@@ -9,6 +9,8 @@ formatters:
     - gofumpt
     - gci
   settings:
+    gofumpt:
+      module-path: vulnmanager
     gci:
       sections:
         - standard
@@ -114,5 +116,8 @@ linters:
         linters: [forbidigo, depguard, errcheck]
       - linters: [revive]
         text: '(package-comments|exported)'
+      - path: 'modules/pipeline/'
+        linters: [forbidigo]
+        text: 'time\.Now'
       - linters: [revive]
         text: 'package-comments'
