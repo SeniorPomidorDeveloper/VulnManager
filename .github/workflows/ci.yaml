@@ -47,3 +47,7 @@ jobs:
   repo-shell:
     if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
     uses: ./.github/workflows/repo-shell.yaml
+
+  repo-contracts:
+    if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
+    uses: ./.github/workflows/repo-contracts.yaml
