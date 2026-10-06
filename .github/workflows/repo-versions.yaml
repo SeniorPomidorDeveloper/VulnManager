@@ -1,0 +1,25 @@
+name: repo-versions
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - ".github/**"
+      - "deploy/**"
+      - "docker/**"
+      - "docker-compose.yaml"
+      - ".github/workflows/repo-versions.yaml"
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: нет latest
+        run: |
+          ! grep -RnE ':lates[t]\b|@lates[t]\b|ubuntu-lates[t]\b' \
+            --include='*.yaml' --include='*.yml' --include=Dockerfile \
+            .github deploy docker docker-compose.yaml 2>/dev/null

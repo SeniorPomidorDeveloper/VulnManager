@@ -1,4 +1,4 @@
-name: ingest
+name: rawstore
 
 on:
   workflow_call:
@@ -6,8 +6,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - "services/ingest/**"
-      - ".github/workflows/ingest.yaml"
+      - "modules/rawstore/**"
+      - ".github/workflows/rawstore.yaml"
 
 env:
   GO_VERSION: "1.23.6"
@@ -17,13 +17,13 @@ jobs:
     runs-on: ubuntu-24.04
     defaults:
       run:
-        working-directory: services/ingest
+        working-directory: modules/rawstore
     steps:
       - uses: actions/checkout@v4.2.2
 
       - uses: actions/setup-go@v5.4.0
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: services/ingest/go.mod
+          cache-dependency-path: modules/rawstore/go.mod
 
       - run: make ci
