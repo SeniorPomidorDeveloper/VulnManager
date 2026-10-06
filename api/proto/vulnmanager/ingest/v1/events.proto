@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package vulnmanager.ingest.v1;
+
+import "vulnmanager/common/v1/scope.proto";
+
+message ReportReceived {
+  string raw_key = 1;
+  vulnmanager.common.v1.Scope scope = 2;
+  string tool = 3;
+  string scan_id = 4;
+}

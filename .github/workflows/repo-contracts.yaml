@@ -10,6 +10,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4.2.2
 
+      - uses: actions/setup-go@v5.4.0
+        with:
+          go-version: "1.23.6"
+          cache: false
+
+      - run: go run github.com/bufbuild/buf/cmd/buf@v1.47.2 lint
+
+      - run: go run github.com/bufbuild/buf/cmd/buf@v1.47.2 format --diff --exit-code
+
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: "22.14.0"

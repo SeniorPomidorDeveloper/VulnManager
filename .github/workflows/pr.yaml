@@ -58,7 +58,8 @@ jobs:
               - "hooks/**"
               - ".github/workflows/repo-shell.yaml"
             repo-contracts:
-              - "api/openapi/**"
+              - "api/**"
+              - "buf.yaml"
               - ".spectral.yaml"
               - ".github/workflows/repo-contracts.yaml"
 
