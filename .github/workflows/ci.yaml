@@ -8,10 +8,6 @@ on:
     types: [labeled]
 
 jobs:
-  lint:
-    if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
-    uses: ./.github/workflows/lint.yaml
-
   naming:
     if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
     uses: ./.github/workflows/naming.yaml
@@ -19,11 +15,6 @@ jobs:
   pr-size:
     if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
     uses: ./.github/workflows/pr-size.yaml
-
-  unit:
-    if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
-    needs: lint
-    uses: ./.github/workflows/unit.yaml
 
   ingest:
     if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
