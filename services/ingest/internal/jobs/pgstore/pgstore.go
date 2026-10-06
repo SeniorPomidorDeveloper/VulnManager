@@ -34,14 +34,42 @@ func (s *Store) MaxReportBytes(ctx context.Context, tenantID model.TenantID) (in
 	return limit, err
 }
 
-func (s *Store) InsertJob(ctx context.Context, scope model.Scope, rawKey rawstore.Key) error {
-	return s.withTenant(ctx, scope.TenantID, func(q *db.Queries) error {
-		return q.InsertIngestJob(ctx, db.InsertIngestJobParams{
+func (s *Store) FindScanID(ctx context.Context, scope model.Scope, tool, sha256 string) (model.ScanID, bool, error) {
+	var scanID string
+	err := s.withTenant(ctx, scope.TenantID, func(q *db.Queries) error {
+		var err error
+		scanID, err = q.FindIngestJobScanID(ctx, db.FindIngestJobScanIDParams{
 			TenantID: string(scope.TenantID),
 			ScopeKey: string(scope.Key()),
-			RawKey:   rawKey.String(),
+			Tool:     tool,
+			Sha256:   sha256,
 		})
+		return err
 	})
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "", false, nil
+	}
+	if err != nil {
+		return "", false, err
+	}
+	return model.ScanID(scanID), true, nil
+}
+
+func (s *Store) InsertJob(ctx context.Context, scope model.Scope, tool string, key rawstore.Key) (bool, error) {
+	var rows int64
+	err := s.withTenant(ctx, scope.TenantID, func(q *db.Queries) error {
+		var err error
+		rows, err = q.InsertIngestJob(ctx, db.InsertIngestJobParams{
+			TenantID: string(scope.TenantID),
+			ScopeKey: string(scope.Key()),
+			RawKey:   key.String(),
+			Tool:     tool,
+			Sha256:   key.SHA256,
+			ScanID:   string(key.ScanID),
+		})
+		return err
+	})
+	return rows > 0, err
 }
 
 func (s *Store) withTenant(ctx context.Context, tenantID model.TenantID, fn func(*db.Queries) error) error {
