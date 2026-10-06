@@ -28,3 +28,31 @@ jobs:
   ingest:
     if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
     uses: ./.github/workflows/ingest.yaml
+
+  model:
+    if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
+    uses: ./.github/workflows/model.yaml
+
+  pipeline:
+    if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
+    uses: ./.github/workflows/pipeline.yaml
+
+  rawstore:
+    if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
+    uses: ./.github/workflows/rawstore.yaml
+
+  repo-yaml:
+    if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
+    uses: ./.github/workflows/repo-yaml.yaml
+
+  repo-versions:
+    if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
+    uses: ./.github/workflows/repo-versions.yaml
+
+  repo-migrations:
+    if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
+    uses: ./.github/workflows/repo-migrations.yaml
+
+  repo-shell:
+    if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
+    uses: ./.github/workflows/repo-shell.yaml
