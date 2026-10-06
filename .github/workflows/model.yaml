@@ -3,11 +3,6 @@ name: model
 on:
   workflow_call:
   workflow_dispatch:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    paths:
-      - "modules/model/**"
-      - ".github/workflows/model.yaml"
 
 env:
   GO_VERSION: "1.23.6"
