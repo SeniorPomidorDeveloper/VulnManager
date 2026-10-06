@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package vulnmanager.common.v1;
+
+message Scope {
+  string tenant_id = 1;
+  string product_id = 2;
+  string context_id = 3;
+}
