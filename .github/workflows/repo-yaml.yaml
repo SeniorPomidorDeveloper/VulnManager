@@ -3,13 +3,6 @@ name: repo-yaml
 on:
   workflow_call:
   workflow_dispatch:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    paths:
-      - "**/*.yaml"
-      - "**/*.yml"
-      - ".yamllint"
-      - ".github/workflows/repo-yaml.yaml"
 
 jobs:
   check:

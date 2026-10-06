@@ -3,11 +3,6 @@ name: rawstore
 on:
   workflow_call:
   workflow_dispatch:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    paths:
-      - "modules/rawstore/**"
-      - ".github/workflows/rawstore.yaml"
 
 env:
   GO_VERSION: "1.23.6"

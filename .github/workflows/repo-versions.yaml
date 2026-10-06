@@ -3,14 +3,6 @@ name: repo-versions
 on:
   workflow_call:
   workflow_dispatch:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    paths:
-      - ".github/**"
-      - "deploy/**"
-      - "docker/**"
-      - "docker-compose.yaml"
-      - ".github/workflows/repo-versions.yaml"
 
 jobs:
   check:

@@ -1,0 +1,105 @@
+name: pr
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      model: ${{ steps.filter.outputs.model }}
+      pipeline: ${{ steps.filter.outputs.pipeline }}
+      rawstore: ${{ steps.filter.outputs.rawstore }}
+      ingest: ${{ steps.filter.outputs.ingest }}
+      repo-yaml: ${{ steps.filter.outputs.repo-yaml }}
+      repo-versions: ${{ steps.filter.outputs.repo-versions }}
+      repo-migrations: ${{ steps.filter.outputs.repo-migrations }}
+      repo-shell: ${{ steps.filter.outputs.repo-shell }}
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: dorny/paths-filter@v3.0.2
+        id: filter
+        with:
+          filters: |
+            model:
+              - "modules/model/**"
+              - ".github/workflows/model.yaml"
+            pipeline:
+              - "modules/pipeline/**"
+              - ".github/workflows/pipeline.yaml"
+            rawstore:
+              - "modules/rawstore/**"
+              - ".github/workflows/rawstore.yaml"
+            ingest:
+              - "services/ingest/**"
+              - ".github/workflows/ingest.yaml"
+            repo-yaml:
+              - "**/*.yaml"
+              - "**/*.yml"
+              - ".yamllint"
+              - ".github/workflows/repo-yaml.yaml"
+            repo-versions:
+              - ".github/**"
+              - "deploy/**"
+              - "docker/**"
+              - "docker-compose.yaml"
+              - ".github/workflows/repo-versions.yaml"
+            repo-migrations:
+              - "migrations/**"
+              - ".github/workflows/repo-migrations.yaml"
+            repo-shell:
+              - "ci/**"
+              - "hooks/**"
+              - ".github/workflows/repo-shell.yaml"
+
+  model:
+    needs: changes
+    if: needs.changes.outputs.model == 'true'
+    uses: ./.github/workflows/model.yaml
+
+  pipeline:
+    needs: changes
+    if: needs.changes.outputs.pipeline == 'true'
+    uses: ./.github/workflows/pipeline.yaml
+
+  rawstore:
+    needs: changes
+    if: needs.changes.outputs.rawstore == 'true'
+    uses: ./.github/workflows/rawstore.yaml
+
+  ingest:
+    needs: changes
+    if: needs.changes.outputs.ingest == 'true'
+    uses: ./.github/workflows/ingest.yaml
+
+  repo-yaml:
+    needs: changes
+    if: needs.changes.outputs.repo-yaml == 'true'
+    uses: ./.github/workflows/repo-yaml.yaml
+
+  repo-versions:
+    needs: changes
+    if: needs.changes.outputs.repo-versions == 'true'
+    uses: ./.github/workflows/repo-versions.yaml
+
+  repo-migrations:
+    needs: changes
+    if: needs.changes.outputs.repo-migrations == 'true'
+    uses: ./.github/workflows/repo-migrations.yaml
+
+  repo-shell:
+    needs: changes
+    if: needs.changes.outputs.repo-shell == 'true'
+    uses: ./.github/workflows/repo-shell.yaml
+
+  gate:
+    needs: [changes, model, pipeline, rawstore, ingest, repo-yaml, repo-versions, repo-migrations, repo-shell]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - run: test "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "false"

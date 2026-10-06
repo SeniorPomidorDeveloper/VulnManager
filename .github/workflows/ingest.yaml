@@ -3,11 +3,6 @@ name: ingest
 on:
   workflow_call:
   workflow_dispatch:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    paths:
-      - "services/ingest/**"
-      - ".github/workflows/ingest.yaml"
 
 env:
   GO_VERSION: "1.23.6"
