@@ -5,6 +5,7 @@ go 1.23.6
 require (
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/minio/minio-go/v7 v7.0.97
+	github.com/oapi-codegen/runtime v1.1.2
 	vulnmanager/modules/model v0.0.0
 	vulnmanager/modules/rawstore v0.0.0
 )
@@ -15,6 +16,7 @@ replace (
 )
 
 require (
+	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
