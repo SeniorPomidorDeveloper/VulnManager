@@ -1,7 +1,0 @@
-go 1.23.6
-
-use (
-	./modules/model
-	./modules/pipeline
-	./modules/rawstore
-)
