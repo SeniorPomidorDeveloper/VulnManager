@@ -2,8 +2,8 @@ GOFUMPT ?= go run mvdan.cc/gofumpt@v0.7.0
 GOLANGCI ?= go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.6
 SQLC ?= go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1
 
-.PHONY: generate fmt tidy lint test ci
-ci: fmt tidy lint test
+.PHONY: build generate fmt tidy lint test ci
+ci: fmt tidy lint build test
 
 generate:
 	$(SQLC) generate
@@ -17,6 +17,9 @@ tidy: generate
 
 lint: generate
 	$(GOLANGCI) run ./...
+
+build: generate
+	go build ./...
 
 test: generate
 	go test -race ./...
