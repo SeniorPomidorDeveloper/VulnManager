@@ -1,0 +1,132 @@
+openapi: 3.1.0
+info:
+  title: VulnManager Ingest API
+  version: 1.0.0
+  description: Приём отчётов сканеров. Тонкий путь — квота, RawStore, задание, ack.
+  contact:
+    name: VulnManager
+servers:
+  - url: /
+tags:
+  - name: reports
+    description: Приём отчётов
+paths:
+  /api/v1/reports:
+    post:
+      tags: [reports]
+      operationId: ingestReport
+      summary: Принять отчёт сканера
+      description: |
+        Идемпотентно по sha256(тело) + Scope + инструмент. Повторная доставка возвращает тот же
+        ответ, что первая, и не создаёт новое задание.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Tool"
+        - $ref: "#/components/parameters/Scope"
+        - $ref: "#/components/parameters/ScanId"
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "202":
+          description: Отчёт принят
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportAccepted"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "413":
+          $ref: "#/components/responses/ReportTooLarge"
+        "500":
+          $ref: "#/components/responses/Internal"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Токен тенанта; тенант определяется по токену.
+  parameters:
+    Tool:
+      name: X-Tool
+      in: header
+      required: true
+      description: Имя инструмента, создавшего отчёт.
+      schema:
+        type: string
+        pattern: "^[a-z0-9][a-z0-9._-]*$"
+        maxLength: 64
+    Scope:
+      name: X-Scope
+      in: header
+      required: true
+      description: Продукт и необязательный контекст внутри тенанта токена, `<product>[/<context>]`.
+      schema:
+        type: string
+        pattern: "^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)?$"
+        maxLength: 256
+    ScanId:
+      name: X-Scan-Id
+      in: header
+      required: false
+      description: Идентификатор скана; если не передан, назначается сервером.
+      schema:
+        type: string
+        maxLength: 128
+  schemas:
+    ReportAccepted:
+      type: object
+      required: [scan_id, sha256]
+      properties:
+        scan_id:
+          type: string
+          description: Идентификатор скана.
+        sha256:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+          description: Хеш принятого тела отчёта.
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          description: Машиночитаемый код ошибки.
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+  responses:
+    BadRequest:
+      description: Некорректные заголовки или пустое тело
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Unauthorized:
+      description: Токен отсутствует или недействителен
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    ReportTooLarge:
+      description: Размер отчёта превышает лимит тенанта
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Internal:
+      description: Внутренняя ошибка
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"

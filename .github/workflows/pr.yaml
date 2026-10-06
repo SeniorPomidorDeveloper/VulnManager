@@ -20,6 +20,7 @@ jobs:
       repo-versions: ${{ steps.filter.outputs.repo-versions }}
       repo-migrations: ${{ steps.filter.outputs.repo-migrations }}
       repo-shell: ${{ steps.filter.outputs.repo-shell }}
+      repo-contracts: ${{ steps.filter.outputs.repo-contracts }}
     steps:
       - uses: actions/checkout@v4.2.2
       - uses: dorny/paths-filter@v3.0.2
@@ -56,6 +57,10 @@ jobs:
               - "ci/**"
               - "hooks/**"
               - ".github/workflows/repo-shell.yaml"
+            repo-contracts:
+              - "api/openapi/**"
+              - ".spectral.yaml"
+              - ".github/workflows/repo-contracts.yaml"
 
   model:
     needs: changes
@@ -97,8 +102,23 @@ jobs:
     if: needs.changes.outputs.repo-shell == 'true'
     uses: ./.github/workflows/repo-shell.yaml
 
+  repo-contracts:
+    needs: changes
+    if: needs.changes.outputs.repo-contracts == 'true'
+    uses: ./.github/workflows/repo-contracts.yaml
+
   gate:
-    needs: [changes, model, pipeline, rawstore, ingest, repo-yaml, repo-versions, repo-migrations, repo-shell]
+    needs:
+      - changes
+      - model
+      - pipeline
+      - rawstore
+      - ingest
+      - repo-yaml
+      - repo-versions
+      - repo-migrations
+      - repo-shell
+      - repo-contracts
     if: always()
     runs-on: ubuntu-24.04
     steps:

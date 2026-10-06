@@ -1,0 +1,17 @@
+name: repo-contracts
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: "22.14.0"
+
+      - run: npx --yes @stoplight/spectral-cli@6.14.2 lint "api/openapi/*.yaml" --fail-severity=warn
