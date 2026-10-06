@@ -1,5 +1,0 @@
-{
-  "tool": "trivy",
-  "tool_version": "0.50.0",
-  "scan_id": "scan1"
-}

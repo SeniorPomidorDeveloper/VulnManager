@@ -8,8 +8,8 @@ import (
 func TestNewScope_Validation(t *testing.T) {
 	cases := []struct {
 		name    string
-		tenant  string
-		product string
+		tenant  TenantID
+		product ProductID
 		wantErr error
 	}{
 		{"empty tenant", "", "p1", ErrEmptyTenant},

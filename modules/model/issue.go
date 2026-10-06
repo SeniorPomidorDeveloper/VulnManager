@@ -3,11 +3,11 @@ package model
 import "time"
 
 type Issue struct {
-	ID          string
+	ID          IssueID
 	Scope       Scope
-	AssetID     string
+	AssetID     AssetID
 	ObjectKind  Kind
-	AdvisoryID  string
+	AdvisoryID  AdvisoryID
 	CWEID       string
 	FirstSeenAt time.Time
 }
