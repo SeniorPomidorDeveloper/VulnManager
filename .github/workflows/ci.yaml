@@ -24,3 +24,7 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
     needs: lint
     uses: ./.github/workflows/unit.yaml
+
+  ingest:
+    if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
+    uses: ./.github/workflows/ingest.yaml

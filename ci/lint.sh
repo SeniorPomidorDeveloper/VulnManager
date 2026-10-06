@@ -3,6 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 STRICT="${STRICT:-0}"
+TARGET="${TARGET:-.}"
 
 fail=0
 step() { printf '\n\033[1m== %s\033[0m\n' "$1"; }
@@ -14,12 +15,27 @@ skip() {
   fi
 }
 need() { command -v "$1" >/dev/null 2>&1; }
+SKIP_REPO_CHECKS="${SKIP_REPO_CHECKS:-0}"
+repo_check_skipped() { [ "$SKIP_REPO_CHECKS" = "1" ]; }
+
+step "кодогенерация: sqlc"
+sqlcyamls=$(find "$TARGET" -name sqlc.yaml -not -path './vendor/*' 2>/dev/null | sort)
+if [ -z "$sqlcyamls" ]; then
+  skip "sqlc.yaml ещё нет" structural
+elif need sqlc; then
+  while IFS= read -r cfg; do
+    cfgdir=$(dirname "$cfg")
+    (cd "$cfgdir" && sqlc generate) || fail=1
+  done <<< "$sqlcyamls"
+else
+  skip "sqlc не установлен"
+fi
 
 step "gofmt / gofumpt"
 if need gofumpt; then
-  out=$(gofumpt -l . || true)
+  out=$(gofumpt -l "$TARGET" || true)
 elif need gofmt; then
-  out=$(gofmt -l . || true)
+  out=$(gofmt -l "$TARGET" || true)
 else
   out=""; skip "gofmt не найден"
 fi
@@ -30,7 +46,7 @@ if [ -n "$out" ]; then
 fi
 
 step "golangci-lint"
-gomods=$(find . -name go.mod -not -path './vendor/*' 2>/dev/null | sort)
+gomods=$(find "$TARGET" -name go.mod -not -path './vendor/*' 2>/dev/null | sort)
 if [ -z "$gomods" ]; then
   skip "Go-модулей ещё нет" structural
 elif need golangci-lint; then
@@ -43,17 +59,25 @@ else
 fi
 
 step "go mod tidy (без изменений)"
-if need go && [ -f go.work ]; then
-  go work sync
-  if ! git diff --quiet -- '**/go.mod' '**/go.sum' 2>/dev/null; then
+gomods_tidy=$(find "$TARGET" -name go.mod -not -path './vendor/*' 2>/dev/null | sort)
+if ! need go; then
+  skip "go отсутствует" structural
+elif [ -z "$gomods_tidy" ]; then
+  skip "Go-модулей ещё нет" structural
+else
+  while IFS= read -r gomod; do
+    moddir=$(dirname "$gomod")
+    (cd "$moddir" && go mod tidy) || fail=1
+  done <<< "$gomods_tidy"
+  if ! git diff --quiet -- "$TARGET"; then
     echo "go.mod/go.sum разошлись — выполни go mod tidy и закоммить"; fail=1
   fi
-else
-  skip "go/go.work отсутствуют" structural
 fi
 
 step "контракты: buf"
-if [ -d api/proto ]; then
+if repo_check_skipped; then
+  skip "репозиторный чек — не для этого workflow" structural
+elif [ -d api/proto ]; then
   if need buf; then
     buf lint || fail=1
     buf format --diff --exit-code || { echo "proto не отформатирован: buf format -w"; fail=1; }
@@ -68,7 +92,9 @@ else
 fi
 
 step "контракты: OpenAPI"
-if compgen -G "api/openapi/*.yaml" >/dev/null; then
+if repo_check_skipped; then
+  skip "репозиторный чек — не для этого workflow" structural
+elif compgen -G "api/openapi/*.yaml" >/dev/null; then
   if need spectral; then
     spectral lint api/openapi/*.yaml || fail=1
   else
@@ -79,7 +105,9 @@ else
 fi
 
 step "кодогенерация без расхождений"
-if [ -f buf.gen.yaml ] && need buf; then
+if repo_check_skipped; then
+  skip "репозиторный чек — не для этого workflow" structural
+elif [ -f buf.gen.yaml ] && need buf; then
   buf generate
   if ! git diff --quiet; then
     echo "Сгенерированный код отличается от закоммиченного — выполни buf generate и закоммить"
@@ -91,37 +119,49 @@ else
 fi
 
 step "shell-скрипты"
-if need shellcheck; then
+if repo_check_skipped; then
+  skip "репозиторный чек — не для этого workflow" structural
+elif need shellcheck; then
   shellcheck ci/*.sh || fail=1
 else
   skip "shellcheck не установлен"
 fi
 
 step "версии зафиксированы (нет latest)"
-bad=$(grep -RnoE ':latest\b|@latest\b|ubuntu-latest\b' \
-  --include='*.yaml' --include='*.yml' --include='Dockerfile' \
-  .github docker deploy 2>/dev/null || true)
-if [ -n "$bad" ]; then
-  echo "Найдены незафиксированные версии (latest):"
-  echo "$bad"
-  fail=1
+if repo_check_skipped; then
+  skip "репозиторный чек — не для этого workflow" structural
+else
+  bad=$(grep -RnoE ':latest\b|@latest\b|ubuntu-latest\b' \
+    --include='*.yaml' --include='*.yml' --include='Dockerfile' \
+    .github docker deploy 2>/dev/null || true)
+  if [ -n "$bad" ]; then
+    echo "Найдены незафиксированные версии (latest):"
+    echo "$bad"
+    fail=1
+  fi
 fi
 
 step "YAML"
-yaml_paths=()
-for d in data deploy .github; do
-  [ -d "$d" ] && yaml_paths+=("$d")
-done
-if [ "${#yaml_paths[@]}" -eq 0 ]; then
-  skip "нет каталогов для проверки YAML" structural
-elif need yamllint; then
-  yamllint -s "${yaml_paths[@]}" || fail=1
+if repo_check_skipped; then
+  skip "репозиторный чек — не для этого workflow" structural
 else
-  skip "yamllint не установлен"
+  yaml_paths=()
+  for d in data deploy .github; do
+    [ -d "$d" ] && yaml_paths+=("$d")
+  done
+  if [ "${#yaml_paths[@]}" -eq 0 ]; then
+    skip "нет каталогов для проверки YAML" structural
+  elif need yamllint; then
+    yamllint -s "${yaml_paths[@]}" || fail=1
+  else
+    skip "yamllint не установлен"
+  fi
 fi
 
 step "миграции неизменяемы"
-if [ -d migrations ] && need git; then
+if repo_check_skipped; then
+  skip "репозиторный чек — не для этого workflow" structural
+elif [ -d migrations ] && need git; then
   base="${BASE_REF:-origin/main}"
   if git rev-parse --verify "$base" >/dev/null 2>&1; then
     changed=$(git diff --diff-filter=MD --name-only "$base"...HEAD -- 'migrations/**' || true)
@@ -137,7 +177,9 @@ else
 fi
 
 step "в корпусе нет настоящих секретов"
-if [ -d testdata/corpus ]; then
+if repo_check_skipped; then
+  skip "репозиторный чек — не для этого workflow" structural
+elif [ -d testdata/corpus ]; then
   if need gitleaks; then
     gitleaks dir testdata/corpus --no-banner || fail=1
   else
