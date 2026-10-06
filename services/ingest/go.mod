@@ -5,6 +5,7 @@ go 1.23.6
 require (
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/minio/minio-go/v7 v7.0.97
+	vulnmanager/modules/model v0.0.0
 	vulnmanager/modules/rawstore v0.0.0
 )
 
@@ -36,5 +37,4 @@ require (
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	vulnmanager/modules/model v0.0.0 // indirect
 )

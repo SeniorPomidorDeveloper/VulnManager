@@ -7,6 +7,7 @@ ci: fmt tidy lint test
 
 generate:
 	cd internal/rawstoreimpl && $(SQLC) generate
+	cd internal/jobs/pgstore && $(SQLC) generate
 
 fmt:
 	test -z "$$(git ls-files '*.go' | xargs -r $(GOFUMPT) -l)"
