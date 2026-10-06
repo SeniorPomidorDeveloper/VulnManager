@@ -1,25 +1,39 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/usr/bin/env python3
+import re
+import sys
 
-TYPES='feat|fix|perf|refactor|test|docs|build|ci|chore|revert'
-ZERO='0000000000000000000000000000000000000000'
-fail=0
+TYPES = "feat|fix|perf|refactor|test|docs|build|ci|chore|revert"
+ZERO = "0" * 40
+BRANCH_RE = re.compile(rf"^({TYPES})/([0-9]+|adr-[0-9]{{4}})-[a-z0-9]+(-[a-z0-9]+)*$")
+RELEASE_RE = re.compile(r"^release/[0-9]+\.[0-9]+$")
+HOTFIX_RE = re.compile(r"^hotfix/[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9-]+$")
+MAX_BRANCH = 50
 
-while read -r _ new ref; do
-  case "$ref" in refs/heads/*) ;; *) continue ;; esac
-  [ "$new" = "$ZERO" ] && continue
-  b="${ref#refs/heads/}"
-  case "$b" in
-    main|master) continue ;;
-    release/*) [[ "$b" =~ ^release/[0-9]+\.[0-9]+$ ]] && continue ;;
-    hotfix/*) [[ "$b" =~ ^hotfix/[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9-]+$ ]] && continue ;;
-  esac
-  if [[ ! "$b" =~ ^($TYPES)/([0-9]+|adr-[0-9]{4})-[a-z0-9]+(-[a-z0-9]+)*$ ]] || [ "${#b}" -gt 50 ]; then
-    echo "отклонено: имя ветки '$b' не соответствует конвенции"
-    echo "формат: <type>/<issue>-<slug>, например feat/142-dedup-simhash-blocking"
-    echo "type: ${TYPES//|/, }"
-    fail=1
-  fi
-done
 
-exit "$fail"
+def allowed(branch):
+    if branch in ("main", "master"):
+        return True
+    if branch.startswith("release/"):
+        return bool(RELEASE_RE.match(branch))
+    if branch.startswith("hotfix/"):
+        return bool(HOTFIX_RE.match(branch))
+    return bool(BRANCH_RE.match(branch)) and len(branch) <= MAX_BRANCH
+
+
+def main():
+    failed = False
+    for line in sys.stdin:
+        _, new, ref = line.split()
+        if not ref.startswith("refs/heads/") or new == ZERO:
+            continue
+        branch = ref.removeprefix("refs/heads/")
+        if not allowed(branch):
+            print(f"отклонено: имя ветки '{branch}' не соответствует конвенции")
+            print("формат: <type>/<issue>-<slug>, например feat/142-dedup-simhash-blocking")
+            print(f"type: {', '.join(TYPES.split('|'))}")
+            failed = True
+    return 1 if failed else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
