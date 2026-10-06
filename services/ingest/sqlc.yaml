@@ -1,11 +1,11 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    schema: "../../../../migrations/ingest"
+    schema: "../../migrations/ingest"
     queries: "queries"
     gen:
       go:
-        package: "rawblobdb"
-        out: "gen/rawblobdb"
+        package: "db"
+        out: "gen/db"
         sql_package: "pgx/v5"
         emit_exact_table_names: false

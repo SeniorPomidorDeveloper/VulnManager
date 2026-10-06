@@ -6,8 +6,7 @@ SQLC ?= go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1
 ci: fmt tidy lint test
 
 generate:
-	cd internal/rawstoreimpl && $(SQLC) generate
-	cd internal/jobs/pgstore && $(SQLC) generate
+	$(SQLC) generate
 
 fmt:
 	test -z "$$(git ls-files '*.go' | xargs -r $(GOFUMPT) -l)"

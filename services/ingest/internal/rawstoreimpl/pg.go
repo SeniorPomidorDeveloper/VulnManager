@@ -1,7 +1,5 @@
 package rawstoreimpl
 
-//go:generate sqlc generate
-
 import (
 	"bytes"
 	"context"
@@ -12,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"vulnmanager/modules/rawstore"
-	"vulnmanager/services/ingest/internal/rawstoreimpl/gen/rawblobdb"
+	"vulnmanager/services/ingest/gen/db"
 )
 
 type PGStore struct {
@@ -28,8 +26,8 @@ func (s *PGStore) Put(ctx context.Context, key rawstore.Key, r io.Reader, _ int6
 	if err != nil {
 		return err
 	}
-	return s.withTenant(ctx, string(key.TenantID), func(q *rawblobdb.Queries) error {
-		return q.PutRawBlob(ctx, rawblobdb.PutRawBlobParams{
+	return s.withTenant(ctx, string(key.TenantID), func(q *db.Queries) error {
+		return q.PutRawBlob(ctx, db.PutRawBlobParams{
 			TenantID:  string(key.TenantID),
 			ScanID:    string(key.ScanID),
 			Sha256:    key.SHA256,
@@ -41,9 +39,9 @@ func (s *PGStore) Put(ctx context.Context, key rawstore.Key, r io.Reader, _ int6
 
 func (s *PGStore) Get(ctx context.Context, key rawstore.Key) (io.ReadCloser, error) {
 	var content []byte
-	err := s.withTenant(ctx, string(key.TenantID), func(q *rawblobdb.Queries) error {
+	err := s.withTenant(ctx, string(key.TenantID), func(q *db.Queries) error {
 		var err error
-		content, err = q.GetRawBlobContent(ctx, rawblobdb.GetRawBlobContentParams{
+		content, err = q.GetRawBlobContent(ctx, db.GetRawBlobContentParams{
 			TenantID: string(key.TenantID),
 			ScanID:   string(key.ScanID),
 			Sha256:   key.SHA256,
@@ -58,9 +56,9 @@ func (s *PGStore) Get(ctx context.Context, key rawstore.Key) (io.ReadCloser, err
 
 func (s *PGStore) Stat(ctx context.Context, key rawstore.Key) (rawstore.Info, error) {
 	var size int64
-	err := s.withTenant(ctx, string(key.TenantID), func(q *rawblobdb.Queries) error {
+	err := s.withTenant(ctx, string(key.TenantID), func(q *db.Queries) error {
 		var err error
-		size, err = q.GetRawBlobSize(ctx, rawblobdb.GetRawBlobSizeParams{
+		size, err = q.GetRawBlobSize(ctx, db.GetRawBlobSizeParams{
 			TenantID: string(key.TenantID),
 			ScanID:   string(key.ScanID),
 			Sha256:   key.SHA256,
@@ -73,14 +71,14 @@ func (s *PGStore) Stat(ctx context.Context, key rawstore.Key) (rawstore.Info, er
 	return rawstore.Info{Size: size}, nil
 }
 
-func (s *PGStore) withTenant(ctx context.Context, tenantID string, fn func(*rawblobdb.Queries) error) error {
+func (s *PGStore) withTenant(ctx context.Context, tenantID string, fn func(*db.Queries) error) error {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(ctx)
 
-	q := rawblobdb.New(tx)
+	q := db.New(tx)
 	if err := q.SetTenant(ctx, tenantID); err != nil {
 		return err
 	}

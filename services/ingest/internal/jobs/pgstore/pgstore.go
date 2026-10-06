@@ -1,7 +1,5 @@
 package pgstore
 
-//go:generate sqlc generate
-
 import (
 	"context"
 	"errors"
@@ -11,8 +9,8 @@ import (
 
 	"vulnmanager/modules/model"
 	"vulnmanager/modules/rawstore"
+	"vulnmanager/services/ingest/gen/db"
 	"vulnmanager/services/ingest/internal/jobs"
-	"vulnmanager/services/ingest/internal/jobs/pgstore/gen/jobsdb"
 )
 
 type Store struct {
@@ -25,7 +23,7 @@ func New(pool *pgxpool.Pool) *Store {
 
 func (s *Store) MaxReportBytes(ctx context.Context, tenantID model.TenantID) (int64, error) {
 	var limit int64
-	err := s.withTenant(ctx, tenantID, func(q *jobsdb.Queries) error {
+	err := s.withTenant(ctx, tenantID, func(q *db.Queries) error {
 		var err error
 		limit, err = q.GetTenantMaxReportBytes(ctx, string(tenantID))
 		return err
@@ -37,8 +35,8 @@ func (s *Store) MaxReportBytes(ctx context.Context, tenantID model.TenantID) (in
 }
 
 func (s *Store) InsertJob(ctx context.Context, scope model.Scope, rawKey rawstore.Key) error {
-	return s.withTenant(ctx, scope.TenantID, func(q *jobsdb.Queries) error {
-		return q.InsertIngestJob(ctx, jobsdb.InsertIngestJobParams{
+	return s.withTenant(ctx, scope.TenantID, func(q *db.Queries) error {
+		return q.InsertIngestJob(ctx, db.InsertIngestJobParams{
 			TenantID: string(scope.TenantID),
 			ScopeKey: string(scope.Key()),
 			RawKey:   rawKey.String(),
@@ -46,14 +44,14 @@ func (s *Store) InsertJob(ctx context.Context, scope model.Scope, rawKey rawstor
 	})
 }
 
-func (s *Store) withTenant(ctx context.Context, tenantID model.TenantID, fn func(*jobsdb.Queries) error) error {
+func (s *Store) withTenant(ctx context.Context, tenantID model.TenantID, fn func(*db.Queries) error) error {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(ctx)
 
-	q := jobsdb.New(tx)
+	q := db.New(tx)
 	if err := q.SetTenant(ctx, string(tenantID)); err != nil {
 		return err
 	}
