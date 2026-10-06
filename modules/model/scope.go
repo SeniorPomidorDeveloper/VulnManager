@@ -6,22 +6,22 @@ import (
 )
 
 type Scope struct {
-	TenantID  string
-	ProductID string
-	ContextID string
+	TenantID  TenantID
+	ProductID ProductID
+	ContextID ContextID
 }
 
-func NewScope(tenantID, productID, contextID string) (Scope, error) {
-	if tenantID == "" {
+func NewScope(tenantID TenantID, productID ProductID, contextID ContextID) (Scope, error) {
+	if tenantID.IsEmpty() {
 		return Scope{}, ErrEmptyTenant
 	}
-	if productID == "" {
+	if productID.IsEmpty() {
 		return Scope{}, ErrEmptyProduct
 	}
 	return Scope{TenantID: tenantID, ProductID: productID, ContextID: contextID}, nil
 }
 
-func (s Scope) Key() string {
-	sum := sha256.Sum256([]byte(s.TenantID + "/" + s.ProductID + "/" + s.ContextID))
-	return hex.EncodeToString(sum[:])
+func (s Scope) Key() ScopeKey {
+	sum := sha256.Sum256([]byte(string(s.TenantID) + "/" + string(s.ProductID) + "/" + string(s.ContextID)))
+	return ScopeKey(hex.EncodeToString(sum[:]))
 }

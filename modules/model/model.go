@@ -6,8 +6,8 @@ import (
 )
 
 type Finding struct {
-	ID            string
-	ImportRunID   string
+	ID            FindingID
+	ImportRunID   ImportRunID
 	Scope         Scope
 	ToolFindingID string
 	Kind          Kind
