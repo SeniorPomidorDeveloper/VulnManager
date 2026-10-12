@@ -1,0 +1,30 @@
+rules:
+  - id: vulnmanager.js-eval
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Call to eval on dynamic input
+    pattern: eval(...)
+  - id: vulnmanager.js-child-process-exec
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Shell command built from a variable
+    pattern: $CP.exec($CMD, ...)
+  - id: vulnmanager.js-insecure-hash
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Weak hash algorithm
+    pattern-either:
+      - pattern: crypto.createHash('md5')
+      - pattern: crypto.createHash('sha1')
+  - id: vulnmanager.js-math-random
+    languages: [javascript, typescript]
+    severity: INFO
+    message: Math.random is not a secure random source
+    pattern: Math.random()
+  - id: vulnmanager.js-hardcoded-jwt-secret
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: JWT signed or verified with a string literal secret
+    pattern-either:
+      - pattern: jwt.sign($PAYLOAD, "...", ...)
+      - pattern: jwt.verify($TOKEN, "...", ...)

@@ -16,6 +16,7 @@ jobs:
       pipeline: ${{ steps.filter.outputs.pipeline }}
       rawstore: ${{ steps.filter.outputs.rawstore }}
       ingest: ${{ steps.filter.outputs.ingest }}
+      normalize: ${{ steps.filter.outputs.normalize }}
       repo-yaml: ${{ steps.filter.outputs.repo-yaml }}
       repo-versions: ${{ steps.filter.outputs.repo-versions }}
       repo-migrations: ${{ steps.filter.outputs.repo-migrations }}
@@ -39,6 +40,10 @@ jobs:
             ingest:
               - "services/ingest/**"
               - ".github/workflows/ingest.yaml"
+            normalize:
+              - "services/normalize/**"
+              - ".github/workflows/normalize.yaml"
+              - "testdata/corpus/**"
             repo-yaml:
               - "**/*.yaml"
               - "**/*.yml"
@@ -83,6 +88,11 @@ jobs:
     if: needs.changes.outputs.ingest == 'true'
     uses: ./.github/workflows/ingest.yaml
 
+  normalize:
+    needs: changes
+    if: needs.changes.outputs.normalize == 'true'
+    uses: ./.github/workflows/normalize.yaml
+
   repo-yaml:
     needs: changes
     if: needs.changes.outputs.repo-yaml == 'true'
@@ -115,6 +125,7 @@ jobs:
       - pipeline
       - rawstore
       - ingest
+      - normalize
       - repo-yaml
       - repo-versions
       - repo-migrations
