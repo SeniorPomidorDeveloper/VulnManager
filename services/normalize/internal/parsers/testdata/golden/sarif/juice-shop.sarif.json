@@ -1,0 +1,497 @@
+[
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|data/datacreator.ts|305|75",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "data/datacreator.ts",
+      "start_line": 305,
+      "start_column": 75,
+      "end_line": 305,
+      "end_column": 88
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|data/datacreator.ts|323|50",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "data/datacreator.ts",
+      "start_line": 323,
+      "start_column": 50,
+      "end_line": 323,
+      "end_column": 63
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|data/datacreator.ts|381|49",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "data/datacreator.ts",
+      "start_line": 381,
+      "start_column": 49,
+      "end_line": 381,
+      "end_column": 62
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|data/datacreator.ts|756|24",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "data/datacreator.ts",
+      "start_line": 756,
+      "start_column": 24,
+      "end_line": 756,
+      "end_column": 37
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|frontend/src/app/Services/conversation-storage.service.ts|17|70",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "frontend/src/app/Services/conversation-storage.service.ts",
+      "start_line": 17,
+      "start_column": 70,
+      "end_line": 17,
+      "end_column": 83
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|frontend/src/app/chatbot/chat-welcome-screen/chat-welcome-screen.component.ts|67|56",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "frontend/src/app/chatbot/chat-welcome-screen/chat-welcome-screen.component.ts",
+      "start_line": 67,
+      "start_column": 56,
+      "end_line": 67,
+      "end_column": 69
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|frontend/src/app/coding-challenge-page/components/coding-challenge-fix-it/coding-challenge-fix-it.component.ts|120|49",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "frontend/src/app/coding-challenge-page/components/coding-challenge-fix-it/coding-challenge-fix-it.component.ts",
+      "start_line": 120,
+      "start_column": 49,
+      "end_line": 120,
+      "end_column": 62
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-child-process-exec|frontend/src/assets/private/three.js|310|16",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-child-process-exec",
+    "description": "Shell command built from a variable",
+    "severity_raw": "error",
+    "location": {
+      "uri": "frontend/src/assets/private/three.js",
+      "start_line": 310,
+      "start_column": 16,
+      "end_line": 310,
+      "end_column": 63
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-child-process-exec|frontend/src/assets/private/three.js|324|16",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-child-process-exec",
+    "description": "Shell command built from a variable",
+    "severity_raw": "error",
+    "location": {
+      "uri": "frontend/src/assets/private/three.js",
+      "start_line": 324,
+      "start_column": 16,
+      "end_line": 324,
+      "end_column": 69
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-child-process-exec|frontend/src/assets/private/three.js|338|16",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-child-process-exec",
+    "description": "Shell command built from a variable",
+    "severity_raw": "error",
+    "location": {
+      "uri": "frontend/src/assets/private/three.js",
+      "start_line": 338,
+      "start_column": 16,
+      "end_line": 338,
+      "end_column": 50
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-child-process-exec|frontend/src/assets/private/three.js|350|16",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-child-process-exec",
+    "description": "Shell command built from a variable",
+    "severity_raw": "error",
+    "location": {
+      "uri": "frontend/src/assets/private/three.js",
+      "start_line": 350,
+      "start_column": 16,
+      "end_line": 350,
+      "end_column": 67
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|frontend/src/assets/private/three.js|6359|42",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "frontend/src/assets/private/three.js",
+      "start_line": 6359,
+      "start_column": 42,
+      "end_line": 6359,
+      "end_column": 55
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|frontend/src/assets/private/three.js|6426|20",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "frontend/src/assets/private/three.js",
+      "start_line": 6426,
+      "start_column": 20,
+      "end_line": 6426,
+      "end_column": 33
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|frontend/src/assets/private/three.js|6426|42",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "frontend/src/assets/private/three.js",
+      "start_line": 6426,
+      "start_column": 42,
+      "end_line": 6426,
+      "end_column": 55
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|frontend/src/assets/private/three.js|6434|28",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "frontend/src/assets/private/three.js",
+      "start_line": 6434,
+      "start_column": 28,
+      "end_line": 6434,
+      "end_column": 41
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|frontend/src/assets/private/three.js|6442|16",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "frontend/src/assets/private/three.js",
+      "start_line": 6442,
+      "start_column": 16,
+      "end_line": 6442,
+      "end_column": 29
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|frontend/src/assets/private/three.js|6450|26",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "frontend/src/assets/private/three.js",
+      "start_line": 6450,
+      "start_column": 26,
+      "end_line": 6450,
+      "end_column": 39
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|frontend/src/assets/private/three.js|15504|97",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "frontend/src/assets/private/three.js",
+      "start_line": 15504,
+      "start_column": 97,
+      "end_line": 15504,
+      "end_column": 110
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|frontend/src/assets/private/three.js|15534|92",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "frontend/src/assets/private/three.js",
+      "start_line": 15534,
+      "start_column": 92,
+      "end_line": 15534,
+      "end_column": 105
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|frontend/src/assets/private/three.js|15567|92",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "frontend/src/assets/private/three.js",
+      "start_line": 15567,
+      "start_column": 92,
+      "end_line": 15567,
+      "end_column": 105
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-child-process-exec|lib/codingChallenges.ts|77|9",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-child-process-exec",
+    "description": "Shell command built from a variable",
+    "severity_raw": "error",
+    "location": {
+      "uri": "lib/codingChallenges.ts",
+      "start_line": 77,
+      "start_column": 9,
+      "end_line": 77,
+      "end_column": 82
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-child-process-exec|lib/codingChallenges.ts|79|16",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-child-process-exec",
+    "description": "Shell command built from a variable",
+    "severity_raw": "error",
+    "location": {
+      "uri": "lib/codingChallenges.ts",
+      "start_line": 79,
+      "start_column": 16,
+      "end_line": 79,
+      "end_column": 92
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-insecure-hash|lib/insecurity.ts|41|39",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-insecure-hash",
+    "description": "Weak hash algorithm",
+    "severity_raw": "warning",
+    "location": {
+      "uri": "lib/insecurity.ts",
+      "start_line": 41,
+      "start_column": 39,
+      "end_line": 41,
+      "end_column": 63
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|lib/insecurity.ts|53|56",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "lib/insecurity.ts",
+      "start_line": 53,
+      "start_column": 56,
+      "end_line": 53,
+      "end_column": 69
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-hardcoded-jwt-secret|lib/insecurity.ts|54|41",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-hardcoded-jwt-secret",
+    "description": "JWT signed or verified with a string literal secret",
+    "severity_raw": "warning",
+    "location": {
+      "uri": "lib/insecurity.ts",
+      "start_line": 54,
+      "start_column": 41,
+      "end_line": 54,
+      "end_column": 108
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|routes/captcha.ts|14|35",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "routes/captcha.ts",
+      "start_line": 14,
+      "start_column": 35,
+      "end_line": 14,
+      "end_column": 48
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|routes/captcha.ts|15|36",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "routes/captcha.ts",
+      "start_line": 15,
+      "start_column": 36,
+      "end_line": 15,
+      "end_column": 49
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|routes/captcha.ts|16|35",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "routes/captcha.ts",
+      "start_line": 16,
+      "start_column": 35,
+      "end_line": 16,
+      "end_column": 48
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|routes/captcha.ts|18|49",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "routes/captcha.ts",
+      "start_line": 18,
+      "start_column": 49,
+      "end_line": 18,
+      "end_column": 62
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-math-random|routes/captcha.ts|19|50",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
+    "description": "Math.random is not a secure random source",
+    "severity_raw": "note",
+    "location": {
+      "uri": "routes/captcha.ts",
+      "start_line": 19,
+      "start_column": 50,
+      "end_line": 19,
+      "end_column": 63
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-eval|routes/captcha.ts|22|20",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-eval",
+    "description": "Call to eval on dynamic input",
+    "severity_raw": "error",
+    "location": {
+      "uri": "routes/captcha.ts",
+      "start_line": 22,
+      "start_column": 20,
+      "end_line": 22,
+      "end_column": 36
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-eval|routes/userProfile.ts|65|22",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-eval",
+    "description": "Call to eval on dynamic input",
+    "severity_raw": "error",
+    "location": {
+      "uri": "routes/userProfile.ts",
+      "start_line": 65,
+      "start_column": 22,
+      "end_line": 65,
+      "end_column": 32
+    },
+    "diagnostics": []
+  },
+  {
+    "tool_finding_id": "rules.vulnmanager.js-insecure-hash|scripts/package.mjs|121|16",
+    "kind": "sast",
+    "title": "Semgrep Finding: rules.vulnmanager.js-insecure-hash",
+    "description": "Weak hash algorithm",
+    "severity_raw": "warning",
+    "location": {
+      "uri": "scripts/package.mjs",
+      "start_line": 121,
+      "start_column": 16,
+      "end_line": 121,
+      "end_column": 40
+    },
+    "diagnostics": []
+  }
+]

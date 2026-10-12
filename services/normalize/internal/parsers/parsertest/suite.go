@@ -177,7 +177,7 @@ func checkGolden(t *testing.T, path string, found []parsers.RawFinding) {
 			Kind:          finding.Kind.String(),
 			Title:         finding.Title,
 			Description:   finding.Description,
-			SeverityRaw:   finding.SeverityRaw,
+			SeverityRaw:   string(finding.SeverityRaw),
 			Location:      finding.Location,
 			Diagnostics:   diagnostics,
 		})

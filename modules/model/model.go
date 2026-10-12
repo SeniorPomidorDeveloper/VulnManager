@@ -13,7 +13,7 @@ type Finding struct {
 	Kind          Kind
 	Title         string
 	Description   string
-	SeverityRaw   string
+	SeverityRaw   SeverityRaw
 	Location      json.RawMessage
 	Raw           json.RawMessage
 	Provenance    Provenance

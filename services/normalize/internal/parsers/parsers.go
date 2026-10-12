@@ -29,7 +29,7 @@ type RawFinding struct {
 	Kind          model.Kind
 	Title         string
 	Description   string
-	SeverityRaw   string
+	SeverityRaw   model.SeverityRaw
 	Location      json.RawMessage
 	Raw           json.RawMessage
 	Diagnostics   model.Diagnostics
