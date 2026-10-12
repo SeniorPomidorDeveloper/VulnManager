@@ -22,7 +22,5 @@ __pycache__/
 
 /vendor/
 
-**/gen/
-
 /CLAUDE.md
 /docs/
