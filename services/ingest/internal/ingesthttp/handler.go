@@ -159,3 +159,7 @@ func writeJSON(w http.ResponseWriter, status int, contentType string, v any) {
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(v)
 }
+
+func InvalidRequest(w http.ResponseWriter, _ *http.Request, err error) {
+	writeProblem(w, http.StatusBadRequest, "bad_request", err.Error())
+}
