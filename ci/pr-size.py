@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 EXCLUDE = [
-    "**/go.sum", "**/*.sum", "**/*.lock", "vendor/**", "testdata/**", "**/*.pb.go",
+    "**/go.sum", "**/*.sum", "**/*.lock", "vendor/**", "testdata/**", "**/testdata/**", "**/*.pb.go",
     "**/*_gen.go", "**/gen/**", ".github/rulesets/**",
 ]
 
