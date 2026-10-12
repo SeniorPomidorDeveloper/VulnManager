@@ -3,7 +3,7 @@ name: vulnmanager
 services:
   postgres:
     image: postgres:16.6-alpine3.20
-    profiles: ["infra", "full"]
+    profiles: ["infra", "core", "full"]
     restart: unless-stopped
     env_file:
       - deploy/local/postgres.env
@@ -11,6 +11,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./deploy/local/postgres-init.sql:/docker-entrypoint-initdb.d/10-roles.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -34,32 +35,94 @@ services:
       timeout: 5s
       retries: 10
 
-  minio:
-    image: minio/minio:RELEASE.2024-06-13T22-53-53Z
-    profiles: ["infra", "full"]
+  garage:
+    image: dxflrs/garage:v2.4.1
+    profiles: ["infra", "core", "full"]
     restart: unless-stopped
     env_file:
-      - deploy/local/minio.env
-    command: server /data --console-address ":9001"
+      - deploy/local/garage.env
+    command: ["/garage", "server", "--single-node", "--default-bucket"]
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "3900:3900"
     volumes:
-      - minio-data:/data
+      - ./deploy/local/garage.toml:/etc/garage.toml:ro
+      - garage-meta:/var/lib/garage/meta
+      - garage-data:/var/lib/garage/data
+    healthcheck:
+      test: ["CMD", "/garage", "status"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
-  minio-init:
-    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
-    profiles: ["infra", "full"]
+  migrate-ingest:
+    build: ./deploy/local/pgmigrate
+    image: vulnmanager/pgmigrate:1.0.13
+    profiles: ["core", "full"]
     depends_on:
-      - minio
+      postgres:
+        condition: service_healthy
     env_file:
-      - deploy/local/minio.env
-    entrypoint: ["/bin/sh", "/init/create-bucket.sh"]
+      - deploy/local/postgres.env
+    entrypoint:
+      - sh
+      - -c
+      - >-
+        pgmigrate -d /db
+        -c "host=postgres dbname=$$POSTGRES_DB user=$$POSTGRES_USER password=$$POSTGRES_PASSWORD"
+        -t latest migrate
     volumes:
-      - ./deploy/local/minio-init.sh:/init/create-bucket.sh:ro
+      - ./migrations/ingest:/db/migrations:ro
     restart: "no"
+
+  seed-ingest:
+    image: postgres:16.6-alpine3.20
+    profiles: ["core", "full"]
+    depends_on:
+      migrate-ingest:
+        condition: service_completed_successfully
+    env_file:
+      - deploy/local/postgres.env
+    entrypoint:
+      - sh
+      - -c
+      - >-
+        psql
+        "host=postgres dbname=$$POSTGRES_DB user=$$POSTGRES_USER password=$$POSTGRES_PASSWORD"
+        -v ON_ERROR_STOP=1 -f /seed/ingest.sql
+    volumes:
+      - ./testdata/seed/ingest.sql:/seed/ingest.sql:ro
+    restart: "no"
+
+  ingest:
+    build:
+      context: ./services/ingest/dist
+      dockerfile: ../Dockerfile
+      args:
+        DEB: vulnmanager-ingest_0.0.1_amd64.deb
+    image: vulnmanager/ingest:0.0.1
+    profiles: ["core", "full"]
+    restart: unless-stopped
+    depends_on:
+      seed-ingest:
+        condition: service_completed_successfully
+      garage:
+        condition: service_healthy
+    env_file:
+      - deploy/local/ingest.env
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -c
+        - exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /ping HTTP/1.0\r\n\r\n' >&3 && grep -q ok <&3
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   postgres-data:
   rabbitmq-data:
-  minio-data:
+  garage-meta:
+  garage-data:
