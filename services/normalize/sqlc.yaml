@@ -1,7 +1,9 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    schema: "../../migrations/normalize"
+    schema:
+      - "../../migrations/normalize"
+      - "schema/ingest_queue.sql"
     queries: "queries"
     gen:
       go:
