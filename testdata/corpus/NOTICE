@@ -1,0 +1,5 @@
+Отчёты в этом каталоге сгенерированы по OWASP Juice Shop v20.3.0 (лицензия MIT):
+https://github.com/juice-shop/juice-shop/blob/v20.3.0/LICENSE
+
+SARIF-отчёты содержат короткие фрагменты исходного кода Juice Shop.
+Команды воспроизведения — в Makefile этого каталога.

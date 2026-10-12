@@ -51,3 +51,7 @@ jobs:
   repo-contracts:
     if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
     uses: ./.github/workflows/repo-contracts.yaml
+
+  normalize:
+    if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
+    uses: ./.github/workflows/normalize.yaml
