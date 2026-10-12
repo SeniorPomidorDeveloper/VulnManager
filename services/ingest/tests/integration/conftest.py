@@ -32,7 +32,9 @@ def pgsql_local(pgsql_local_create):
 
 
 @pytest.fixture(scope='session')
-def app_database_url(pgsql_local, ensure_service_started, _pgsql_service_settings):
+def app_database_url(
+    pgsql_local, ensure_service_started, _pgsql_service_settings,
+):
     ensure_service_started('postgresql', settings=_pgsql_service_settings)
     pgsql_local.initialize(parallel_init=False)
     conninfo = pgsql_local['ingest']
@@ -42,7 +44,9 @@ def app_database_url(pgsql_local, ensure_service_started, _pgsql_service_setting
         f"""
         DO $$
         BEGIN
-            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '{APP_ROLE}') THEN
+            IF NOT EXISTS (
+                SELECT FROM pg_roles WHERE rolname = '{APP_ROLE}'
+            ) THEN
                 CREATE ROLE {APP_ROLE} LOGIN NOSUPERUSER NOBYPASSRLS;
             END IF;
         END
@@ -78,7 +82,9 @@ async def service_daemon(create_daemon_scope, app_database_url):
 
 
 @pytest.fixture
-async def service_client(ensure_daemon_started, create_service_client, service_daemon):
+async def service_client(
+    ensure_daemon_started, create_service_client, service_daemon,
+):
     await ensure_daemon_started(service_daemon)
     return create_service_client(BASE_URL)
 
@@ -94,17 +100,22 @@ def assert_matches_spec(openapi):
 
     def check(response, body):
         documented = operation['responses'].get(str(response.status))
-        assert documented is not None, f'status {response.status} is not in the spec'
+        assert documented is not None, (
+            f'status {response.status} is not in the spec'
+        )
         content = documented.get('content')
         if content is None:
             content = openapi['components']['responses'][
                 documented['$ref'].rsplit('/', 1)[1]
             ]['content']
         media_type = response.content_type
-        assert media_type in content, f'content type {media_type} is not in the spec'
+        assert media_type in content, (
+            f'content type {media_type} is not in the spec'
+        )
         schema = content[media_type]['schema']
         if '$ref' in schema:
-            schema = openapi['components']['schemas'][schema['$ref'].rsplit('/', 1)[1]]
+            name = schema['$ref'].rsplit('/', 1)[1]
+            schema = openapi['components']['schemas'][name]
         Draft202012Validator(schema).validate(body)
 
     return check

@@ -4,7 +4,11 @@ REPORTS = '/api/v1/reports'
 
 
 def headers(**overrides):
-    base = {'X-Tool': 'trivy', 'X-Scope': 'payments/prod', 'X-Scan-Id': 'scan-1'}
+    base = {
+        'X-Tool': 'trivy',
+        'X-Scope': 'payments/prod',
+        'X-Scan-Id': 'scan-1',
+    }
     base.update(overrides)
     return {key: value for key, value in base.items() if value is not None}
 
@@ -15,7 +19,10 @@ async def post(client, body=b'report', **overrides):
 
 def jobs(pgsql):
     cursor = pgsql['ingest'].cursor()
-    cursor.execute('SELECT tool, scan_id, state FROM ingest_job ORDER BY created_at, tool')
+    cursor.execute(
+        'SELECT tool, scan_id, state FROM ingest_job '
+        'ORDER BY created_at, tool',
+    )
     return cursor.fetchall()
 
 
@@ -45,7 +52,9 @@ async def test_server_assigns_scan_id(service_client, pgsql):
     assert jobs(pgsql) == [('trivy', body['scan_id'], 'pending')]
 
 
-async def test_redelivery_returns_first_result_without_new_work(service_client, pgsql):
+async def test_redelivery_returns_first_result_without_new_work(
+    service_client, pgsql,
+):
     first = await post(service_client, **{'X-Scan-Id': 'scan-1'})
     second = await post(service_client, **{'X-Scan-Id': 'scan-2'})
 
@@ -57,18 +66,28 @@ async def test_redelivery_returns_first_result_without_new_work(service_client, 
 
 @pytest.mark.parametrize(
     'overrides',
-    [{'X-Tool': 'semgrep'}, {'X-Scope': 'payments/stage'}, {'X-Scope': 'billing/prod'}],
+    [
+        {'X-Tool': 'semgrep'},
+        {'X-Scope': 'payments/stage'},
+        {'X-Scope': 'billing/prod'},
+    ],
 )
-async def test_other_tool_or_scope_is_not_a_duplicate(service_client, pgsql, overrides):
+async def test_other_tool_or_scope_is_not_a_duplicate(
+    service_client, pgsql, overrides,
+):
     await post(service_client, **{'X-Scan-Id': 'scan-1'})
-    response = await post(service_client, **{'X-Scan-Id': 'scan-2', **overrides})
+    response = await post(
+        service_client, **{'X-Scan-Id': 'scan-2', **overrides},
+    )
 
     assert response.status == 202
     assert (response.json())['scan_id'] == 'scan-2'
     assert len(jobs(pgsql)) == 2
 
 
-async def test_report_above_tenant_limit_is_rejected(service_client, pgsql, assert_matches_spec):
+async def test_report_above_tenant_limit_is_rejected(
+    service_client, pgsql, assert_matches_spec,
+):
     response = await post(service_client, body=b'a' * 1001)
 
     assert response.status == 413
@@ -87,7 +106,9 @@ async def test_report_at_tenant_limit_is_accepted(service_client):
     'overrides',
     [{'X-Tool': None}, {'X-Scope': None}, {'X-Scope': '/context-only'}],
 )
-async def test_invalid_headers_are_rejected(service_client, pgsql, assert_matches_spec, overrides):
+async def test_invalid_headers_are_rejected(
+    service_client, pgsql, assert_matches_spec, overrides,
+):
     response = await post(service_client, **overrides)
 
     assert response.status == 400
@@ -95,7 +116,9 @@ async def test_invalid_headers_are_rejected(service_client, pgsql, assert_matche
     assert jobs(pgsql) == []
 
 
-async def test_empty_body_is_rejected(service_client, pgsql, assert_matches_spec):
+async def test_empty_body_is_rejected(
+    service_client, pgsql, assert_matches_spec,
+):
     response = await post(service_client, body=b'')
 
     assert response.status == 400

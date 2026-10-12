@@ -16,11 +16,13 @@ def versions():
 def test_row_level_security_is_forced_on_every_table(pgsql):
     cursor = pgsql['ingest'].cursor()
     cursor.execute(
-        'SELECT relname, relrowsecurity, relforcerowsecurity FROM pg_class WHERE relname = ANY(%s)',
+        'SELECT relname, relrowsecurity, relforcerowsecurity '
+        'FROM pg_class WHERE relname = ANY(%s)',
         (TENANT_TABLES,),
     )
 
-    assert sorted(cursor.fetchall()) == sorted((name, True, True) for name in TENANT_TABLES)
+    expected = sorted((name, True, True) for name in TENANT_TABLES)
+    assert sorted(cursor.fetchall()) == expected
 
 
 @pytest.fixture
@@ -31,7 +33,8 @@ def scratch_database(pgsql):
     cursor = admin.cursor()
     cursor.execute(f'DROP DATABASE IF EXISTS {name}')
     cursor.execute(f'CREATE DATABASE {name}')
-    conn = psycopg2.connect(pgsql['ingest'].conninfo.replace(dbname=name).get_dsn())
+    conninfo = pgsql['ingest'].conninfo.replace(dbname=name)
+    conn = psycopg2.connect(conninfo.get_dsn())
     conn.autocommit = True
     yield conn
     conn.close()
@@ -48,7 +51,8 @@ def test_upgrade_from_previous_schema_keeps_existing_jobs(scratch_database):
         apply(scratch_database, path)
     cursor = scratch_database.cursor()
     cursor.execute(
-        "INSERT INTO ingest_job (tenant_id, scope_key, raw_key) VALUES ('acme', 'scope', 'acme/scan/sha')",
+        'INSERT INTO ingest_job (tenant_id, scope_key, raw_key) '
+        "VALUES ('acme', 'scope', 'acme/scan/sha')",
     )
 
     apply(scratch_database, latest)
