@@ -1,0 +1,20 @@
+#!/usr/bin/make -f
+BINARY ?= bin/ingest
+
+%:
+	dh $@
+
+override_dh_auto_build:
+
+override_dh_auto_test:
+
+override_dh_auto_install:
+	install -D -m 0755 $(BINARY) debian/vulnmanager-ingest/usr/bin/vulnmanager-ingest
+	install -D -m 0644 .env.example debian/vulnmanager-ingest/etc/vulnmanager/ingest/ingest.env
+
+override_dh_strip:
+
+override_dh_builddeb:
+	dh_builddeb --destdir=dist
+
+override_dh_dwz:

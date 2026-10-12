@@ -47,7 +47,7 @@ jobs:
             repo-versions:
               - ".github/**"
               - "deploy/**"
-              - "docker/**"
+              - "services/**/Dockerfile"
               - "docker-compose.yaml"
               - ".github/workflows/repo-versions.yaml"
             repo-migrations:

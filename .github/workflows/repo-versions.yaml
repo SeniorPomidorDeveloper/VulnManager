@@ -14,4 +14,4 @@ jobs:
         run: |
           ! grep -RnE ':lates[t]\b|@lates[t]\b|ubuntu-lates[t]\b' \
             --include='*.yaml' --include='*.yml' --include=Dockerfile \
-            .github deploy docker docker-compose.yaml 2>/dev/null
+            .github deploy services docker-compose.yaml 2>/dev/null

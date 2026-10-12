@@ -1,0 +1,13 @@
+Source: vulnmanager-ingest
+Section: net
+Priority: optional
+Maintainer: VulnManager <noreply@vulnmanager.invalid>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+
+Package: vulnmanager-ingest
+Architecture: amd64
+Depends: ${misc:Depends}
+Description: VulnManager report ingestion service
+ Accepts scanner reports over HTTP, stores raw payloads and queues
+ processing jobs.
