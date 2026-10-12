@@ -5,12 +5,14 @@ import pytest
 import yaml
 from testsuite.databases.pgsql import discover
 
+import roles
 import settings
 import spec_check
 
 pytest_plugins = [
     'testsuite.pytest_plugin',
     'testsuite.databases.pgsql.pytest_plugin',
+    'queue_fixtures',
 ]
 
 SESSION = 'session'
@@ -27,8 +29,9 @@ def app_database_url(
     pgsql_local, ensure_service_started, _pgsql_service_settings,
 ):
     ensure_service_started('postgresql', settings=_pgsql_service_settings)
-    pgsql_local.initialize(parallel_init=False)
     conninfo = pgsql_local[settings.DATABASE]
+    roles.create_cluster_roles(conninfo.replace(dbname='postgres'))
+    pgsql_local.initialize(parallel_init=False)
     conn = psycopg2.connect(conninfo.get_dsn())
     conn.autocommit = True
     conn.cursor().execute(

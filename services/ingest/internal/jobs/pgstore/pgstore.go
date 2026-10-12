@@ -60,12 +60,14 @@ func (s *Store) InsertJob(ctx context.Context, scope model.Scope, tool model.Too
 	err := s.withTenant(ctx, scope.TenantID, func(q *db.Queries) error {
 		var err error
 		rows, err = q.InsertIngestJob(ctx, db.InsertIngestJobParams{
-			TenantID: string(scope.TenantID),
-			ScopeKey: string(scope.Key()),
-			RawKey:   key.String(),
-			Tool:     string(tool),
-			Sha256:   key.SHA256,
-			ScanID:   string(key.ScanID),
+			TenantID:  string(scope.TenantID),
+			ScopeKey:  string(scope.Key()),
+			ProductID: string(scope.ProductID),
+			ContextID: string(scope.ContextID),
+			RawKey:    key.String(),
+			Tool:      string(tool),
+			Sha256:    key.SHA256,
+			ScanID:    string(key.ScanID),
 		})
 		return err
 	})
