@@ -73,7 +73,7 @@ func (h *Handler) IngestReport(w http.ResponseWriter, r *http.Request, params ap
 	}
 	accepted, p := h.accept(ctx, jobs.Report{
 		Scope:  scope,
-		Tool:   params.XTool,
+		Tool:   model.ToolName(params.XTool),
 		ScanID: h.scanID(params.XScanId),
 		Body:   body,
 	})

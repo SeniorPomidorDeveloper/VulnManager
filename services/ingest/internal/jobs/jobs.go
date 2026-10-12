@@ -19,7 +19,7 @@ var (
 
 type Report struct {
 	Scope  model.Scope
-	Tool   string
+	Tool   model.ToolName
 	ScanID model.ScanID
 	Body   []byte
 }
@@ -31,8 +31,8 @@ type Accepted struct {
 
 type Store interface {
 	MaxReportBytes(ctx context.Context, tenantID model.TenantID) (int64, error)
-	FindScanID(ctx context.Context, scope model.Scope, tool, sha256 string) (model.ScanID, bool, error)
-	InsertJob(ctx context.Context, scope model.Scope, tool string, key rawstore.Key) (bool, error)
+	FindScanID(ctx context.Context, scope model.Scope, tool model.ToolName, sha256 string) (model.ScanID, bool, error)
+	InsertJob(ctx context.Context, scope model.Scope, tool model.ToolName, key rawstore.Key) (bool, error)
 }
 
 type Enqueuer struct {
