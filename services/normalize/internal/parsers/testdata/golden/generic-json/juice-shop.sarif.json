@@ -1,0 +1,13 @@
+[
+  {
+    "tool_finding_id": "",
+    "kind": "unknown",
+    "title": "unparsed report",
+    "description": "",
+    "severity_raw": "",
+    "location": null,
+    "diagnostics": [
+      "warn:unknown_format"
+    ]
+  }
+]

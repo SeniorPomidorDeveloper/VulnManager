@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"flag"
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"testing"
 
 	"vulnmanager/services/normalize/internal/parsers"
@@ -15,12 +17,29 @@ import (
 const (
 	defaultMinSniff = 0.5
 	headSize        = 4096
+	goldenMode      = 0o644
+)
+
+var (
+	update       = flag.Bool("update", false, "rewrite golden files")
+	absolutePath = regexp.MustCompile(`^(/|[A-Za-z]:[\\/])`)
 )
 
 type Options struct {
-	Corpus   []string
-	Foreign  []string
-	MinSniff parsers.SniffScore
+	Corpus    []string
+	Foreign   []string
+	GoldenDir string
+	MinSniff  parsers.SniffScore
+}
+
+type goldenFinding struct {
+	ToolFindingID string          `json:"tool_finding_id"`
+	Kind          string          `json:"kind"`
+	Title         string          `json:"title"`
+	Description   string          `json:"description"`
+	SeverityRaw   string          `json:"severity_raw"`
+	Location      json.RawMessage `json:"location"`
+	Diagnostics   []string        `json:"diagnostics"`
 }
 
 func Suite(t *testing.T, p parsers.Parser, opts Options) {
@@ -70,6 +89,10 @@ func Suite(t *testing.T, p parsers.Parser, opts Options) {
 				t.Error("two runs on the same input differ")
 			}
 			checkFields(t, first)
+			checkPaths(t, first)
+			if opts.GoldenDir != "" {
+				checkGolden(t, filepath.Join(opts.GoldenDir, filepath.Base(path)+".json"), first)
+			}
 		})
 		t.Run("truncated/"+filepath.Base(path), func(t *testing.T) {
 			defer func() {
@@ -105,6 +128,76 @@ func checkFields(t *testing.T, found []parsers.RawFinding) {
 		if finding.Location != nil && !json.Valid(finding.Location) {
 			t.Errorf("finding %d: location is not valid json", i)
 		}
+	}
+}
+
+func checkPaths(t *testing.T, found []parsers.RawFinding) {
+	t.Helper()
+	for i, finding := range found {
+		if finding.Location == nil {
+			continue
+		}
+		var location any
+		if err := json.Unmarshal(finding.Location, &location); err != nil {
+			continue
+		}
+		walkStrings(location, func(value string) {
+			if absolutePath.MatchString(value) {
+				t.Errorf("finding %d: absolute path %q in location", i, value)
+			}
+		})
+	}
+}
+
+func walkStrings(node any, visit func(string)) {
+	switch value := node.(type) {
+	case string:
+		visit(value)
+	case []any:
+		for _, item := range value {
+			walkStrings(item, visit)
+		}
+	case map[string]any:
+		for _, item := range value {
+			walkStrings(item, visit)
+		}
+	}
+}
+
+func checkGolden(t *testing.T, path string, found []parsers.RawFinding) {
+	t.Helper()
+	snapshot := make([]goldenFinding, 0, len(found))
+	for _, finding := range found {
+		diagnostics := make([]string, 0, len(finding.Diagnostics))
+		for _, diagnostic := range finding.Diagnostics {
+			diagnostics = append(diagnostics, string(diagnostic.Level)+":"+diagnostic.Code)
+		}
+		snapshot = append(snapshot, goldenFinding{
+			ToolFindingID: string(finding.ToolFindingID),
+			Kind:          finding.Kind.String(),
+			Title:         finding.Title,
+			Description:   finding.Description,
+			SeverityRaw:   finding.SeverityRaw,
+			Location:      finding.Location,
+			Diagnostics:   diagnostics,
+		})
+	}
+	got, err := json.MarshalIndent(snapshot, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got = append(got, '\n')
+	if *update {
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, got, goldenMode); err != nil {
+			t.Fatal(err)
+		}
+		return
+	}
+	if want := read(t, path); !bytes.Equal(got, want) {
+		t.Errorf("golden mismatch for %s; rerun with -update to rewrite", path)
 	}
 }
 
