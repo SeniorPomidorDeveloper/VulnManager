@@ -1,43 +1,34 @@
-import os
-import pathlib
+import functools
 
 import psycopg2
 import pytest
 import yaml
-from jsonschema import Draft202012Validator
 from testsuite.databases.pgsql import discover
+
+import settings
+import spec_check
 
 pytest_plugins = [
     'testsuite.pytest_plugin',
     'testsuite.databases.pgsql.pytest_plugin',
 ]
 
-SERVICE_DIR = pathlib.Path(__file__).resolve().parents[2]
-REPO_DIR = SERVICE_DIR.parents[1]
-MIGRATIONS_DIR = REPO_DIR / 'migrations'
-OPENAPI_PATH = REPO_DIR / 'api' / 'openapi' / 'ingest.yaml'
-BINARY = SERVICE_DIR / 'bin' / 'ingest'
-
-ADDR = os.environ.get('INGEST_TEST_ADDR', '127.0.0.1:18080')
-BASE_URL = f'http://{ADDR}/'
-TENANT = 'acme'
-TENANT_LIMIT = 1000
-APP_ROLE = 'ingest_app'
+SESSION = 'session'
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope=SESSION)
 def pgsql_local(pgsql_local_create):
-    databases = discover.find_schemas(None, [MIGRATIONS_DIR])
+    databases = discover.find_schemas(None, [settings.MIGRATIONS_DIR])
     return pgsql_local_create(list(databases.values()))
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope=SESSION)
 def app_database_url(
     pgsql_local, ensure_service_started, _pgsql_service_settings,
 ):
     ensure_service_started('postgresql', settings=_pgsql_service_settings)
     pgsql_local.initialize(parallel_init=False)
-    conninfo = pgsql_local['ingest']
+    conninfo = pgsql_local[settings.DATABASE]
     conn = psycopg2.connect(conninfo.get_dsn())
     conn.autocommit = True
     conn.cursor().execute(
@@ -45,38 +36,41 @@ def app_database_url(
         DO $$
         BEGIN
             IF NOT EXISTS (
-                SELECT FROM pg_roles WHERE rolname = '{APP_ROLE}'
+                SELECT FROM pg_roles WHERE rolname = '{settings.APP_ROLE}'
             ) THEN
-                CREATE ROLE {APP_ROLE} LOGIN NOSUPERUSER NOBYPASSRLS;
+                CREATE ROLE {settings.APP_ROLE}
+                    LOGIN NOSUPERUSER NOBYPASSRLS;
             END IF;
         END
         $$;
-        GRANT ALL ON ALL TABLES IN SCHEMA public TO {APP_ROLE};
+        GRANT ALL ON ALL TABLES IN SCHEMA public TO {settings.APP_ROLE};
         """,
     )
     conn.close()
-    return conninfo.replace(user=APP_ROLE, password=None).get_uri()
+    return conninfo.replace(
+        user=settings.APP_ROLE, password=None,
+    ).get_uri()
 
 
 @pytest.fixture(autouse=True)
 def seeded_tenant(pgsql):
-    pgsql['ingest'].cursor().execute(
+    pgsql[settings.DATABASE].cursor().execute(
         'INSERT INTO tenant (id, max_report_bytes) VALUES (%s, %s)',
-        (TENANT, TENANT_LIMIT),
+        (settings.TENANT, settings.TENANT_LIMIT),
     )
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope=SESSION)
 async def service_daemon(create_daemon_scope, app_database_url):
     async with create_daemon_scope(
-        args=[str(BINARY)],
+        args=[str(settings.BINARY)],
         env={
-            'INGEST_ADDR': ADDR,
+            'INGEST_ADDR': settings.ADDR,
             'INGEST_DATABASE_URL': app_database_url,
-            'INGEST_TENANT': TENANT,
+            'INGEST_TENANT': settings.TENANT,
             'INGEST_RAWSTORE': 'pg',
         },
-        ping_url=BASE_URL + 'ping',
+        ping_url=settings.PING_URL,
     ) as scope:
         yield scope
 
@@ -86,36 +80,16 @@ async def service_client(
     ensure_daemon_started, create_service_client, service_daemon,
 ):
     await ensure_daemon_started(service_daemon)
-    return create_service_client(BASE_URL)
+    return create_service_client(settings.BASE_URL)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope=SESSION)
 def openapi():
-    return yaml.safe_load(OPENAPI_PATH.read_text(encoding='utf-8'))
+    return yaml.safe_load(
+        settings.OPENAPI_PATH.read_text(encoding='utf-8'),
+    )
 
 
 @pytest.fixture
 def assert_matches_spec(openapi):
-    operation = openapi['paths']['/api/v1/reports']['post']
-
-    def check(response, body):
-        documented = operation['responses'].get(str(response.status))
-        assert documented is not None, (
-            f'status {response.status} is not in the spec'
-        )
-        content = documented.get('content')
-        if content is None:
-            content = openapi['components']['responses'][
-                documented['$ref'].rsplit('/', 1)[1]
-            ]['content']
-        media_type = response.content_type
-        assert media_type in content, (
-            f'content type {media_type} is not in the spec'
-        )
-        schema = content[media_type]['schema']
-        if '$ref' in schema:
-            name = schema['$ref'].rsplit('/', 1)[1]
-            schema = openapi['components']['schemas'][name]
-        Draft202012Validator(schema).validate(body)
-
-    return check
+    return functools.partial(spec_check.matches_spec, openapi)

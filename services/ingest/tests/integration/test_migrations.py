@@ -3,22 +3,22 @@ import pathlib
 import psycopg2
 import pytest
 
-from conftest import MIGRATIONS_DIR
+from settings import DATABASE, MIGRATIONS_DIR
 
-INGEST = MIGRATIONS_DIR / 'ingest'
-TENANT_TABLES = ['tenant', 'product', 'ingest_job', 'raw_blob']
+TENANT_TABLES = ('tenant', 'product', 'ingest_job', 'raw_blob')
+SCRATCH_DATABASE = 'ingest_upgrade_check'
 
 
 def versions():
-    return sorted(INGEST.glob('V*.sql'))
+    return sorted((MIGRATIONS_DIR / DATABASE).glob('V*.sql'))
 
 
-def test_row_level_security_is_forced_on_every_table(pgsql):
-    cursor = pgsql['ingest'].cursor()
+def test_rls_is_forced_on_all_tables(pgsql):
+    cursor = pgsql[DATABASE].cursor()
     cursor.execute(
         'SELECT relname, relrowsecurity, relforcerowsecurity '
         'FROM pg_class WHERE relname = ANY(%s)',
-        (TENANT_TABLES,),
+        (list(TENANT_TABLES),),
     )
 
     expected = sorted((name, True, True) for name in TENANT_TABLES)
@@ -27,25 +27,24 @@ def test_row_level_security_is_forced_on_every_table(pgsql):
 
 @pytest.fixture
 def scratch_database(pgsql):
-    admin = pgsql['ingest'].conn
+    admin = pgsql[DATABASE].conn
     admin.autocommit = True
-    name = 'ingest_upgrade_check'
     cursor = admin.cursor()
-    cursor.execute(f'DROP DATABASE IF EXISTS {name}')
-    cursor.execute(f'CREATE DATABASE {name}')
-    conninfo = pgsql['ingest'].conninfo.replace(dbname=name)
+    cursor.execute(f'DROP DATABASE IF EXISTS {SCRATCH_DATABASE}')
+    cursor.execute(f'CREATE DATABASE {SCRATCH_DATABASE}')
+    conninfo = pgsql[DATABASE].conninfo.replace(dbname=SCRATCH_DATABASE)
     conn = psycopg2.connect(conninfo.get_dsn())
     conn.autocommit = True
     yield conn
     conn.close()
-    cursor.execute(f'DROP DATABASE {name}')
+    cursor.execute(f'DROP DATABASE {SCRATCH_DATABASE}')
 
 
 def apply(conn, path: pathlib.Path):
     conn.cursor().execute(path.read_text(encoding='utf-8'))
 
 
-def test_upgrade_from_previous_schema_keeps_existing_jobs(scratch_database):
+def test_upgrade_keeps_existing_jobs(scratch_database):
     *previous, latest = versions()
     for path in previous:
         apply(scratch_database, path)
