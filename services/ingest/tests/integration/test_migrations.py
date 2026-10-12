@@ -50,11 +50,14 @@ def test_upgrade_keeps_existing_jobs(scratch_database):
         apply(scratch_database, path)
     cursor = scratch_database.cursor()
     cursor.execute(
-        'INSERT INTO ingest_job (tenant_id, scope_key, raw_key) '
-        "VALUES ('acme', 'scope', 'acme/scan/sha')",
+        'INSERT INTO ingest_job '
+        '(tenant_id, scope_key, raw_key, tool, sha256, scan_id) '
+        "VALUES ('acme', 'scope', 'acme/scan/sha', 'trivy', 'sha', 'scan')",
     )
 
     apply(scratch_database, latest)
 
-    cursor.execute('SELECT tenant_id, raw_key, state FROM ingest_job')
-    assert cursor.fetchall() == [('acme', 'acme/scan/sha', 'pending')]
+    cursor.execute(
+        'SELECT tenant_id, raw_key, state, product_id FROM ingest_job',
+    )
+    assert cursor.fetchall() == [('acme', 'acme/scan/sha', 'pending', '')]

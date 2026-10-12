@@ -15,3 +15,6 @@ DATABASE = 'ingest'
 TENANT = 'acme'
 TENANT_LIMIT = 1000
 APP_ROLE = 'ingest_app'
+QUEUE_OWNER_ROLE = 'ingest_queue_owner'
+QUEUE_CONSUMER_ROLE = 'queue_consumer'
+QUEUE_CLIENT_ROLE = 'queue_client'
