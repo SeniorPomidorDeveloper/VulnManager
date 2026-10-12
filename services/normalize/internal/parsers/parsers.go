@@ -16,7 +16,11 @@ type (
 	SniffScore    float64
 )
 
-const FormatJSON FormatName = "json"
+const (
+	FormatJSON FormatName = "json"
+
+	codeAbsolutePath = "absolute_path"
+)
 
 type ScanMeta struct {
 	Tool        model.ToolName

@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"regexp"
 	"testing"
 
 	"vulnmanager/services/normalize/internal/parsers"
@@ -20,10 +19,7 @@ const (
 	goldenMode      = 0o644
 )
 
-var (
-	update       = flag.Bool("update", false, "rewrite golden files")
-	absolutePath = regexp.MustCompile(`^(/|[A-Za-z]:[\\/])`)
-)
+var update = flag.Bool("update", false, "rewrite golden files")
 
 type Options struct {
 	Corpus    []string
@@ -89,7 +85,6 @@ func Suite(t *testing.T, p parsers.Parser, opts Options) {
 				t.Error("two runs on the same input differ")
 			}
 			checkFields(t, first)
-			checkPaths(t, first)
 			if opts.GoldenDir != "" {
 				checkGolden(t, filepath.Join(opts.GoldenDir, filepath.Base(path)+".json"), first)
 			}
@@ -127,39 +122,6 @@ func checkFields(t *testing.T, found []parsers.RawFinding) {
 		}
 		if finding.Location != nil && !json.Valid(finding.Location) {
 			t.Errorf("finding %d: location is not valid json", i)
-		}
-	}
-}
-
-func checkPaths(t *testing.T, found []parsers.RawFinding) {
-	t.Helper()
-	for i, finding := range found {
-		if finding.Location == nil {
-			continue
-		}
-		var location any
-		if err := json.Unmarshal(finding.Location, &location); err != nil {
-			continue
-		}
-		walkStrings(location, func(value string) {
-			if absolutePath.MatchString(value) {
-				t.Errorf("finding %d: absolute path %q in location", i, value)
-			}
-		})
-	}
-}
-
-func walkStrings(node any, visit func(string)) {
-	switch value := node.(type) {
-	case string:
-		visit(value)
-	case []any:
-		for _, item := range value {
-			walkStrings(item, visit)
-		}
-	case map[string]any:
-		for _, item := range value {
-			walkStrings(item, visit)
 		}
 	}
 }

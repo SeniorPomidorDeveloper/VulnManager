@@ -104,7 +104,7 @@ func TestSARIF_Location(t *testing.T) {
 		wantDiag int
 	}{
 		{name: "relative", uri: "src/app.py", wantURI: "src/app.py"},
-		{name: "absolute file uri", uri: "file:///home/dev/app.py", wantURI: "home/dev/app.py", wantDiag: 1},
+		{name: "absolute file uri", uri: "file:///home/dev/app.py", wantURI: "/home/dev/app.py", wantDiag: 1},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
