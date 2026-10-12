@@ -3,7 +3,7 @@ GOLANGCI ?= go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.6
 SQLC ?= go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1
 OAPI ?= go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.4.1
 
-.PHONY: build generate fmt tidy lint test ci
+.PHONY: build binary generate fmt tidy lint lint-py test integration ci
 ci: fmt tidy lint build test
 
 generate:
@@ -26,3 +26,12 @@ build: generate
 
 test: generate
 	go test -race ./...
+
+binary: generate
+	go build -o bin/ingest .
+
+integration: binary
+	python3 -m pytest tests/integration
+
+lint-py:
+	python3 -m flake8 tests
