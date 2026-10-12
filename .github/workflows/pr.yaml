@@ -14,7 +14,6 @@ jobs:
     outputs:
       model: ${{ steps.filter.outputs.model }}
       pipeline: ${{ steps.filter.outputs.pipeline }}
-      rawstore: ${{ steps.filter.outputs.rawstore }}
       ingest: ${{ steps.filter.outputs.ingest }}
       normalize: ${{ steps.filter.outputs.normalize }}
       repo-yaml: ${{ steps.filter.outputs.repo-yaml }}
@@ -34,9 +33,6 @@ jobs:
             pipeline:
               - "modules/pipeline/**"
               - ".github/workflows/pipeline.yaml"
-            rawstore:
-              - "modules/rawstore/**"
-              - ".github/workflows/rawstore.yaml"
             ingest:
               - "services/ingest/**"
               - ".github/workflows/ingest.yaml"
@@ -78,11 +74,6 @@ jobs:
     if: needs.changes.outputs.pipeline == 'true'
     uses: ./.github/workflows/pipeline.yaml
 
-  rawstore:
-    needs: changes
-    if: needs.changes.outputs.rawstore == 'true'
-    uses: ./.github/workflows/rawstore.yaml
-
   ingest:
     needs: changes
     if: needs.changes.outputs.ingest == 'true'
@@ -123,7 +114,6 @@ jobs:
       - changes
       - model
       - pipeline
-      - rawstore
       - ingest
       - normalize
       - repo-yaml

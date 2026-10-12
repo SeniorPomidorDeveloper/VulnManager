@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"vulnmanager/modules/model"
-	"vulnmanager/modules/rawstore"
 )
 
 type fakeStore struct {
@@ -40,7 +39,7 @@ func (f *fakeStore) FindScanID(_ context.Context, scope model.Scope, tool model.
 	return id, ok, nil
 }
 
-func (f *fakeStore) InsertJob(_ context.Context, scope model.Scope, tool model.ToolName, key rawstore.Key) (bool, error) {
+func (f *fakeStore) InsertJob(_ context.Context, scope model.Scope, tool model.ToolName, key model.RawKey) (bool, error) {
 	k := jobKey(scope, tool, key.SHA256)
 	if _, ok := f.jobs[k]; ok {
 		return false, nil
@@ -53,18 +52,10 @@ type fakeRaw struct {
 	puts int
 }
 
-func (f *fakeRaw) Put(_ context.Context, _ rawstore.Key, r io.Reader, _ int64) error {
+func (f *fakeRaw) Put(_ context.Context, _ model.RawKey, r io.Reader, _ int64) error {
 	f.puts++
 	_, err := io.Copy(io.Discard, r)
 	return err
-}
-
-func (f *fakeRaw) Get(context.Context, rawstore.Key) (io.ReadCloser, error) {
-	return nil, rawstore.ErrNotFound
-}
-
-func (f *fakeRaw) Stat(context.Context, rawstore.Key) (rawstore.Info, error) {
-	return rawstore.Info{}, rawstore.ErrNotFound
 }
 
 func newScope(t *testing.T, tenant model.TenantID) model.Scope {

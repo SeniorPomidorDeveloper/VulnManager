@@ -28,10 +28,6 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
     uses: ./.github/workflows/pipeline.yaml
 
-  rawstore:
-    if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
-    uses: ./.github/workflows/rawstore.yaml
-
   repo-yaml:
     if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
     uses: ./.github/workflows/repo-yaml.yaml

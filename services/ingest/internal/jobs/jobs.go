@@ -7,9 +7,9 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 
 	"vulnmanager/modules/model"
-	"vulnmanager/modules/rawstore"
 )
 
 var (
@@ -29,18 +29,22 @@ type Accepted struct {
 	SHA256 string
 }
 
+type RawWriter interface {
+	Put(ctx context.Context, key model.RawKey, r io.Reader, size int64) error
+}
+
 type Store interface {
 	MaxReportBytes(ctx context.Context, tenantID model.TenantID) (int64, error)
 	FindScanID(ctx context.Context, scope model.Scope, tool model.ToolName, sha256 string) (model.ScanID, bool, error)
-	InsertJob(ctx context.Context, scope model.Scope, tool model.ToolName, key rawstore.Key) (bool, error)
+	InsertJob(ctx context.Context, scope model.Scope, tool model.ToolName, key model.RawKey) (bool, error)
 }
 
 type Enqueuer struct {
 	store Store
-	raw   rawstore.Store
+	raw   RawWriter
 }
 
-func NewEnqueuer(store Store, raw rawstore.Store) *Enqueuer {
+func NewEnqueuer(store Store, raw RawWriter) *Enqueuer {
 	return &Enqueuer{store: store, raw: raw}
 }
 
@@ -69,7 +73,7 @@ func (e *Enqueuer) Accept(ctx context.Context, r Report) (Accepted, error) {
 		return Accepted{ScanID: scanID, SHA256: digest}, nil
 	}
 
-	key := rawstore.KeyFor(r.Scope, r.ScanID, digest)
+	key := model.RawKeyFor(r.Scope, r.ScanID, digest)
 	if err := e.raw.Put(ctx, key, bytes.NewReader(r.Body), size); err != nil {
 		return Accepted{}, fmt.Errorf("put raw: %w", err)
 	}

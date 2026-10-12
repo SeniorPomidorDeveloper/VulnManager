@@ -8,7 +8,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"vulnmanager/modules/model"
-	"vulnmanager/modules/rawstore"
 	"vulnmanager/services/ingest/gen/db"
 	"vulnmanager/services/ingest/internal/jobs"
 )
@@ -55,7 +54,7 @@ func (s *Store) FindScanID(ctx context.Context, scope model.Scope, tool model.To
 	return model.ScanID(scanID), true, nil
 }
 
-func (s *Store) InsertJob(ctx context.Context, scope model.Scope, tool model.ToolName, key rawstore.Key) (bool, error) {
+func (s *Store) InsertJob(ctx context.Context, scope model.Scope, tool model.ToolName, key model.RawKey) (bool, error) {
 	var rows int64
 	err := s.withTenant(ctx, scope.TenantID, func(q *db.Queries) error {
 		var err error
