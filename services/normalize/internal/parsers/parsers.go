@@ -1,0 +1,50 @@
+package parsers
+
+import (
+	"context"
+	"encoding/json"
+	"io"
+	"iter"
+
+	"vulnmanager/modules/model"
+)
+
+type (
+	FormatName    string
+	ParserID      string
+	ParserVersion string
+	SniffScore    float64
+)
+
+const FormatJSON FormatName = "json"
+
+type ScanMeta struct {
+	Tool        model.ToolName
+	ToolVersion model.ToolVersion
+	ScanID      model.ScanID
+}
+
+type RawFinding struct {
+	ToolFindingID model.ToolFindingID
+	Kind          model.Kind
+	Title         string
+	Description   string
+	SeverityRaw   string
+	Location      json.RawMessage
+	Raw           json.RawMessage
+	Diagnostics   model.Diagnostics
+}
+
+type Capabilities struct {
+	Formats []FormatName
+	Kinds   []model.Kind
+	Tools   []model.ToolName
+}
+
+type Parser interface {
+	ID() ParserID
+	Version() ParserVersion
+	Capabilities() Capabilities
+	Sniff(head []byte) SniffScore
+	Parse(ctx context.Context, r io.Reader, meta ScanMeta) iter.Seq2[RawFinding, error]
+}
