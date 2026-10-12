@@ -18,7 +18,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"vulnmanager/modules/model"
-	"vulnmanager/modules/rawstore"
 	"vulnmanager/services/ingest/gen/api"
 	"vulnmanager/services/ingest/internal/config"
 	"vulnmanager/services/ingest/internal/ingesthttp"
@@ -54,7 +53,7 @@ func run(log *slog.Logger) error {
 	}
 	defer pool.Close()
 
-	raw, err := newRawStore(cfg, pool)
+	raw, err := newRawWriter(cfg, pool)
 	if err != nil {
 		return fmt.Errorf("rawstore: %w", err)
 	}
@@ -104,11 +103,11 @@ func run(log *slog.Logger) error {
 	return nil
 }
 
-func newRawStore(cfg config.Config, pool *pgxpool.Pool) (rawstore.Store, error) {
+func newRawWriter(cfg config.Config, pool *pgxpool.Pool) (jobs.RawWriter, error) {
 	if cfg.RawStore == config.RawStorePG {
-		return rawstoreimpl.NewPGStore(pool), nil
+		return rawstoreimpl.NewPGWriter(pool), nil
 	}
-	return rawstoreimpl.NewS3Store(rawstoreimpl.S3Config{
+	return rawstoreimpl.NewS3Writer(rawstoreimpl.S3Config{
 		Endpoint:        cfg.S3Endpoint,
 		AccessKeyID:     cfg.S3AccessKey,
 		SecretAccessKey: cfg.S3SecretKey,

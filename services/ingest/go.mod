@@ -9,13 +9,9 @@ require (
 	github.com/oapi-codegen/runtime v1.1.2
 	github.com/prometheus/client_golang v1.20.5
 	vulnmanager/modules/model v0.0.0
-	vulnmanager/modules/rawstore v0.0.0
 )
 
-replace (
-	vulnmanager/modules/model => ../../modules/model
-	vulnmanager/modules/rawstore => ../../modules/rawstore
-)
+replace vulnmanager/modules/model => ../../modules/model
 
 require (
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
