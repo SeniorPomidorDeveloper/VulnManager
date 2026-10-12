@@ -129,3 +129,20 @@ func TestIngestReport_ClientScanID(t *testing.T) {
 		t.Fatalf("got scan id %q, want client-scan", intake.got.ScanID)
 	}
 }
+
+func TestStaticTenant_SkipsAuthentication(t *testing.T) {
+	intake := &fakeIntake{limit: 100}
+	log := slog.New(slog.NewTextHandler(io.Discard, nil))
+	srv := api.HandlerWithOptions(New(intake, func() model.ScanID { return "generated" }, log), api.StdHTTPServerOptions{
+		Middlewares: []api.MiddlewareFunc{StaticTenant("acme")},
+	})
+
+	rec := post(srv, map[string]string{"X-Tool": "trivy", "X-Scope": "payments"}, "report")
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("got status %d, want 202: %s", rec.Code, rec.Body)
+	}
+	if intake.got.Scope.TenantID != "acme" {
+		t.Fatalf("got tenant %q, want acme", intake.got.Scope.TenantID)
+	}
+}
