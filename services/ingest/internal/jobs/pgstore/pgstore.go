@@ -34,14 +34,14 @@ func (s *Store) MaxReportBytes(ctx context.Context, tenantID model.TenantID) (in
 	return limit, err
 }
 
-func (s *Store) FindScanID(ctx context.Context, scope model.Scope, tool, sha256 string) (model.ScanID, bool, error) {
+func (s *Store) FindScanID(ctx context.Context, scope model.Scope, tool model.ToolName, sha256 string) (model.ScanID, bool, error) {
 	var scanID string
 	err := s.withTenant(ctx, scope.TenantID, func(q *db.Queries) error {
 		var err error
 		scanID, err = q.FindIngestJobScanID(ctx, db.FindIngestJobScanIDParams{
 			TenantID: string(scope.TenantID),
 			ScopeKey: string(scope.Key()),
-			Tool:     tool,
+			Tool:     string(tool),
 			Sha256:   sha256,
 		})
 		return err
@@ -55,7 +55,7 @@ func (s *Store) FindScanID(ctx context.Context, scope model.Scope, tool, sha256 
 	return model.ScanID(scanID), true, nil
 }
 
-func (s *Store) InsertJob(ctx context.Context, scope model.Scope, tool string, key rawstore.Key) (bool, error) {
+func (s *Store) InsertJob(ctx context.Context, scope model.Scope, tool model.ToolName, key rawstore.Key) (bool, error) {
 	var rows int64
 	err := s.withTenant(ctx, scope.TenantID, func(q *db.Queries) error {
 		var err error
@@ -63,7 +63,7 @@ func (s *Store) InsertJob(ctx context.Context, scope model.Scope, tool string, k
 			TenantID: string(scope.TenantID),
 			ScopeKey: string(scope.Key()),
 			RawKey:   key.String(),
-			Tool:     tool,
+			Tool:     string(tool),
 			Sha256:   key.SHA256,
 			ScanID:   string(key.ScanID),
 		})

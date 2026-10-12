@@ -23,8 +23,8 @@ func newFakeStore() *fakeStore {
 	}
 }
 
-func jobKey(scope model.Scope, tool, sha string) string {
-	return string(scope.Key()) + "/" + tool + "/" + sha
+func jobKey(scope model.Scope, tool model.ToolName, sha string) string {
+	return string(scope.Key()) + "/" + string(tool) + "/" + sha
 }
 
 func (f *fakeStore) MaxReportBytes(_ context.Context, tenantID model.TenantID) (int64, error) {
@@ -35,12 +35,12 @@ func (f *fakeStore) MaxReportBytes(_ context.Context, tenantID model.TenantID) (
 	return limit, nil
 }
 
-func (f *fakeStore) FindScanID(_ context.Context, scope model.Scope, tool, sha string) (model.ScanID, bool, error) {
+func (f *fakeStore) FindScanID(_ context.Context, scope model.Scope, tool model.ToolName, sha string) (model.ScanID, bool, error) {
 	id, ok := f.jobs[jobKey(scope, tool, sha)]
 	return id, ok, nil
 }
 
-func (f *fakeStore) InsertJob(_ context.Context, scope model.Scope, tool string, key rawstore.Key) (bool, error) {
+func (f *fakeStore) InsertJob(_ context.Context, scope model.Scope, tool model.ToolName, key rawstore.Key) (bool, error) {
 	k := jobKey(scope, tool, key.SHA256)
 	if _, ok := f.jobs[k]; ok {
 		return false, nil

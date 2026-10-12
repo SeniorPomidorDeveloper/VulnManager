@@ -9,7 +9,7 @@ type Finding struct {
 	ID            FindingID
 	ImportRunID   ImportRunID
 	Scope         Scope
-	ToolFindingID string
+	ToolFindingID ToolFindingID
 	Kind          Kind
 	Title         string
 	Description   string

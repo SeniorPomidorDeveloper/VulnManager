@@ -1,8 +1,8 @@
 package model
 
 type Provenance struct {
-	Tool                   string
-	ToolVersion            string
+	Tool                   ToolName
+	ToolVersion            ToolVersion
 	ScanID                 ScanID
 	ContextSnapshotVersion string
 }
