@@ -25,7 +25,6 @@ const (
 
 	codeSARIFVersion  = "sarif_version"
 	codeInvalidResult = "invalid_result"
-	codeAbsolutePath  = "absolute_path"
 )
 
 var sarifSniffMarkers = map[string]SniffScore{
@@ -229,8 +228,7 @@ func convertLocation(locations []sarifLocation) (normalizedLocation, model.Diagn
 	uri := strings.TrimPrefix(physical.ArtifactLocation.URI, "file://")
 	var diagnostics model.Diagnostics
 	if strings.HasPrefix(uri, "/") {
-		uri = strings.TrimLeft(uri, "/")
-		diagnostics = diagnostics.Append(model.DiagLevelWarn, codeAbsolutePath, "absolute artifact uri made relative")
+		diagnostics = diagnostics.Append(model.DiagLevelWarn, codeAbsolutePath, "artifact uri is an absolute path")
 	}
 	return normalizedLocation{
 		URI:         uri,
