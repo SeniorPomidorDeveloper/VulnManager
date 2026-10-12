@@ -21,7 +21,7 @@ SESSION = 'session'
 @pytest.fixture(scope=SESSION)
 def pgsql_local(pgsql_local_create):
     databases = discover.find_schemas(None, [settings.MIGRATIONS_DIR])
-    return pgsql_local_create(list(databases.values()))
+    return pgsql_local_create([databases[settings.DATABASE]])
 
 
 @pytest.fixture(scope=SESSION)
