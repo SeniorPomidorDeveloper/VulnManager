@@ -22,12 +22,30 @@ const headSize = 4096
 
 var ErrInvalidConfig = errors.New("worker: invalid config")
 
+type Action string
+
+const (
+	ActionAck   Action = "ack"
+	ActionRetry Action = "retry"
+	ActionDead  Action = "dead"
+)
+
+var skipActions = map[queue.ClaimStatus]Action{
+	queue.ClaimMissing:  ActionAck,
+	queue.ClaimFinished: ActionAck,
+	queue.ClaimBusy:     ActionRetry,
+}
+
+type Outcome struct {
+	Action Action
+	Delay  time.Duration
+}
+
 type Config struct {
-	ID           queue.WorkerID
-	Lease        time.Duration
-	PollInterval time.Duration
-	RetryDelay   time.Duration
-	MaxAttempts  int
+	ID          queue.WorkerID
+	Lease       time.Duration
+	RetryDelay  time.Duration
+	MaxAttempts int
 }
 
 type Deps struct {
@@ -40,8 +58,8 @@ type Deps struct {
 }
 
 type JobSource interface {
-	Claim(ctx context.Context, worker queue.WorkerID, lease time.Duration) (queue.Job, bool, error)
-	Finish(ctx context.Context, id uuid.UUID, worker queue.WorkerID, state queue.State, retryAfter time.Duration) (bool, error)
+	Claim(ctx context.Context, id uuid.UUID, worker queue.WorkerID, lease time.Duration) (queue.Job, queue.ClaimStatus, error)
+	Finish(ctx context.Context, id uuid.UUID, worker queue.WorkerID, state queue.State) (bool, error)
 }
 
 type RawReader interface {
@@ -81,7 +99,7 @@ func (a storeAdapter) FailRun(ctx context.Context, run store.Run, reason string)
 }
 
 func (c Config) valid() bool {
-	durations := []time.Duration{c.Lease, c.PollInterval, c.RetryDelay}
+	durations := []time.Duration{c.Lease, c.RetryDelay}
 	return c.ID != "" && c.MaxAttempts > 0 && !slices.ContainsFunc(durations, func(d time.Duration) bool { return d <= 0 })
 }
 
@@ -99,26 +117,13 @@ func New(cfg Config, deps Deps) (*Worker, error) {
 	return &Worker{cfg: cfg, deps: deps}, nil
 }
 
-func (w *Worker) Run(ctx context.Context) {
-	for ctx.Err() == nil {
-		processed, err := w.RunOnce(ctx)
-		if err != nil {
-			w.deps.Log.Error("worker iteration failed", "error", err)
-		}
-		if processed && err == nil {
-			continue
-		}
-		select {
-		case <-ctx.Done():
-		case <-time.After(w.cfg.PollInterval):
-		}
+func (w *Worker) Handle(ctx context.Context, id uuid.UUID) (Outcome, error) {
+	job, status, err := w.deps.Jobs.Claim(ctx, id, w.cfg.ID, w.cfg.Lease)
+	if err != nil {
+		return Outcome{}, err
 	}
-}
-
-func (w *Worker) RunOnce(ctx context.Context) (bool, error) {
-	job, ok, err := w.deps.Jobs.Claim(ctx, w.cfg.ID, w.cfg.Lease)
-	if err != nil || !ok {
-		return false, err
+	if status != queue.ClaimClaimed {
+		return w.skipped(id, status), nil
 	}
 	run := store.Run{
 		Scope:  job.Scope,
@@ -127,8 +132,16 @@ func (w *Worker) RunOnce(ctx context.Context) (bool, error) {
 		RawKey: job.RawKey.String(),
 		SHA256: job.RawKey.SHA256,
 	}
-	procErr := w.process(ctx, job, run)
-	return true, w.settle(ctx, job, run, procErr)
+	return w.settle(ctx, job, run, w.process(ctx, job, run))
+}
+
+func (w *Worker) skipped(id uuid.UUID, status queue.ClaimStatus) Outcome {
+	action, known := skipActions[status]
+	if !known {
+		action = ActionRetry
+	}
+	w.deps.Log.Info("job not claimed", "job", id, "status", status, "action", action)
+	return Outcome{Action: action, Delay: w.cfg.RetryDelay}
 }
 
 func (w *Worker) process(ctx context.Context, job queue.Job, run store.Run) error {
@@ -193,22 +206,22 @@ func (w *Worker) write(
 	return tx.CompleteRun(ctx, runID, count)
 }
 
-func (w *Worker) settle(ctx context.Context, job queue.Job, run store.Run, procErr error) error {
+func (w *Worker) settle(ctx context.Context, job queue.Job, run store.Run, procErr error) (Outcome, error) {
 	ctx = context.WithoutCancel(ctx)
 	if procErr == nil {
-		return w.finish(ctx, job, queue.StateDone, 0)
+		return Outcome{Action: ActionAck}, w.finish(ctx, job, queue.StateDone)
 	}
 	w.deps.Log.Warn("job failed", "job", job.ID, "attempts", job.Attempts, "error", procErr)
 	failErr := w.deps.Store.FailRun(ctx, run, procErr.Error())
-	state, delay := queue.StatePending, w.cfg.RetryDelay*time.Duration(job.Attempts)
+	state, outcome := queue.StatePending, Outcome{Action: ActionRetry, Delay: w.cfg.RetryDelay * time.Duration(job.Attempts)}
 	if job.Attempts >= w.cfg.MaxAttempts {
-		state, delay = queue.StateDead, 0
+		state, outcome = queue.StateDead, Outcome{Action: ActionDead}
 	}
-	return errors.Join(failErr, w.finish(ctx, job, state, delay))
+	return outcome, errors.Join(failErr, w.finish(ctx, job, state))
 }
 
-func (w *Worker) finish(ctx context.Context, job queue.Job, state queue.State, delay time.Duration) error {
-	ok, err := w.deps.Jobs.Finish(ctx, job.ID, w.cfg.ID, state, delay)
+func (w *Worker) finish(ctx context.Context, job queue.Job, state queue.State) error {
+	ok, err := w.deps.Jobs.Finish(ctx, job.ID, w.cfg.ID, state)
 	if err != nil {
 		return err
 	}

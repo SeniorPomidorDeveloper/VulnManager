@@ -43,7 +43,7 @@ func TestLoad_WorkerIDFallsBackToHostname(t *testing.T) {
 
 func TestLoad_ReadsOverrides(t *testing.T) {
 	values := validEnv()
-	values["NORMALIZE_POLL_INTERVAL"] = "500ms"
+	values["NORMALIZE_RETRY_DELAY"] = "500ms"
 	values["NORMALIZE_MAX_ATTEMPTS"] = "7"
 	values["NORMALIZE_S3_SSL"] = "true"
 
@@ -52,7 +52,7 @@ func TestLoad_ReadsOverrides(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if cfg.PollInterval != 500*time.Millisecond || cfg.MaxAttempts != 7 || !cfg.S3SSL {
+	if cfg.RetryDelay != 500*time.Millisecond || cfg.MaxAttempts != 7 || !cfg.S3SSL {
 		t.Fatalf("unexpected config: %+v", cfg)
 	}
 }

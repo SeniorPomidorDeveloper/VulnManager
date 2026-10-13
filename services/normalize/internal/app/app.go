@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
 
@@ -17,7 +16,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"vulnmanager/services/normalize/gen/queuedb"
+	"vulnmanager/services/normalize/gen/db"
 	"vulnmanager/services/normalize/internal/config"
 	"vulnmanager/services/normalize/internal/metrics"
 	"vulnmanager/services/normalize/internal/parsers"
@@ -47,7 +46,7 @@ func Run(log *slog.Logger) error {
 	}
 	defer pool.Close()
 
-	w, reg, err := newWorker(cfg, pool, log)
+	_, reg, err := newWorker(cfg, pool, log)
 	if err != nil {
 		return err
 	}
@@ -56,23 +55,14 @@ func Run(log *slog.Logger) error {
 	errCh := make(chan error, 1)
 	go func() { errCh <- srv.ListenAndServe() }()
 
-	var workerDone sync.WaitGroup
-	workerDone.Add(1)
-	go func() {
-		defer workerDone.Done()
-		w.Run(ctx)
-	}()
 	log.Info("normalize started", "addr", cfg.Addr, "worker", cfg.WorkerID)
 
 	select {
 	case err := <-errCh:
-		stop()
-		workerDone.Wait()
 		return err
 	case <-ctx.Done():
 	}
 
-	workerDone.Wait()
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 	if err := srv.Shutdown(shutdownCtx); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -106,14 +96,13 @@ func newWorker(cfg config.Config, pool *pgxpool.Pool, log *slog.Logger) (*worker
 
 	w, err := worker.New(
 		worker.Config{
-			ID:           cfg.WorkerID,
-			Lease:        cfg.Lease,
-			PollInterval: cfg.PollInterval,
-			RetryDelay:   cfg.RetryDelay,
-			MaxAttempts:  cfg.MaxAttempts,
+			ID:          cfg.WorkerID,
+			Lease:       cfg.Lease,
+			RetryDelay:  cfg.RetryDelay,
+			MaxAttempts: cfg.MaxAttempts,
 		},
 		worker.Deps{
-			Jobs:    m.WrapJobs(queue.New(queuedb.New(pool)), time.Now),
+			Jobs:    m.WrapJobs(queue.New(db.New(pool)), time.Now),
 			Raw:     raw,
 			Store:   m.WrapStore(worker.NewStore(store.New(pool))),
 			Parsers: registry,
