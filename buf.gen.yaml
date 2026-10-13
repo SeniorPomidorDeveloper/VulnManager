@@ -1,0 +1,12 @@
+version: v2
+managed:
+  enabled: true
+  override:
+    - file_option: go_package_prefix
+      value: vulnmanager/api/gen/go
+plugins:
+  - local: ["go", "run", "google.golang.org/protobuf/cmd/protoc-gen-go@v1.34.2"]
+    out: api/gen/go
+    opt: paths=source_relative
+inputs:
+  - directory: api/proto
