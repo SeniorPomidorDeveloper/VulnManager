@@ -8,10 +8,15 @@ require (
 	github.com/minio/minio-go/v7 v7.0.97
 	github.com/oapi-codegen/runtime v1.1.2
 	github.com/prometheus/client_golang v1.20.5
+	github.com/rabbitmq/amqp091-go v1.10.0
+	google.golang.org/protobuf v1.34.2
+	vulnmanager/api/gen/go v0.0.0
 	vulnmanager/modules/model v0.0.0
 )
 
 replace vulnmanager/modules/model => ../../modules/model
+
+replace vulnmanager/api/gen/go => ../../api/gen/go
 
 require (
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
@@ -42,6 +47,5 @@ require (
 	golang.org/x/sync v0.15.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
-	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

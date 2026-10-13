@@ -63,8 +63,14 @@ func run(log *slog.Logger) error {
 	reg.MustRegister(collectors.NewGoCollector(), collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 	metrics := ingesthttp.NewMetrics(reg)
 
+	publisher, closePublisher, err := newPublisher(cfg, reg)
+	if err != nil {
+		return fmt.Errorf("events: %w", err)
+	}
+	defer closePublisher()
+
 	handler := ingesthttp.New(
-		jobs.NewEnqueuer(pgstore.New(pool), raw, events.Disabled{}),
+		jobs.NewEnqueuer(pgstore.New(pool), raw, publisher),
 		func() model.ScanID { return model.ScanID(uuid.NewString()) },
 		log,
 	)
@@ -102,6 +108,20 @@ func run(log *slog.Logger) error {
 		return fmt.Errorf("shutdown: %w", err)
 	}
 	return nil
+}
+
+func newPublisher(cfg config.Config, reg prometheus.Registerer) (jobs.Publisher, func(), error) {
+	if cfg.Events == config.EventsNone {
+		return events.Disabled{}, func() {}, nil
+	}
+	amqpPublisher, err := events.NewAMQPPublisher(events.Config{
+		URL:      events.URL(cfg.AMQPURL),
+		Exchange: events.ExchangeName(cfg.AMQPExchange),
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return events.NewMetrics(reg).Wrap(amqpPublisher), func() { _ = amqpPublisher.Close() }, nil
 }
 
 func newRawWriter(cfg config.Config, pool *pgxpool.Pool) (jobs.RawWriter, error) {

@@ -7,6 +7,7 @@ OAPI ?= go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.4.1
 ci: fmt tidy lint build test
 
 generate:
+	$(MAKE) -C ../../api generate
 	$(SQLC) generate
 	mkdir -p gen/api
 	$(OAPI) -config oapi-codegen.yaml ../../api/openapi/ingest.yaml

@@ -9,6 +9,11 @@ import (
 const (
 	RawStoreS3 = "s3"
 	RawStorePG = "pg"
+
+	EventsAMQP = "amqp"
+	EventsNone = "none"
+
+	defaultExchange = "vulnmanager.report.received"
 )
 
 type Config struct {
@@ -16,6 +21,10 @@ type Config struct {
 	DatabaseURL string
 	Tenant      string
 	RawStore    string
+
+	Events       string
+	AMQPURL      string
+	AMQPExchange string
 
 	S3Endpoint  string
 	S3AccessKey string
@@ -30,10 +39,14 @@ func Load(getenv func(string) string) (Config, error) {
 		DatabaseURL: getenv("INGEST_DATABASE_URL"),
 		Tenant:      getenv("INGEST_TENANT"),
 		RawStore:    withDefault(getenv("INGEST_RAWSTORE"), RawStoreS3),
-		S3Endpoint:  getenv("INGEST_S3_ENDPOINT"),
-		S3AccessKey: getenv("INGEST_S3_ACCESS_KEY"),
-		S3SecretKey: getenv("INGEST_S3_SECRET_KEY"),
-		S3Bucket:    getenv("INGEST_S3_BUCKET"),
+
+		Events:       withDefault(getenv("INGEST_EVENTS"), EventsAMQP),
+		AMQPURL:      getenv("INGEST_AMQP_URL"),
+		AMQPExchange: withDefault(getenv("INGEST_AMQP_EXCHANGE"), defaultExchange),
+		S3Endpoint:   getenv("INGEST_S3_ENDPOINT"),
+		S3AccessKey:  getenv("INGEST_S3_ACCESS_KEY"),
+		S3SecretKey:  getenv("INGEST_S3_SECRET_KEY"),
+		S3Bucket:     getenv("INGEST_S3_BUCKET"),
 	}
 
 	var errs []error
@@ -57,6 +70,16 @@ func Load(getenv func(string) string) (Config, error) {
 		errs = append(errs, requireS3(cfg)...)
 	default:
 		errs = append(errs, fmt.Errorf("INGEST_RAWSTORE: unknown profile %q", cfg.RawStore))
+	}
+
+	switch cfg.Events {
+	case EventsNone:
+	case EventsAMQP:
+		if cfg.AMQPURL == "" {
+			errs = append(errs, errors.New("INGEST_AMQP_URL is required for events amqp"))
+		}
+	default:
+		errs = append(errs, fmt.Errorf("INGEST_EVENTS: unknown mode %q", cfg.Events))
 	}
 
 	return cfg, errors.Join(errs...)

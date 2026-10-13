@@ -47,6 +47,7 @@ async def service_daemon(create_daemon_scope, app_database_url):
             'INGEST_DATABASE_URL': app_database_url,
             'INGEST_TENANT': settings.TENANT,
             'INGEST_RAWSTORE': 'pg',
+            'INGEST_EVENTS': 'none',
         },
         ping_url=settings.PING_URL,
     ) as scope:
