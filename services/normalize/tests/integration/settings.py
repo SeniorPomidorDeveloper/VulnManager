@@ -5,3 +5,4 @@ REPO_DIR = SERVICE_DIR.parents[1]
 MIGRATIONS_DIR = REPO_DIR / 'db'
 
 DATABASE = 'vulnmanager'
+TENANT = 'acme'

@@ -20,14 +20,10 @@ const sarifReport = `{"$schema":"https://json.schemastore.org/sarif-2.1.0.json",
 {"ruleId":"r1","message":{"text":"first"},"locations":[{"physicalLocation":{"artifactLocation":{"uri":"a.go"},"region":{"startLine":1}}}]},
 {"ruleId":"r2","message":{"text":"second"},"locations":[{"physicalLocation":{"artifactLocation":{"uri":"b.go"},"region":{"startLine":2}}}]}]}]}`
 
-type finishCall struct {
-	state queue.State
-	delay time.Duration
-}
-
 type fakeJobs struct {
-	job      *queue.Job
-	finished []finishCall
+	job      queue.Job
+	status   queue.ClaimStatus
+	finished []queue.State
 }
 
 type fakeRaw struct {
@@ -47,17 +43,12 @@ type fakeStore struct {
 	failed []string
 }
 
-func (j *fakeJobs) Claim(context.Context, queue.WorkerID, time.Duration) (queue.Job, bool, error) {
-	if j.job == nil {
-		return queue.Job{}, false, nil
-	}
-	job := *j.job
-	j.job = nil
-	return job, true, nil
+func (j *fakeJobs) Claim(context.Context, uuid.UUID, queue.WorkerID, time.Duration) (queue.Job, queue.ClaimStatus, error) {
+	return j.job, j.status, nil
 }
 
-func (j *fakeJobs) Finish(_ context.Context, _ uuid.UUID, _ queue.WorkerID, state queue.State, delay time.Duration) (bool, error) {
-	j.finished = append(j.finished, finishCall{state: state, delay: delay})
+func (j *fakeJobs) Finish(_ context.Context, _ uuid.UUID, _ queue.WorkerID, state queue.State) (bool, error) {
+	j.finished = append(j.finished, state)
 	return true, nil
 }
 
@@ -101,10 +92,10 @@ func newWorker(t *testing.T, job queue.Job, raw fakeRaw) (*Worker, *fakeJobs, *f
 	if err := registry.Register(parsers.NewSARIF()); err != nil {
 		t.Fatal(err)
 	}
-	jobs := &fakeJobs{job: &job}
+	jobs := &fakeJobs{job: job, status: queue.ClaimClaimed}
 	findings := &fakeStore{tx: &fakeTx{}}
 	w, err := New(
-		Config{ID: "w1", Lease: time.Minute, PollInterval: time.Second, RetryDelay: time.Minute, MaxAttempts: 3},
+		Config{ID: "w1", Lease: time.Minute, RetryDelay: time.Minute, MaxAttempts: 3},
 		Deps{
 			Jobs:    jobs,
 			Raw:     raw,
@@ -131,13 +122,14 @@ func testJob(attempts int) queue.Job {
 	}
 }
 
-func TestRunOnce_WritesFindingsAndFinishesDone(t *testing.T) {
-	w, jobs, findings := newWorker(t, testJob(1), fakeRaw{body: sarifReport})
+func TestHandle_WritesFindingsAndAcks(t *testing.T) {
+	job := testJob(1)
+	w, jobs, findings := newWorker(t, job, fakeRaw{body: sarifReport})
 
-	processed, err := w.RunOnce(context.Background())
+	outcome, err := w.Handle(context.Background(), job.ID)
 
-	if err != nil || !processed {
-		t.Fatalf("processed=%v err=%v", processed, err)
+	if err != nil || outcome.Action != ActionAck {
+		t.Fatalf("outcome=%+v err=%v", outcome, err)
 	}
 	if got := findings.tx.completed; len(got) != 1 || got[0] != 2 {
 		t.Fatalf("completed = %v, want [2]", got)
@@ -149,69 +141,75 @@ func TestRunOnce_WritesFindingsAndFinishesDone(t *testing.T) {
 	if !strings.HasPrefix(first.AlgoVersion, string(parsers.NewSARIF().ID())+"@") {
 		t.Fatalf("algo version = %q", first.AlgoVersion)
 	}
-	if want := (finishCall{state: queue.StateDone}); jobs.finished[0] != want {
-		t.Fatalf("finish = %+v, want %+v", jobs.finished[0], want)
+	if len(jobs.finished) != 1 || jobs.finished[0] != queue.StateDone {
+		t.Fatalf("finished = %v", jobs.finished)
 	}
 }
 
-func TestRunOnce_EmptyQueueDoesNothing(t *testing.T) {
-	w, jobs, _ := newWorker(t, testJob(1), fakeRaw{})
-	jobs.job = nil
+func TestHandle_UnclaimedJobIsSkipped(t *testing.T) {
+	tests := map[queue.ClaimStatus]Action{
+		queue.ClaimMissing:  ActionAck,
+		queue.ClaimFinished: ActionAck,
+		queue.ClaimBusy:     ActionRetry,
+	}
+	for status, want := range tests {
+		t.Run(string(status), func(t *testing.T) {
+			job := testJob(1)
+			w, jobs, findings := newWorker(t, job, fakeRaw{body: sarifReport})
+			jobs.status = status
 
-	processed, err := w.RunOnce(context.Background())
+			outcome, err := w.Handle(context.Background(), job.ID)
 
-	if err != nil || processed || len(jobs.finished) != 0 {
-		t.Fatalf("processed=%v err=%v finished=%v", processed, err, jobs.finished)
+			if err != nil || outcome.Action != want || len(findings.tx.findings) != 0 || len(jobs.finished) != 0 {
+				t.Fatalf("outcome=%+v err=%v findings=%d finished=%v", outcome, err, len(findings.tx.findings), jobs.finished)
+			}
+		})
 	}
 }
 
-func TestRunOnce_AlreadyProcessedReportIsDone(t *testing.T) {
-	w, jobs, findings := newWorker(t, testJob(1), fakeRaw{body: sarifReport})
+func TestHandle_AlreadyProcessedReportIsAcked(t *testing.T) {
+	job := testJob(1)
+	w, jobs, findings := newWorker(t, job, fakeRaw{body: sarifReport})
 	findings.tx.alreadyDone = true
 
-	if _, err := w.RunOnce(context.Background()); err != nil {
-		t.Fatal(err)
-	}
+	outcome, err := w.Handle(context.Background(), job.ID)
 
-	if jobs.finished[0].state != queue.StateDone || len(findings.failed) != 0 {
-		t.Fatalf("finished=%+v failed=%v", jobs.finished, findings.failed)
+	if err != nil || outcome.Action != ActionAck || jobs.finished[0] != queue.StateDone || len(findings.failed) != 0 {
+		t.Fatalf("outcome=%+v err=%v finished=%v failed=%v", outcome, err, jobs.finished, findings.failed)
 	}
 }
 
-func TestRunOnce_FailureRetriesWithGrowingDelay(t *testing.T) {
-	w, jobs, findings := newWorker(t, testJob(2), fakeRaw{err: errors.New("boom")})
+func TestHandle_FailureRetriesWithGrowingDelay(t *testing.T) {
+	job := testJob(2)
+	w, jobs, findings := newWorker(t, job, fakeRaw{err: errors.New("boom")})
 
-	if _, err := w.RunOnce(context.Background()); err != nil {
-		t.Fatal(err)
-	}
+	outcome, err := w.Handle(context.Background(), job.ID)
 
-	want := finishCall{state: queue.StatePending, delay: 2 * time.Minute}
-	if jobs.finished[0] != want || len(findings.failed) != 1 {
-		t.Fatalf("finished=%+v failed=%v", jobs.finished, findings.failed)
-	}
-}
-
-func TestRunOnce_FailureOnLastAttemptIsDead(t *testing.T) {
-	w, jobs, _ := newWorker(t, testJob(3), fakeRaw{err: errors.New("boom")})
-
-	if _, err := w.RunOnce(context.Background()); err != nil {
-		t.Fatal(err)
-	}
-
-	if want := (finishCall{state: queue.StateDead}); jobs.finished[0] != want {
-		t.Fatalf("finish = %+v, want %+v", jobs.finished[0], want)
+	want := Outcome{Action: ActionRetry, Delay: 2 * time.Minute}
+	if err != nil || outcome != want || jobs.finished[0] != queue.StatePending || len(findings.failed) != 1 {
+		t.Fatalf("outcome=%+v err=%v finished=%v failed=%v", outcome, err, jobs.finished, findings.failed)
 	}
 }
 
-func TestRunOnce_BrokenReportFailsTheRun(t *testing.T) {
-	w, jobs, findings := newWorker(t, testJob(1), fakeRaw{body: `{"$schema":"https://json.schemastore.org/sarif-2.1.0.json","runs": [`})
+func TestHandle_FailureOnLastAttemptIsDead(t *testing.T) {
+	job := testJob(3)
+	w, jobs, _ := newWorker(t, job, fakeRaw{err: errors.New("boom")})
 
-	if _, err := w.RunOnce(context.Background()); err != nil {
-		t.Fatal(err)
+	outcome, err := w.Handle(context.Background(), job.ID)
+
+	if err != nil || outcome.Action != ActionDead || jobs.finished[0] != queue.StateDead {
+		t.Fatalf("outcome=%+v err=%v finished=%v", outcome, err, jobs.finished)
 	}
+}
 
-	if jobs.finished[0].state != queue.StatePending || len(findings.failed) != 1 {
-		t.Fatalf("finished=%+v failed=%v", jobs.finished, findings.failed)
+func TestHandle_BrokenReportFailsTheRun(t *testing.T) {
+	job := testJob(1)
+	w, jobs, findings := newWorker(t, job, fakeRaw{body: `{"$schema":"https://json.schemastore.org/sarif-2.1.0.json","runs": [`})
+
+	outcome, err := w.Handle(context.Background(), job.ID)
+
+	if err != nil || outcome.Action != ActionRetry || jobs.finished[0] != queue.StatePending || len(findings.failed) != 1 {
+		t.Fatalf("outcome=%+v err=%v finished=%v failed=%v", outcome, err, jobs.finished, findings.failed)
 	}
 }
 

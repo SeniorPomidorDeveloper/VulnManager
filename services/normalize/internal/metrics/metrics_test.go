@@ -28,11 +28,11 @@ type stubStore struct {
 	err error
 }
 
-func (s stubJobs) Claim(context.Context, queue.WorkerID, time.Duration) (queue.Job, bool, error) {
-	return s.job, true, nil
+func (s stubJobs) Claim(context.Context, uuid.UUID, queue.WorkerID, time.Duration) (queue.Job, queue.ClaimStatus, error) {
+	return s.job, queue.ClaimClaimed, nil
 }
 
-func (stubJobs) Finish(context.Context, uuid.UUID, queue.WorkerID, queue.State, time.Duration) (bool, error) {
+func (stubJobs) Finish(context.Context, uuid.UUID, queue.WorkerID, queue.State) (bool, error) {
 	return true, nil
 }
 
@@ -57,8 +57,8 @@ func TestJobs_CountByStateAndObserveDuration(t *testing.T) {
 	clock := func() time.Time { now = now.Add(time.Second); return now }
 	jobs := m.WrapJobs(stubJobs{job: queue.Job{ID: uuid.New()}}, clock)
 
-	job, _, _ := jobs.Claim(context.Background(), "w", time.Minute)
-	if _, err := jobs.Finish(context.Background(), job.ID, "w", queue.StateDone, 0); err != nil {
+	job, _, _ := jobs.Claim(context.Background(), uuid.New(), "w", time.Minute)
+	if _, err := jobs.Finish(context.Background(), job.ID, "w", queue.StateDone); err != nil {
 		t.Fatal(err)
 	}
 

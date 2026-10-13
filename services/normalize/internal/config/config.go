@@ -11,12 +11,11 @@ import (
 )
 
 const (
-	defaultAddr         = ":8081"
-	defaultWorkerID     = "normalize"
-	defaultLease        = 5 * time.Minute
-	defaultPollInterval = 2 * time.Second
-	defaultRetryDelay   = time.Minute
-	defaultMaxAttempts  = 5
+	defaultAddr        = ":8081"
+	defaultWorkerID    = "normalize"
+	defaultLease       = 5 * time.Minute
+	defaultRetryDelay  = time.Minute
+	defaultMaxAttempts = 5
 )
 
 type Config struct {
@@ -30,10 +29,9 @@ type Config struct {
 	S3Bucket    rawread.Bucket
 	S3SSL       bool
 
-	Lease        time.Duration
-	PollInterval time.Duration
-	RetryDelay   time.Duration
-	MaxAttempts  int
+	Lease       time.Duration
+	RetryDelay  time.Duration
+	MaxAttempts int
 }
 
 func Load(getenv func(string) string) (Config, error) {
@@ -62,7 +60,6 @@ func Load(getenv func(string) string) (Config, error) {
 		target   *time.Duration
 	}{
 		{"NORMALIZE_LEASE", defaultLease, &cfg.Lease},
-		{"NORMALIZE_POLL_INTERVAL", defaultPollInterval, &cfg.PollInterval},
 		{"NORMALIZE_RETRY_DELAY", defaultRetryDelay, &cfg.RetryDelay},
 	} {
 		value, err := parseDuration(getenv(field.name), field.fallback)

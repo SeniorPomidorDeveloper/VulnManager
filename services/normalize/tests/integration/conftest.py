@@ -1,6 +1,7 @@
 import pytest
 from testsuite.databases.pgsql import discover
 
+import ingest_jobs
 import roles
 import settings
 
@@ -23,3 +24,14 @@ def cluster_roles(
     ensure_service_started('postgresql', settings=_pgsql_service_settings)
     conninfo = pgsql_local[settings.DATABASE]
     roles.create_cluster_roles(conninfo.replace(dbname='postgres'))
+
+
+@pytest.fixture
+def consumer(pgsql):
+    return pgsql[settings.DATABASE].cursor()
+
+
+@pytest.fixture
+def job_id(pgsql):
+    cursor = pgsql[settings.DATABASE].cursor()
+    return ingest_jobs.insert_job(cursor, settings.TENANT)

@@ -67,20 +67,20 @@ func (m *Metrics) WrapStore(next worker.FindingStore) worker.FindingStore {
 	return findingStore{next: next, metrics: m}
 }
 
-func (j *jobSource) Claim(ctx context.Context, id queue.WorkerID, lease time.Duration) (queue.Job, bool, error) {
-	job, ok, err := j.next.Claim(ctx, id, lease)
-	if ok && err == nil {
+func (j *jobSource) Claim(ctx context.Context, id uuid.UUID, worker queue.WorkerID, lease time.Duration) (queue.Job, queue.ClaimStatus, error) {
+	job, status, err := j.next.Claim(ctx, id, worker, lease)
+	if status == queue.ClaimClaimed && err == nil {
 		j.mu.Lock()
 		j.started[job.ID] = j.clock()
 		j.mu.Unlock()
 	}
-	return job, ok, err
+	return job, status, err
 }
 
 func (j *jobSource) Finish(
-	ctx context.Context, id uuid.UUID, worker queue.WorkerID, state queue.State, retryAfter time.Duration,
+	ctx context.Context, id uuid.UUID, worker queue.WorkerID, state queue.State,
 ) (bool, error) {
-	ok, err := j.next.Finish(ctx, id, worker, state, retryAfter)
+	ok, err := j.next.Finish(ctx, id, worker, state)
 	j.mu.Lock()
 	started, tracked := j.started[id]
 	delete(j.started, id)
