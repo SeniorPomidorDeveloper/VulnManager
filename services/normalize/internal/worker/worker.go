@@ -55,7 +55,7 @@ type Tx interface {
 }
 
 type FindingStore interface {
-	InTx(ctx context.Context, tenantID model.TenantID, fn func(Tx) error) error
+	InTx(ctx context.Context, fn func(Tx) error) error
 	FailRun(ctx context.Context, run store.Run, reason string) error
 }
 
@@ -72,8 +72,8 @@ func NewStore(s *store.Store) FindingStore {
 	return storeAdapter{store: s}
 }
 
-func (a storeAdapter) InTx(ctx context.Context, tenantID model.TenantID, fn func(Tx) error) error {
-	return a.store.InTx(ctx, tenantID, func(tx *store.Tx) error { return fn(tx) })
+func (a storeAdapter) InTx(ctx context.Context, fn func(Tx) error) error {
+	return a.store.InTx(ctx, func(tx *store.Tx) error { return fn(tx) })
 }
 
 func (a storeAdapter) FailRun(ctx context.Context, run store.Run, reason string) error {
@@ -146,7 +146,7 @@ func (w *Worker) process(ctx context.Context, job queue.Job, run store.Run) erro
 	parser := w.deps.Parsers.Detect(head)
 	meta := parsers.ScanMeta{Tool: job.Tool, ScanID: job.ScanID}
 
-	err = w.deps.Store.InTx(ctx, job.Scope.TenantID, func(tx Tx) error {
+	err = w.deps.Store.InTx(ctx, func(tx Tx) error {
 		return w.write(ctx, tx, job, run, parser, reader, meta)
 	})
 	if errors.Is(err, store.ErrAlreadyCompleted) {

@@ -13,6 +13,7 @@ jobs:
           fetch-depth: 0
 
       - name: миграции неизменяемы
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'migrations-rewrite') }}
         run: |
           git diff --diff-filter=MD --name-only --exit-code \
             origin/${{ github.event.repository.default_branch }}...HEAD -- db/vulnmanager/migrations

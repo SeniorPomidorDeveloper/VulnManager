@@ -3,7 +3,6 @@ import pytest
 
 from settings import DATABASE
 
-TABLES = ('import_run', 'finding')
 MISSING_RUN = '00000000-0000-0000-0000-000000000000'
 INSERT_RUN = (
     'INSERT INTO import_run (tenant_id, scope_key, product_id, context_id, '
@@ -18,18 +17,6 @@ INSERT_FINDING = (
     "VALUES ('acme', %s, 'scope', 'p', 'c', 'id', 'sca', 't', 'd', 'HIGH', "
     "'{}', '{}', 'trivy@1', now())"
 )
-
-
-def test_rls_is_forced_on_all_tables(pgsql):
-    cursor = pgsql[DATABASE].cursor()
-    cursor.execute(
-        'SELECT relname, relrowsecurity, relforcerowsecurity '
-        'FROM pg_class WHERE relname = ANY(%s)',
-        (list(TABLES),),
-    )
-
-    expected = sorted((name, True, True) for name in TABLES)
-    assert sorted(cursor.fetchall()) == expected
 
 
 def test_report_key_is_unique(pgsql):

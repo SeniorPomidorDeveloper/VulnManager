@@ -21,12 +21,7 @@ func New(pool *pgxpool.Pool) *Store {
 }
 
 func (s *Store) MaxReportBytes(ctx context.Context, tenantID model.TenantID) (int64, error) {
-	var limit int64
-	err := s.withTenant(ctx, tenantID, func(q *db.Queries) error {
-		var err error
-		limit, err = q.GetTenantMaxReportBytes(ctx, string(tenantID))
-		return err
-	})
+	limit, err := db.New(s.pool).GetTenantMaxReportBytes(ctx, string(tenantID))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return 0, jobs.ErrTenantNotFound
 	}
@@ -34,16 +29,11 @@ func (s *Store) MaxReportBytes(ctx context.Context, tenantID model.TenantID) (in
 }
 
 func (s *Store) FindScanID(ctx context.Context, scope model.Scope, tool model.ToolName, sha256 string) (model.ScanID, bool, error) {
-	var scanID string
-	err := s.withTenant(ctx, scope.TenantID, func(q *db.Queries) error {
-		var err error
-		scanID, err = q.FindIngestJobScanID(ctx, db.FindIngestJobScanIDParams{
-			TenantID: string(scope.TenantID),
-			ScopeKey: string(scope.Key()),
-			Tool:     string(tool),
-			Sha256:   sha256,
-		})
-		return err
+	scanID, err := db.New(s.pool).FindIngestJobScanID(ctx, db.FindIngestJobScanIDParams{
+		TenantID: string(scope.TenantID),
+		ScopeKey: string(scope.Key()),
+		Tool:     string(tool),
+		Sha256:   sha256,
 	})
 	if errors.Is(err, pgx.ErrNoRows) {
 		return "", false, nil
@@ -55,37 +45,15 @@ func (s *Store) FindScanID(ctx context.Context, scope model.Scope, tool model.To
 }
 
 func (s *Store) InsertJob(ctx context.Context, scope model.Scope, tool model.ToolName, key model.RawKey) (bool, error) {
-	var rows int64
-	err := s.withTenant(ctx, scope.TenantID, func(q *db.Queries) error {
-		var err error
-		rows, err = q.InsertIngestJob(ctx, db.InsertIngestJobParams{
-			TenantID:  string(scope.TenantID),
-			ScopeKey:  string(scope.Key()),
-			ProductID: string(scope.ProductID),
-			ContextID: string(scope.ContextID),
-			RawKey:    key.String(),
-			Tool:      string(tool),
-			Sha256:    key.SHA256,
-			ScanID:    string(key.ScanID),
-		})
-		return err
+	rows, err := db.New(s.pool).InsertIngestJob(ctx, db.InsertIngestJobParams{
+		TenantID:  string(scope.TenantID),
+		ScopeKey:  string(scope.Key()),
+		ProductID: string(scope.ProductID),
+		ContextID: string(scope.ContextID),
+		RawKey:    key.String(),
+		Tool:      string(tool),
+		Sha256:    key.SHA256,
+		ScanID:    string(key.ScanID),
 	})
 	return rows > 0, err
-}
-
-func (s *Store) withTenant(ctx context.Context, tenantID model.TenantID, fn func(*db.Queries) error) error {
-	tx, err := s.pool.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback(ctx)
-
-	q := db.New(tx)
-	if err := q.SetTenant(ctx, string(tenantID)); err != nil {
-		return err
-	}
-	if err := fn(q); err != nil {
-		return err
-	}
-	return tx.Commit(ctx)
 }

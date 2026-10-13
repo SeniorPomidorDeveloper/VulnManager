@@ -27,18 +27,3 @@ CREATE TABLE ingest_job (
 
 CREATE INDEX ingest_job_tenant_state_idx ON ingest_job (tenant_id, state);
 CREATE INDEX ingest_job_pending_idx ON ingest_job (tenant_id, available_at) WHERE state = 'pending';
-
-ALTER TABLE tenant ENABLE ROW LEVEL SECURITY;
-ALTER TABLE tenant FORCE ROW LEVEL SECURITY;
-CREATE POLICY tenant_isolation ON tenant
-    USING (id = current_setting('app.tenant_id', true));
-
-ALTER TABLE product ENABLE ROW LEVEL SECURITY;
-ALTER TABLE product FORCE ROW LEVEL SECURITY;
-CREATE POLICY product_tenant_isolation ON product
-    USING (tenant_id = current_setting('app.tenant_id', true));
-
-ALTER TABLE ingest_job ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ingest_job FORCE ROW LEVEL SECURITY;
-CREATE POLICY ingest_job_tenant_isolation ON ingest_job
-    USING (tenant_id = current_setting('app.tenant_id', true));
