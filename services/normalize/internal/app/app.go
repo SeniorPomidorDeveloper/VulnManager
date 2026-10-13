@@ -19,6 +19,7 @@ import (
 
 	"vulnmanager/services/normalize/gen/db"
 	"vulnmanager/services/normalize/internal/config"
+	"vulnmanager/services/normalize/internal/metrics"
 	"vulnmanager/services/normalize/internal/parsers"
 	"vulnmanager/services/normalize/internal/queue"
 	"vulnmanager/services/normalize/internal/rawread"
@@ -101,6 +102,7 @@ func newWorker(cfg config.Config, pool *pgxpool.Pool, log *slog.Logger) (*worker
 
 	reg := prometheus.NewRegistry()
 	reg.MustRegister(collectors.NewGoCollector(), collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+	m := metrics.New(reg)
 
 	w, err := worker.New(
 		worker.Config{
@@ -111,9 +113,9 @@ func newWorker(cfg config.Config, pool *pgxpool.Pool, log *slog.Logger) (*worker
 			MaxAttempts:  cfg.MaxAttempts,
 		},
 		worker.Deps{
-			Jobs:    queue.New(db.New(pool)),
+			Jobs:    m.WrapJobs(queue.New(db.New(pool)), time.Now),
 			Raw:     raw,
-			Store:   worker.NewStore(store.New(pool)),
+			Store:   m.WrapStore(worker.NewStore(store.New(pool))),
 			Parsers: registry,
 			Clock:   time.Now,
 			Log:     log,
