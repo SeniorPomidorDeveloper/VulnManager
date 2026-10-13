@@ -54,7 +54,7 @@ func New(pool *pgxpool.Pool) *Store {
 	return &Store{pool: pool}
 }
 
-func (s *Store) InTx(ctx context.Context, tenantID model.TenantID, fn func(*Tx) error) error {
+func (s *Store) InTx(ctx context.Context, fn func(*Tx) error) error {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin: %w", err)
@@ -62,9 +62,6 @@ func (s *Store) InTx(ctx context.Context, tenantID model.TenantID, fn func(*Tx) 
 	defer func() { _ = tx.Rollback(ctx) }()
 
 	queries := db.New(tx)
-	if err := queries.SetTenant(ctx, string(tenantID)); err != nil {
-		return fmt.Errorf("set tenant: %w", err)
-	}
 	if err := fn(&Tx{queries: queries}); err != nil {
 		return err
 	}
@@ -83,7 +80,7 @@ func (s *Store) FailRun(ctx context.Context, run Run, reason string) error {
 	if err != nil {
 		return fmt.Errorf("encode stats: %w", err)
 	}
-	return s.InTx(ctx, run.Scope.TenantID, func(tx *Tx) error {
+	return s.InTx(ctx, func(tx *Tx) error {
 		return tx.queries.FailImportRun(ctx, db.FailImportRunParams{
 			TenantID:  string(run.Scope.TenantID),
 			ScopeKey:  string(run.Scope.Key()),

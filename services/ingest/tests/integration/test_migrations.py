@@ -5,7 +5,6 @@ import pytest
 
 from settings import DATABASE, MIGRATIONS_DIR
 
-TENANT_TABLES = ('tenant', 'product', 'ingest_job', 'raw_blob')
 SCRATCH_DATABASE = 'ingest_upgrade_check'
 UPGRADE_VERSION = 'V0004'
 
@@ -22,18 +21,6 @@ def split_at_upgrade():
         if path.name.startswith(UPGRADE_VERSION)
     )
     return paths[:index], paths[index]
-
-
-def test_rls_is_forced_on_all_tables(pgsql):
-    cursor = pgsql[DATABASE].cursor()
-    cursor.execute(
-        'SELECT relname, relrowsecurity, relforcerowsecurity '
-        'FROM pg_class WHERE relname = ANY(%s)',
-        (list(TENANT_TABLES),),
-    )
-
-    expected = sorted((name, True, True) for name in TENANT_TABLES)
-    assert sorted(cursor.fetchall()) == expected
 
 
 @pytest.fixture

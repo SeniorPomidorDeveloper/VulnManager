@@ -86,7 +86,7 @@ func (t *fakeTx) CompleteRun(_ context.Context, _ model.ImportRunID, findings in
 	return nil
 }
 
-func (s *fakeStore) InTx(_ context.Context, _ model.TenantID, fn func(Tx) error) error {
+func (s *fakeStore) InTx(_ context.Context, fn func(Tx) error) error {
 	return fn(s.tx)
 }
 

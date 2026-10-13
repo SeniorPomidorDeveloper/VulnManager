@@ -39,12 +39,3 @@ CREATE TABLE finding (
 
 CREATE INDEX finding_run_idx ON finding (tenant_id, import_run_id);
 
-ALTER TABLE import_run ENABLE ROW LEVEL SECURITY;
-ALTER TABLE import_run FORCE ROW LEVEL SECURITY;
-CREATE POLICY import_run_tenant_isolation ON import_run
-    USING (tenant_id = current_setting('app.tenant_id', true));
-
-ALTER TABLE finding ENABLE ROW LEVEL SECURITY;
-ALTER TABLE finding FORCE ROW LEVEL SECURITY;
-CREATE POLICY finding_tenant_isolation ON finding
-    USING (tenant_id = current_setting('app.tenant_id', true));

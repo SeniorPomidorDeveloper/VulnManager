@@ -94,9 +94,9 @@ func (j *jobSource) Finish(
 	return ok, err
 }
 
-func (s findingStore) InTx(ctx context.Context, tenantID model.TenantID, fn func(worker.Tx) error) error {
+func (s findingStore) InTx(ctx context.Context, fn func(worker.Tx) error) error {
 	var written int
-	err := s.next.InTx(ctx, tenantID, func(inner worker.Tx) error {
+	err := s.next.InTx(ctx, func(inner worker.Tx) error {
 		return fn(countingTx{Tx: inner, written: &written})
 	})
 	if err == nil {

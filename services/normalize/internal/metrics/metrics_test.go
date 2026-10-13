@@ -40,7 +40,7 @@ func (stubTx) CompleteRun(context.Context, model.ImportRunID, int) error {
 	return nil
 }
 
-func (s stubStore) InTx(_ context.Context, _ model.TenantID, fn func(worker.Tx) error) error {
+func (s stubStore) InTx(_ context.Context, fn func(worker.Tx) error) error {
 	if err := fn(stubTx{}); err != nil {
 		return err
 	}
@@ -74,12 +74,12 @@ func TestStore_CountsFindingsOnlyAfterSuccessfulTx(t *testing.T) {
 	m := New(prometheus.NewRegistry())
 	complete := func(tx worker.Tx) error { return tx.CompleteRun(context.Background(), "run", 3) }
 
-	_ = m.WrapStore(stubStore{err: errors.New("commit failed")}).InTx(context.Background(), "t1", complete)
+	_ = m.WrapStore(stubStore{err: errors.New("commit failed")}).InTx(context.Background(), complete)
 	if got := testutil.ToFloat64(m.findings); got != 0 {
 		t.Fatalf("findings after failed commit = %v, want 0", got)
 	}
 
-	if err := m.WrapStore(stubStore{}).InTx(context.Background(), "t1", complete); err != nil {
+	if err := m.WrapStore(stubStore{}).InTx(context.Background(), complete); err != nil {
 		t.Fatal(err)
 	}
 	if got := testutil.ToFloat64(m.findings); got != 3 {
