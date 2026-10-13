@@ -1,0 +1,44 @@
+name: e2e
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+env:
+  GO_VERSION: "1.23.6"
+
+jobs:
+  e2e:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - uses: actions/setup-go@v5.4.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: |
+            services/ingest/go.mod
+            services/normalize/go.mod
+
+      - uses: actions/setup-python@v5.4.0
+        with:
+          python-version: "3.12.8"
+
+      - run: sudo apt-get install -y --no-install-recommends debhelper dpkg-dev fakeroot
+
+      - run: make deb
+        working-directory: services/ingest
+
+      - run: make deb
+        working-directory: services/normalize
+
+      - run: docker compose --profile core up -d --build --wait
+
+      - run: pip install -r requirements.txt
+        working-directory: tests/e2e
+
+      - run: make ci
+        working-directory: tests/e2e
+
+      - if: always()
+        run: docker compose --profile core down -v

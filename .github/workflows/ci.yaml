@@ -51,3 +51,7 @@ jobs:
   normalize:
     if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
     uses: ./.github/workflows/normalize.yaml
+
+  e2e:
+    if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
+    uses: ./.github/workflows/e2e.yaml
