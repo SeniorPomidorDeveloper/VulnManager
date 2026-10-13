@@ -18,3 +18,12 @@ type Diagnostics []Diagnostic
 func (d Diagnostics) Append(level DiagnosticLevel, code, message string) Diagnostics {
 	return append(d, Diagnostic{Level: level, Code: code, Message: message})
 }
+
+func (d Diagnostics) Has(code string) bool {
+	for _, entry := range d {
+		if entry.Code == code {
+			return true
+		}
+	}
+	return false
+}
