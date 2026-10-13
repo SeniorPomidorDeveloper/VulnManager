@@ -43,7 +43,7 @@ image:
 	docker build -f Dockerfile --build-arg DEB=$(DEB) -t $(IMAGE) dist
 
 smoke:
-	docker run -d --name vm-ingest-smoke -p 127.0.0.1:18081:8080 -e INGEST_DATABASE_URL=postgres://smoke@localhost/smoke -e INGEST_TENANT=smoke -e INGEST_RAWSTORE=pg $(IMAGE)
+	docker run -d --name vm-ingest-smoke -p 127.0.0.1:18081:8080 -e INGEST_DATABASE_URL=postgres://smoke@localhost/smoke -e INGEST_TENANT=smoke -e INGEST_RAWSTORE=pg -e INGEST_EVENTS=none $(IMAGE)
 	curl --retry 15 --retry-connrefused --retry-delay 1 -fsS http://127.0.0.1:18081/ping
 	curl -fsS -o /dev/null http://127.0.0.1:18081/metrics
 
