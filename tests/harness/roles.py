@@ -1,14 +1,13 @@
 import psycopg2
 
-import settings
+QUEUE_OWNER_ROLE = 'ingest_queue_owner'
+QUEUE_CONSUMER_ROLE = 'queue_consumer'
+QUEUE_CLIENT_ROLE = 'queue_client'
 
 ROLES = (
-    (settings.QUEUE_OWNER_ROLE, 'NOLOGIN BYPASSRLS'),
-    (settings.QUEUE_CONSUMER_ROLE, 'NOLOGIN'),
-    (
-        settings.QUEUE_CLIENT_ROLE,
-        f'LOGIN IN ROLE {settings.QUEUE_CONSUMER_ROLE}',
-    ),
+    (QUEUE_OWNER_ROLE, 'NOLOGIN BYPASSRLS'),
+    (QUEUE_CONSUMER_ROLE, 'NOLOGIN'),
+    (QUEUE_CLIENT_ROLE, f'LOGIN IN ROLE {QUEUE_CONSUMER_ROLE}'),
 )
 
 

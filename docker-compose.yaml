@@ -54,7 +54,7 @@ services:
       timeout: 5s
       retries: 10
 
-  migrate-ingest:
+  migrate:
     build: ./deploy/local/pgmigrate
     image: vulnmanager/pgmigrate:1.0.13
     profiles: ["core", "full"]
@@ -71,14 +71,14 @@ services:
         -c "host=postgres dbname=$$POSTGRES_DB user=$$POSTGRES_USER password=$$POSTGRES_PASSWORD"
         -t latest migrate
     volumes:
-      - ./migrations/ingest:/db/migrations:ro
+      - ./db/vulnmanager:/db:ro
     restart: "no"
 
   seed-ingest:
     image: postgres:16.6-alpine3.20
     profiles: ["core", "full"]
     depends_on:
-      migrate-ingest:
+      migrate:
         condition: service_completed_successfully
     env_file:
       - deploy/local/postgres.env

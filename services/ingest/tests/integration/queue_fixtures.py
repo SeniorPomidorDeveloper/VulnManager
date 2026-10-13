@@ -1,6 +1,7 @@
 import psycopg2
 import pytest
 
+import roles
 import settings
 
 SESSION = 'session'
@@ -10,7 +11,7 @@ SESSION = 'session'
 def queue_dsn(app_database_url, pgsql_local):
     conninfo = pgsql_local[settings.DATABASE]
     return conninfo.replace(
-        user=settings.QUEUE_CLIENT_ROLE, password=None,
+        user=roles.QUEUE_CLIENT_ROLE, password=None,
     ).get_dsn()
 
 

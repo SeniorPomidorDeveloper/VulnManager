@@ -52,7 +52,7 @@ jobs:
               - "docker-compose.yaml"
               - ".github/workflows/repo-versions.yaml"
             repo-migrations:
-              - "migrations/**"
+              - "db/**"
               - ".github/workflows/repo-migrations.yaml"
             repo-shell:
               - "ci/**"

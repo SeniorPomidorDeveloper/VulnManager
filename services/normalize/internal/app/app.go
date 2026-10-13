@@ -17,7 +17,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"vulnmanager/services/normalize/gen/db"
+	"vulnmanager/services/normalize/gen/queuedb"
 	"vulnmanager/services/normalize/internal/config"
 	"vulnmanager/services/normalize/internal/metrics"
 	"vulnmanager/services/normalize/internal/parsers"
@@ -113,7 +113,7 @@ func newWorker(cfg config.Config, pool *pgxpool.Pool, log *slog.Logger) (*worker
 			MaxAttempts:  cfg.MaxAttempts,
 		},
 		worker.Deps{
-			Jobs:    m.WrapJobs(queue.New(db.New(pool)), time.Now),
+			Jobs:    m.WrapJobs(queue.New(queuedb.New(pool)), time.Now),
 			Raw:     raw,
 			Store:   m.WrapStore(worker.NewStore(store.New(pool))),
 			Parsers: registry,

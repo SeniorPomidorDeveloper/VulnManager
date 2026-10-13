@@ -7,10 +7,21 @@ from settings import DATABASE, MIGRATIONS_DIR
 
 TENANT_TABLES = ('tenant', 'product', 'ingest_job', 'raw_blob')
 SCRATCH_DATABASE = 'ingest_upgrade_check'
+UPGRADE_VERSION = 'V0004'
 
 
 def versions():
-    return sorted((MIGRATIONS_DIR / DATABASE).glob('V*.sql'))
+    return sorted((MIGRATIONS_DIR / DATABASE / 'migrations').glob('V*.sql'))
+
+
+def split_at_upgrade():
+    paths = versions()
+    index = next(
+        position
+        for position, path in enumerate(paths)
+        if path.name.startswith(UPGRADE_VERSION)
+    )
+    return paths[:index], paths[index]
 
 
 def test_rls_is_forced_on_all_tables(pgsql):
@@ -45,7 +56,7 @@ def apply(conn, path: pathlib.Path):
 
 
 def test_upgrade_keeps_existing_jobs(scratch_database):
-    *previous, latest = versions()
+    previous, upgrade = split_at_upgrade()
     for path in previous:
         apply(scratch_database, path)
     cursor = scratch_database.cursor()
@@ -55,7 +66,7 @@ def test_upgrade_keeps_existing_jobs(scratch_database):
         "VALUES ('acme', 'scope', 'acme/scan/sha', 'trivy', 'sha', 'scan')",
     )
 
-    apply(scratch_database, latest)
+    apply(scratch_database, upgrade)
 
     cursor.execute(
         'SELECT tenant_id, raw_key, state, product_id FROM ingest_job',

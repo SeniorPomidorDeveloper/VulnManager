@@ -53,4 +53,4 @@ integration: binary
 	python3 -m pytest tests/integration
 
 lint-py:
-	python3 -m flake8 tests
+	python3 -m flake8 tests ../../tests/harness

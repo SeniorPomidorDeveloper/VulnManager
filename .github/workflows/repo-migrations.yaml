@@ -15,4 +15,4 @@ jobs:
       - name: миграции неизменяемы
         run: |
           git diff --diff-filter=MD --name-only --exit-code \
-            origin/${{ github.event.repository.default_branch }}...HEAD -- migrations
+            origin/${{ github.event.repository.default_branch }}...HEAD -- db/vulnmanager/migrations
