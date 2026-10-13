@@ -1,6 +1,3 @@
-CREATE ROLE ingest_app LOGIN PASSWORD 'ingest-app-local-dev' NOSUPERUSER NOBYPASSRLS;
+CREATE ROLE ingest_app LOGIN PASSWORD 'ingest-app-local-dev' NOSUPERUSER;
 
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ingest_app;
-
-CREATE ROLE ingest_queue_owner NOLOGIN BYPASSRLS;
-CREATE ROLE queue_consumer NOLOGIN;

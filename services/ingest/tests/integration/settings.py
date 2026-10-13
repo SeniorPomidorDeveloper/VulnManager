@@ -14,4 +14,3 @@ PING_URL = f'{BASE_URL}ping'
 DATABASE = 'vulnmanager'
 TENANT = 'acme'
 TENANT_LIMIT = 1000
-APP_ROLE = 'ingest_app'

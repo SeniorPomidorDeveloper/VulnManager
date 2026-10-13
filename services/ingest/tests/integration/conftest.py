@@ -1,18 +1,15 @@
 import functools
 
-import psycopg2
 import pytest
 import yaml
 from testsuite.databases.pgsql import discover
 
-import roles
 import settings
 import spec_check
 
 pytest_plugins = [
     'testsuite.pytest_plugin',
     'testsuite.databases.pgsql.pytest_plugin',
-    'queue_fixtures',
 ]
 
 SESSION = 'session'
@@ -29,30 +26,8 @@ def app_database_url(
     pgsql_local, ensure_service_started, _pgsql_service_settings,
 ):
     ensure_service_started('postgresql', settings=_pgsql_service_settings)
-    conninfo = pgsql_local[settings.DATABASE]
-    roles.create_cluster_roles(conninfo.replace(dbname='postgres'))
     pgsql_local.initialize(parallel_init=False)
-    conn = psycopg2.connect(conninfo.get_dsn())
-    conn.autocommit = True
-    conn.cursor().execute(
-        f"""
-        DO $$
-        BEGIN
-            IF NOT EXISTS (
-                SELECT FROM pg_roles WHERE rolname = '{settings.APP_ROLE}'
-            ) THEN
-                CREATE ROLE {settings.APP_ROLE}
-                    LOGIN NOSUPERUSER NOBYPASSRLS;
-            END IF;
-        END
-        $$;
-        GRANT ALL ON ALL TABLES IN SCHEMA public TO {settings.APP_ROLE};
-        """,
-    )
-    conn.close()
-    return conninfo.replace(
-        user=settings.APP_ROLE, password=None,
-    ).get_uri()
+    return pgsql_local[settings.DATABASE].get_uri()
 
 
 @pytest.fixture(autouse=True)
