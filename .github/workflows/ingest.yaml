@@ -44,6 +44,8 @@ jobs:
 
       - run: pip install -r tests/integration/requirements.txt
 
+      - run: pip install --no-deps yandex-pgmigrate==1.0.13
+
       - run: make lint-py
 
       - run: make integration

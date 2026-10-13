@@ -7,3 +7,4 @@ PyYAML==6.0.2
 flake8==7.4.1
 flake8-bugbear==26.9.9
 wemake-python-styleguide==1.8.1
+sqlparse==0.6.0

@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"vulnmanager/modules/model"
-	"vulnmanager/services/normalize/gen/db"
+	"vulnmanager/services/normalize/gen/queuedb"
 )
 
 type (
@@ -35,15 +35,15 @@ type Job struct {
 }
 
 type Queue struct {
-	queries *db.Queries
+	queries *queuedb.Queries
 }
 
-func New(queries *db.Queries) *Queue {
+func New(queries *queuedb.Queries) *Queue {
 	return &Queue{queries: queries}
 }
 
 func (q *Queue) Claim(ctx context.Context, worker WorkerID, lease time.Duration) (Job, bool, error) {
-	row, err := q.queries.ClaimIngestJob(ctx, db.ClaimIngestJobParams{PWorker: string(worker), PLease: interval(lease)})
+	row, err := q.queries.ClaimIngestJob(ctx, queuedb.ClaimIngestJobParams{PWorker: string(worker), PLease: interval(lease)})
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Job{}, false, nil
 	}
@@ -66,7 +66,7 @@ func (q *Queue) Claim(ctx context.Context, worker WorkerID, lease time.Duration)
 }
 
 func (q *Queue) Finish(ctx context.Context, id uuid.UUID, worker WorkerID, state State, retryAfter time.Duration) (bool, error) {
-	ok, err := q.queries.FinishIngestJob(ctx, db.FinishIngestJobParams{
+	ok, err := q.queries.FinishIngestJob(ctx, queuedb.FinishIngestJobParams{
 		PID:         id,
 		PWorker:     string(worker),
 		PState:      string(state),
