@@ -9,4 +9,5 @@ message ReportReceived {
   vulnmanager.common.v1.Scope scope = 2;
   string tool = 3;
   string scan_id = 4;
+  string job_id = 5;
 }
