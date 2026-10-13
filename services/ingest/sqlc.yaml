@@ -9,3 +9,6 @@ sql:
         out: "gen/db"
         sql_package: "pgx/v5"
         emit_exact_table_names: false
+        overrides:
+          - db_type: "uuid"
+            go_type: "github.com/google/uuid.UUID"
