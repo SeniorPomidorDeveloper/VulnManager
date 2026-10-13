@@ -20,7 +20,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3.13.7-management-alpine
-    profiles: ["infra", "full"]
+    profiles: ["infra", "core", "full"]
     restart: unless-stopped
     env_file:
       - deploy/local/rabbitmq.env
@@ -29,6 +29,7 @@ services:
       - "15672:15672"
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+      - ./deploy/local/rabbitmq-plugins:/etc/rabbitmq/enabled_plugins:ro
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 5s
@@ -109,6 +110,8 @@ services:
         condition: service_healthy
     env_file:
       - deploy/local/ingest.env
+    environment:
+      INGEST_EVENTS: ${INGEST_EVENTS:-amqp}
     ports:
       - "8080:8080"
     healthcheck:
@@ -117,6 +120,36 @@ services:
         - bash
         - -c
         - exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /ping HTTP/1.0\r\n\r\n' >&3 && grep -q ok <&3
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  normalize:
+    build:
+      context: ./services/normalize/dist
+      dockerfile: ../Dockerfile
+      args:
+        DEB: vulnmanager-normalize_0.0.1_amd64.deb
+    image: vulnmanager/normalize:0.0.1
+    profiles: ["core", "full"]
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      garage:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    env_file:
+      - deploy/local/normalize.env
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -c
+        - exec 3<>/dev/tcp/127.0.0.1/8081 && printf 'GET /ping HTTP/1.0\r\n\r\n' >&3 && grep -q ok <&3
       interval: 5s
       timeout: 5s
       retries: 10
