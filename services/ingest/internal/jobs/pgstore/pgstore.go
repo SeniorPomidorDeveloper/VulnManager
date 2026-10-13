@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -28,24 +29,24 @@ func (s *Store) MaxReportBytes(ctx context.Context, tenantID model.TenantID) (in
 	return limit, err
 }
 
-func (s *Store) FindScanID(ctx context.Context, scope model.Scope, tool model.ToolName, sha256 string) (model.ScanID, bool, error) {
-	scanID, err := db.New(s.pool).FindIngestJobScanID(ctx, db.FindIngestJobScanIDParams{
+func (s *Store) FindJob(ctx context.Context, scope model.Scope, tool model.ToolName, sha256 string) (jobs.Job, bool, error) {
+	row, err := db.New(s.pool).FindIngestJob(ctx, db.FindIngestJobParams{
 		TenantID: string(scope.TenantID),
 		ScopeKey: string(scope.Key()),
 		Tool:     string(tool),
 		Sha256:   sha256,
 	})
 	if errors.Is(err, pgx.ErrNoRows) {
-		return "", false, nil
+		return jobs.Job{}, false, nil
 	}
 	if err != nil {
-		return "", false, err
+		return jobs.Job{}, false, err
 	}
-	return model.ScanID(scanID), true, nil
+	return jobs.Job{ID: row.ID, ScanID: model.ScanID(row.ScanID), State: jobs.JobState(row.State)}, true, nil
 }
 
-func (s *Store) InsertJob(ctx context.Context, scope model.Scope, tool model.ToolName, key model.RawKey) (bool, error) {
-	rows, err := db.New(s.pool).InsertIngestJob(ctx, db.InsertIngestJobParams{
+func (s *Store) InsertJob(ctx context.Context, scope model.Scope, tool model.ToolName, key model.RawKey) (uuid.UUID, bool, error) {
+	id, err := db.New(s.pool).InsertIngestJob(ctx, db.InsertIngestJobParams{
 		TenantID:  string(scope.TenantID),
 		ScopeKey:  string(scope.Key()),
 		ProductID: string(scope.ProductID),
@@ -55,5 +56,8 @@ func (s *Store) InsertJob(ctx context.Context, scope model.Scope, tool model.Too
 		Sha256:    key.SHA256,
 		ScanID:    string(key.ScanID),
 	})
-	return rows > 0, err
+	if errors.Is(err, pgx.ErrNoRows) {
+		return uuid.Nil, false, nil
+	}
+	return id, err == nil, err
 }

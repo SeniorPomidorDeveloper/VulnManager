@@ -49,6 +49,10 @@ func tooLarge() *problem {
 	return &problem{status: http.StatusRequestEntityTooLarge, code: "report_too_large", detail: "report exceeds tenant limit"}
 }
 
+func notPublished(err error) *problem {
+	return &problem{status: http.StatusServiceUnavailable, code: "event_not_published", detail: "report is stored but processing event was not delivered, retry the request", op: "publish event", cause: err}
+}
+
 func internal(op string, err error) *problem {
 	return &problem{status: http.StatusInternalServerError, code: "internal", detail: "internal error", op: op, cause: err}
 }
@@ -115,6 +119,9 @@ func (h *Handler) accept(ctx context.Context, report jobs.Report) (jobs.Accepted
 	accepted, err := h.intake.Accept(ctx, report)
 	if errors.Is(err, jobs.ErrReportTooLarge) {
 		return jobs.Accepted{}, tooLarge()
+	}
+	if errors.Is(err, jobs.ErrNotPublished) {
+		return jobs.Accepted{}, notPublished(err)
 	}
 	if err != nil {
 		return jobs.Accepted{}, internal("accept report", err)

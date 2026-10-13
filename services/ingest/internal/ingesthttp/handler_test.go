@@ -3,6 +3,7 @@ package ingesthttp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -29,6 +30,7 @@ type fakeIntake struct {
 	accepted jobs.Accepted
 	got      jobs.Report
 	calls    int
+	err      error
 }
 
 func (f *fakeIntake) MaxReportBytes(context.Context, model.TenantID) (int64, error) {
@@ -38,7 +40,7 @@ func (f *fakeIntake) MaxReportBytes(context.Context, model.TenantID) (int64, err
 func (f *fakeIntake) Accept(_ context.Context, r jobs.Report) (jobs.Accepted, error) {
 	f.calls++
 	f.got = r
-	return f.accepted, nil
+	return f.accepted, f.err
 }
 
 func newServer(intake *fakeIntake) http.Handler {
@@ -115,6 +117,20 @@ func TestIngestReport_Accepted(t *testing.T) {
 	}
 	if intake.got.ScanID != "generated" || intake.got.Tool != "trivy" || string(intake.got.Body) != "report" {
 		t.Fatalf("unexpected report: %+v", intake.got)
+	}
+}
+
+func TestIngestReport_EventNotPublished(t *testing.T) {
+	intake := &fakeIntake{limit: 100, err: fmt.Errorf("%w: broker down", jobs.ErrNotPublished)}
+
+	rec := post(newServer(intake), validHeaders(), "report")
+
+	if rec.Code != http.StatusServiceUnavailable {
+		t.Fatalf("got status %d, want 503: %s", rec.Code, rec.Body)
+	}
+	var problem api.Problem
+	if err := json.Unmarshal(rec.Body.Bytes(), &problem); err != nil || problem.Type != "event_not_published" {
+		t.Fatalf("unexpected problem %+v (err=%v)", problem, err)
 	}
 }
 

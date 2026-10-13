@@ -20,6 +20,7 @@ import (
 	"vulnmanager/modules/model"
 	"vulnmanager/services/ingest/gen/api"
 	"vulnmanager/services/ingest/internal/config"
+	"vulnmanager/services/ingest/internal/events"
 	"vulnmanager/services/ingest/internal/ingesthttp"
 	"vulnmanager/services/ingest/internal/jobs"
 	"vulnmanager/services/ingest/internal/jobs/pgstore"
@@ -63,7 +64,7 @@ func run(log *slog.Logger) error {
 	metrics := ingesthttp.NewMetrics(reg)
 
 	handler := ingesthttp.New(
-		jobs.NewEnqueuer(pgstore.New(pool), raw),
+		jobs.NewEnqueuer(pgstore.New(pool), raw, events.Disabled{}),
 		func() model.ScanID { return model.ScanID(uuid.NewString()) },
 		log,
 	)

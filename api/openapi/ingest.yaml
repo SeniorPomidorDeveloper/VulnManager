@@ -47,6 +47,8 @@ paths:
           $ref: "#/components/responses/ReportTooLarge"
         "500":
           $ref: "#/components/responses/Internal"
+        "503":
+          $ref: "#/components/responses/EventNotPublished"
 components:
   securitySchemes:
     bearerAuth:
@@ -126,6 +128,12 @@ components:
             $ref: "#/components/schemas/Problem"
     Internal:
       description: Внутренняя ошибка
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    EventNotPublished:
+      description: Отчёт сохранён, но событие для обработки не доставлено брокеру; запрос можно повторить
       content:
         application/problem+json:
           schema:

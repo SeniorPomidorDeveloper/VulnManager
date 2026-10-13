@@ -7,18 +7,20 @@ import (
 	"io"
 	"testing"
 
+	"github.com/google/uuid"
+
 	"vulnmanager/modules/model"
 )
 
 type fakeStore struct {
 	limits map[model.TenantID]int64
-	jobs   map[string]model.ScanID
+	jobs   map[string]Job
 }
 
 func newFakeStore() *fakeStore {
 	return &fakeStore{
 		limits: map[model.TenantID]int64{"acme": 100},
-		jobs:   map[string]model.ScanID{},
+		jobs:   map[string]Job{},
 	}
 }
 
@@ -34,18 +36,32 @@ func (f *fakeStore) MaxReportBytes(_ context.Context, tenantID model.TenantID) (
 	return limit, nil
 }
 
-func (f *fakeStore) FindScanID(_ context.Context, scope model.Scope, tool model.ToolName, sha string) (model.ScanID, bool, error) {
-	id, ok := f.jobs[jobKey(scope, tool, sha)]
-	return id, ok, nil
+func (f *fakeStore) FindJob(_ context.Context, scope model.Scope, tool model.ToolName, sha string) (Job, bool, error) {
+	job, ok := f.jobs[jobKey(scope, tool, sha)]
+	return job, ok, nil
 }
 
-func (f *fakeStore) InsertJob(_ context.Context, scope model.Scope, tool model.ToolName, key model.RawKey) (bool, error) {
+func (f *fakeStore) InsertJob(_ context.Context, scope model.Scope, tool model.ToolName, key model.RawKey) (uuid.UUID, bool, error) {
 	k := jobKey(scope, tool, key.SHA256)
 	if _, ok := f.jobs[k]; ok {
-		return false, nil
+		return uuid.Nil, false, nil
 	}
-	f.jobs[k] = key.ScanID
-	return true, nil
+	job := Job{ID: uuid.New(), ScanID: key.ScanID, State: StatePending}
+	f.jobs[k] = job
+	return job.ID, true, nil
+}
+
+type fakePublisher struct {
+	events []Event
+	err    error
+}
+
+func (f *fakePublisher) Publish(_ context.Context, event Event) error {
+	if f.err != nil {
+		return f.err
+	}
+	f.events = append(f.events, event)
+	return nil
 }
 
 type fakeRaw struct {
@@ -82,7 +98,7 @@ func TestAccept_Limits(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			raw := &fakeRaw{}
-			e := NewEnqueuer(newFakeStore(), raw)
+			e := NewEnqueuer(newFakeStore(), raw, &fakePublisher{})
 
 			_, err := e.Accept(context.Background(), Report{
 				Scope: newScope(t, tc.tenant), Tool: "trivy", ScanID: "scan-1", Body: bytes.Repeat([]byte("a"), tc.size),
@@ -104,7 +120,7 @@ func TestAccept_Limits(t *testing.T) {
 
 func TestAccept_DuplicateReturnsFirstScanID(t *testing.T) {
 	raw := &fakeRaw{}
-	e := NewEnqueuer(newFakeStore(), raw)
+	e := NewEnqueuer(newFakeStore(), raw, &fakePublisher{})
 	scope := newScope(t, "acme")
 
 	first, err := e.Accept(context.Background(), Report{Scope: scope, Tool: "trivy", ScanID: "scan-1", Body: []byte("report")})
@@ -129,7 +145,7 @@ func TestAccept_DuplicateReturnsFirstScanID(t *testing.T) {
 
 func TestAccept_DifferentToolIsNotDuplicate(t *testing.T) {
 	raw := &fakeRaw{}
-	e := NewEnqueuer(newFakeStore(), raw)
+	e := NewEnqueuer(newFakeStore(), raw, &fakePublisher{})
 	scope := newScope(t, "acme")
 
 	_, err := e.Accept(context.Background(), Report{Scope: scope, Tool: "trivy", ScanID: "scan-1", Body: []byte("report")})
@@ -143,5 +159,66 @@ func TestAccept_DifferentToolIsNotDuplicate(t *testing.T) {
 
 	if other.ScanID != "scan-2" {
 		t.Fatalf("got scan id %q, want scan-2", other.ScanID)
+	}
+}
+
+func TestAccept_PublishesEventWithJobID(t *testing.T) {
+	store, publisher := newFakeStore(), &fakePublisher{}
+	e := NewEnqueuer(store, &fakeRaw{}, publisher)
+	scope := newScope(t, "acme")
+
+	accepted, err := e.Accept(context.Background(), Report{Scope: scope, Tool: "trivy", ScanID: "scan-1", Body: []byte("report")})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	job := store.jobs[jobKey(scope, "trivy", accepted.SHA256)]
+	want := Event{JobID: job.ID, Scope: scope, Tool: "trivy", RawKey: model.RawKeyFor(scope, "scan-1", accepted.SHA256)}
+	if len(publisher.events) != 1 || publisher.events[0] != want {
+		t.Fatalf("got events %+v, want [%+v]", publisher.events, want)
+	}
+}
+
+func TestAccept_PublishFailureIsRetriedOnRepeat(t *testing.T) {
+	raw, publisher := &fakeRaw{}, &fakePublisher{err: errors.New("broker down")}
+	e := NewEnqueuer(newFakeStore(), raw, publisher)
+	report := Report{Scope: newScope(t, "acme"), Tool: "trivy", ScanID: "scan-1", Body: []byte("report")}
+
+	_, err := e.Accept(context.Background(), report)
+	if !errors.Is(err, ErrNotPublished) {
+		t.Fatalf("got err=%v, want ErrNotPublished", err)
+	}
+
+	publisher.err = nil
+	retried, err := e.Accept(context.Background(), report)
+
+	if err != nil || retried.ScanID != "scan-1" {
+		t.Fatalf("retry: accepted=%+v err=%v", retried, err)
+	}
+	if len(publisher.events) != 1 || raw.puts != 1 {
+		t.Fatalf("got %d events and %d puts, want 1 and 1", len(publisher.events), raw.puts)
+	}
+}
+
+func TestAccept_FinishedJobIsNotPublishedAgain(t *testing.T) {
+	store, publisher := newFakeStore(), &fakePublisher{}
+	e := NewEnqueuer(store, &fakeRaw{}, publisher)
+	scope := newScope(t, "acme")
+	report := Report{Scope: scope, Tool: "trivy", ScanID: "scan-1", Body: []byte("report")}
+	accepted, err := e.Accept(context.Background(), report)
+	if err != nil {
+		t.Fatal(err)
+	}
+	key := jobKey(scope, "trivy", accepted.SHA256)
+	finished := store.jobs[key]
+	finished.State = "done"
+	store.jobs[key] = finished
+
+	if _, err := e.Accept(context.Background(), report); err != nil {
+		t.Fatal(err)
+	}
+
+	if len(publisher.events) != 1 {
+		t.Fatalf("got %d events, want 1", len(publisher.events))
 	}
 }
