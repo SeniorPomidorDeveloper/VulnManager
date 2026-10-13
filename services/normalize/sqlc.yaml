@@ -14,15 +14,3 @@ sql:
             go_type: "github.com/google/uuid.UUID"
           - db_type: "timestamptz"
             go_type: "time.Time"
-  - engine: "postgresql"
-    schema: "schema/ingest_queue.sql"
-    queries: "queue_queries"
-    gen:
-      go:
-        package: "queuedb"
-        out: "gen/queuedb"
-        sql_package: "pgx/v5"
-        emit_exact_table_names: false
-        overrides:
-          - db_type: "uuid"
-            go_type: "github.com/google/uuid.UUID"
