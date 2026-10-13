@@ -14,6 +14,7 @@ type Finding struct {
 	Title         string
 	Description   string
 	SeverityRaw   SeverityRaw
+	Severity      Severity
 	Location      json.RawMessage
 	Raw           json.RawMessage
 	Provenance    Provenance

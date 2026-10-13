@@ -12,3 +12,10 @@ func TestDiagnostics_Append(t *testing.T) {
 		t.Fatalf("unexpected entry: %+v", d[0])
 	}
 }
+
+func TestDiagnostics_Has(t *testing.T) {
+	d := Diagnostics{}.Append(DiagLevelInfo, "known", "message")
+	if !d.Has("known") || d.Has("missing") {
+		t.Fatalf("Has misreports codes in %+v", d)
+	}
+}
