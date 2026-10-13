@@ -7,6 +7,7 @@ OAPI ?= go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.4.1
 ci: fmt tidy lint build test
 
 generate:
+	$(MAKE) -C ../../api generate
 	$(SQLC) generate
 	mkdir -p gen/api
 	$(OAPI) -config oapi-codegen.yaml ../../api/openapi/ingest.yaml
@@ -42,7 +43,7 @@ image:
 	docker build -f Dockerfile --build-arg DEB=$(DEB) -t $(IMAGE) dist
 
 smoke:
-	docker run -d --name vm-ingest-smoke -p 127.0.0.1:18081:8080 -e INGEST_DATABASE_URL=postgres://smoke@localhost/smoke -e INGEST_TENANT=smoke -e INGEST_RAWSTORE=pg $(IMAGE)
+	docker run -d --name vm-ingest-smoke -p 127.0.0.1:18081:8080 -e INGEST_DATABASE_URL=postgres://smoke@localhost/smoke -e INGEST_TENANT=smoke -e INGEST_RAWSTORE=pg -e INGEST_EVENTS=none $(IMAGE)
 	curl --retry 15 --retry-connrefused --retry-delay 1 -fsS http://127.0.0.1:18081/ping
 	curl -fsS -o /dev/null http://127.0.0.1:18081/metrics
 

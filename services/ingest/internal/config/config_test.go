@@ -17,6 +17,7 @@ func TestLoad(t *testing.T) {
 		"INGEST_S3_ACCESS_KEY": "key",
 		"INGEST_S3_SECRET_KEY": "secret",
 		"INGEST_S3_BUCKET":     "raw",
+		"INGEST_AMQP_URL":      "amqp://guest:guest@rabbit:5672/",
 	}
 	tests := []struct {
 		name    string
@@ -32,6 +33,12 @@ func TestLoad(t *testing.T) {
 		{name: "tenant missing", mutate: func(m map[string]string) { delete(m, "INGEST_TENANT") }, wantErr: "INGEST_TENANT"},
 		{name: "s3 bucket missing", mutate: func(m map[string]string) { delete(m, "INGEST_S3_BUCKET") }, wantErr: "INGEST_S3_BUCKET"},
 		{name: "unknown profile", mutate: func(m map[string]string) { m["INGEST_RAWSTORE"] = "mongo" }, wantErr: "unknown profile"},
+		{name: "events none needs no broker", mutate: func(m map[string]string) {
+			m["INGEST_EVENTS"] = "none"
+			delete(m, "INGEST_AMQP_URL")
+		}},
+		{name: "amqp url missing", mutate: func(m map[string]string) { delete(m, "INGEST_AMQP_URL") }, wantErr: "INGEST_AMQP_URL"},
+		{name: "unknown events mode", mutate: func(m map[string]string) { m["INGEST_EVENTS"] = "kafka" }, wantErr: "INGEST_EVENTS"},
 		{name: "bad ssl flag", mutate: func(m map[string]string) { m["INGEST_S3_SSL"] = "maybe" }, wantErr: "INGEST_S3_SSL"},
 	}
 	for _, tc := range tests {
