@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 
 	"vulnmanager/services/normalize/gen/db"
 	"vulnmanager/services/normalize/internal/config"
+	"vulnmanager/services/normalize/internal/consumer"
 	"vulnmanager/services/normalize/internal/metrics"
 	"vulnmanager/services/normalize/internal/parsers"
 	"vulnmanager/services/normalize/internal/queue"
@@ -46,7 +48,7 @@ func Run(log *slog.Logger) error {
 	}
 	defer pool.Close()
 
-	_, reg, err := newWorker(cfg, pool, log)
+	w, reg, err := newWorker(cfg, pool, log)
 	if err != nil {
 		return err
 	}
@@ -55,13 +57,31 @@ func Run(log *slog.Logger) error {
 	errCh := make(chan error, 1)
 	go func() { errCh <- srv.ListenAndServe() }()
 
+	var consuming sync.WaitGroup
+	consuming.Add(1)
+	go func() {
+		defer consuming.Done()
+		consumer.New(consumer.Config{
+			URL:         cfg.AMQPURL,
+			Exchange:    cfg.AMQPExchange,
+			Queue:       cfg.AMQPQueue,
+			Prefetch:    cfg.Prefetch,
+			RetryDelay:  cfg.RetryDelay,
+			ConsumerTag: string(cfg.WorkerID),
+		}, w, consumer.NewMetrics(reg), log).Run(ctx)
+	}()
+
 	log.Info("normalize started", "addr", cfg.Addr, "worker", cfg.WorkerID)
 
 	select {
 	case err := <-errCh:
+		stop()
+		consuming.Wait()
 		return err
 	case <-ctx.Done():
 	}
+
+	consuming.Wait()
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()

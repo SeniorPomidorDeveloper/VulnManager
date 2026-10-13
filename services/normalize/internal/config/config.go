@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"vulnmanager/services/normalize/internal/consumer"
 	"vulnmanager/services/normalize/internal/queue"
 	"vulnmanager/services/normalize/internal/rawread"
 )
@@ -16,6 +17,9 @@ const (
 	defaultLease       = 5 * time.Minute
 	defaultRetryDelay  = time.Minute
 	defaultMaxAttempts = 5
+	defaultPrefetch    = 4
+	defaultExchange    = "vulnmanager.report.received"
+	defaultQueue       = "vulnmanager.normalize.report_received"
 )
 
 type Config struct {
@@ -28,6 +32,11 @@ type Config struct {
 	S3SecretKey rawread.SecretAccessKey
 	S3Bucket    rawread.Bucket
 	S3SSL       bool
+
+	AMQPURL      consumer.URL
+	AMQPExchange consumer.ExchangeName
+	AMQPQueue    consumer.QueueName
+	Prefetch     int
 
 	Lease       time.Duration
 	RetryDelay  time.Duration
@@ -44,6 +53,11 @@ func Load(getenv func(string) string) (Config, error) {
 		S3SecretKey: rawread.SecretAccessKey(getenv("NORMALIZE_S3_SECRET_KEY")),
 		S3Bucket:    rawread.Bucket(getenv("NORMALIZE_S3_BUCKET")),
 		MaxAttempts: defaultMaxAttempts,
+		Prefetch:    defaultPrefetch,
+
+		AMQPURL:      consumer.URL(getenv("NORMALIZE_AMQP_URL")),
+		AMQPExchange: consumer.ExchangeName(withDefault(getenv("NORMALIZE_AMQP_EXCHANGE"), defaultExchange)),
+		AMQPQueue:    consumer.QueueName(withDefault(getenv("NORMALIZE_AMQP_QUEUE"), defaultQueue)),
 	}
 
 	errs := requireAll(map[string]string{
@@ -52,6 +66,7 @@ func Load(getenv func(string) string) (Config, error) {
 		"NORMALIZE_S3_ACCESS_KEY": string(cfg.S3AccessKey),
 		"NORMALIZE_S3_SECRET_KEY": string(cfg.S3SecretKey),
 		"NORMALIZE_S3_BUCKET":     string(cfg.S3Bucket),
+		"NORMALIZE_AMQP_URL":      string(cfg.AMQPURL),
 	})
 
 	for _, field := range []struct {
@@ -75,6 +90,13 @@ func Load(getenv func(string) string) (Config, error) {
 			errs = append(errs, fmt.Errorf("NORMALIZE_MAX_ATTEMPTS: want a positive integer, got %q", raw))
 		}
 		cfg.MaxAttempts = value
+	}
+	if raw := getenv("NORMALIZE_PREFETCH"); raw != "" {
+		value, err := strconv.Atoi(raw)
+		if err != nil || value <= 0 {
+			errs = append(errs, fmt.Errorf("NORMALIZE_PREFETCH: want a positive integer, got %q", raw))
+		}
+		cfg.Prefetch = value
 	}
 	if raw := getenv("NORMALIZE_S3_SSL"); raw != "" {
 		value, err := strconv.ParseBool(raw)
