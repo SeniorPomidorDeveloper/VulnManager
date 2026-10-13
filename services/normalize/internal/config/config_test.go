@@ -17,6 +17,7 @@ func validEnv() map[string]string {
 		"NORMALIZE_S3_ACCESS_KEY": "key",
 		"NORMALIZE_S3_SECRET_KEY": "secret",
 		"NORMALIZE_S3_BUCKET":     "raw",
+		"NORMALIZE_AMQP_URL":      "amqp://guest:guest@rabbit:5672/",
 	}
 }
 
@@ -68,6 +69,8 @@ func TestLoad_Rejects(t *testing.T) {
 		{"bad duration", func(m map[string]string) { m["NORMALIZE_LEASE"] = "soon" }, "NORMALIZE_LEASE"},
 		{"non-positive duration", func(m map[string]string) { m["NORMALIZE_RETRY_DELAY"] = "-1s" }, "NORMALIZE_RETRY_DELAY"},
 		{"bad attempts", func(m map[string]string) { m["NORMALIZE_MAX_ATTEMPTS"] = "0" }, "NORMALIZE_MAX_ATTEMPTS"},
+		{"amqp url missing", func(m map[string]string) { delete(m, "NORMALIZE_AMQP_URL") }, "NORMALIZE_AMQP_URL"},
+		{"bad prefetch", func(m map[string]string) { m["NORMALIZE_PREFETCH"] = "0" }, "NORMALIZE_PREFETCH"},
 		{"bad ssl flag", func(m map[string]string) { m["NORMALIZE_S3_SSL"] = "maybe" }, "NORMALIZE_S3_SSL"},
 	}
 	for _, tc := range tests {
