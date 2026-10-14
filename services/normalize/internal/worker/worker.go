@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 
 	"vulnmanager/modules/model"
+	"vulnmanager/services/normalize/internal/normalizers"
 	"vulnmanager/services/normalize/internal/parsers"
 	"vulnmanager/services/normalize/internal/queue"
 	"vulnmanager/services/normalize/internal/store"
@@ -49,12 +50,13 @@ type Config struct {
 }
 
 type Deps struct {
-	Jobs    JobSource
-	Raw     RawReader
-	Store   FindingStore
-	Parsers *parsers.Registry
-	Clock   func() time.Time
-	Log     *slog.Logger
+	Jobs     JobSource
+	Raw      RawReader
+	Store    FindingStore
+	Parsers  *parsers.Registry
+	Profiles normalizers.Profiles
+	Clock    func() time.Time
+	Log      *slog.Logger
 }
 
 type JobSource interface {
@@ -176,7 +178,8 @@ func (w *Worker) write(
 	if err != nil {
 		return err
 	}
-	algoVersion := fmt.Sprintf("%s@%s", parser.ID(), parser.Version())
+	chain := w.deps.Profiles.For(job.Tool)
+	algoVersion := algoVersion(parser, chain)
 	detectedAt := w.deps.Clock()
 	count := 0
 	for raw, err := range parser.Parse(ctx, reader, meta) {
@@ -198,12 +201,23 @@ func (w *Worker) write(
 			DetectedAt:    detectedAt,
 			Diagnostics:   raw.Diagnostics,
 		}
+		if err := chain.Apply(ctx, &finding); err != nil {
+			return fmt.Errorf("normalize: %w", err)
+		}
 		if err := tx.AddFinding(ctx, finding); err != nil {
 			return err
 		}
 		count++
 	}
 	return tx.CompleteRun(ctx, runID, count)
+}
+
+func algoVersion(parser parsers.Parser, chain normalizers.Chain) string {
+	version := fmt.Sprintf("%s@%s", parser.ID(), parser.Version())
+	if steps := chain.Version(); steps != "" {
+		version += "/" + steps
+	}
+	return version
 }
 
 func (w *Worker) settle(ctx context.Context, job queue.Job, run store.Run, procErr error) (Outcome, error) {

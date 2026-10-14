@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 
 	"vulnmanager/modules/model"
+	"vulnmanager/services/normalize/internal/normalizers"
 	"vulnmanager/services/normalize/internal/parsers"
 	"vulnmanager/services/normalize/internal/queue"
 	"vulnmanager/services/normalize/internal/store"
@@ -86,22 +87,40 @@ func (s *fakeStore) FailRun(_ context.Context, _ store.Run, reason string) error
 	return nil
 }
 
+func newProfiles(t *testing.T) normalizers.Profiles {
+	t.Helper()
+	registry := normalizers.NewRegistry()
+	scales := normalizers.SeverityScales{
+		Default: normalizers.SeverityScale{"warning": model.SeverityMedium},
+	}
+	if err := registry.Register(normalizers.NewSeverity(scales)); err != nil {
+		t.Fatal(err)
+	}
+	profiles, err := registry.Profiles(normalizers.ProfileSpec{Default: []normalizers.NormalizerID{normalizers.SeverityID}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return profiles
+}
+
 func newWorker(t *testing.T, job queue.Job, raw fakeRaw) (*Worker, *fakeJobs, *fakeStore) {
 	t.Helper()
 	registry := parsers.NewRegistry(parsers.NewGenericJSON())
 	if err := registry.Register(parsers.NewSARIF()); err != nil {
 		t.Fatal(err)
 	}
+	profiles := newProfiles(t)
 	jobs := &fakeJobs{job: job, status: queue.ClaimClaimed}
 	findings := &fakeStore{tx: &fakeTx{}}
 	w, err := New(
 		Config{ID: "w1", Lease: time.Minute, RetryDelay: time.Minute, MaxAttempts: 3},
 		Deps{
-			Jobs:    jobs,
-			Raw:     raw,
-			Store:   findings,
-			Parsers: registry,
-			Clock:   func() time.Time { return time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC) },
+			Jobs:     jobs,
+			Raw:      raw,
+			Store:    findings,
+			Parsers:  registry,
+			Profiles: profiles,
+			Clock:    func() time.Time { return time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC) },
 		},
 	)
 	if err != nil {
@@ -138,8 +157,12 @@ func TestHandle_WritesFindingsAndAcks(t *testing.T) {
 	if first.Scope.TenantID != "t1" || first.ImportRunID != "run-1" || first.Provenance.ScanID != "scan-1" {
 		t.Fatalf("unexpected finding: %+v", first)
 	}
-	if !strings.HasPrefix(first.AlgoVersion, string(parsers.NewSARIF().ID())+"@") {
+	if !strings.HasPrefix(first.AlgoVersion, string(parsers.NewSARIF().ID())+"@") ||
+		!strings.HasSuffix(first.AlgoVersion, "/severity@1") {
 		t.Fatalf("algo version = %q", first.AlgoVersion)
+	}
+	if first.Severity != model.SeverityMedium {
+		t.Fatalf("severity = %v, want medium", first.Severity)
 	}
 	if len(jobs.finished) != 1 || jobs.finished[0] != queue.StateDone {
 		t.Fatalf("finished = %v", jobs.finished)

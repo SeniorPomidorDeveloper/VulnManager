@@ -139,6 +139,7 @@ func (t *Tx) AddFinding(ctx context.Context, finding model.Finding) error {
 		Title:         finding.Title,
 		Description:   finding.Description,
 		SeverityRaw:   string(finding.SeverityRaw),
+		Severity:      finding.Severity.String(),
 		Location:      finding.Location,
 		Raw:           finding.Raw,
 		Provenance:    provenance,

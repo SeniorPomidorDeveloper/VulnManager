@@ -17,6 +17,13 @@ INSERT_FINDING = (
     "VALUES ('acme', %s, 'scope', 'p', 'c', 'id', 'sca', 't', 'd', 'HIGH', "
     "'{}', '{}', 'trivy@1', now())"
 )
+INSERT_FINDING_SEVERITY = (
+    'INSERT INTO finding (tenant_id, import_run_id, scope_key, product_id, '
+    'context_id, tool_finding_id, kind, title, description, severity_raw, '
+    'raw, provenance, algo_version, detected_at, severity) '
+    "VALUES ('acme', %s, 'scope', 'p', 'c', 'id', 'sca', 't', 'd', 'HIGH', "
+    "'{}', '{}', 'trivy@1', now(), %s)"
+)
 
 
 def test_report_key_is_unique(pgsql):
@@ -52,3 +59,23 @@ def test_finding_is_stored_for_an_existing_run(pgsql):
         'SELECT count(*) FROM finding WHERE import_run_id = %s', (run_id,),
     )
     assert cursor.fetchone()[0] == 1
+
+
+def test_finding_severity_defaults_to_unknown(pgsql):
+    cursor = pgsql[DATABASE].cursor()
+    cursor.execute(INSERT_RUN, ('completed',))
+    run_id = cursor.fetchone()[0]
+    cursor.execute(INSERT_FINDING, (run_id,))
+
+    cursor.execute('SELECT severity FROM finding')
+
+    assert cursor.fetchone()[0] == 'unknown'
+
+
+def test_unknown_severity_value_is_rejected(pgsql):
+    cursor = pgsql[DATABASE].cursor()
+    cursor.execute(INSERT_RUN, ('completed',))
+    run_id = cursor.fetchone()[0]
+
+    with pytest.raises(psycopg2.errors.CheckViolation):
+        cursor.execute(INSERT_FINDING_SEVERITY, (run_id, 'extreme'))
