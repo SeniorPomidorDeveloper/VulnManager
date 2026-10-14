@@ -15,22 +15,25 @@ func TestToolNormalizers(t *testing.T) {
 		in          model.Finding
 		wantSev     model.Severity
 		wantVuln    model.VulnID
+		wantPURL    model.PURL
 		wantPath    string
 		wantVersion normalizers.NormalizerVersion
 	}{
 		{
 			"trivy", normalizers.NewTrivy,
-			model.Finding{SeverityRaw: "HIGH", VulnIDRaw: "cve-2026-3449", Location: []byte(`{"target":"/app/package-lock.json"}`)},
+			model.Finding{SeverityRaw: "HIGH", VulnIDRaw: "cve-2026-3449", PURLRaw: "pkg:npm/%40Scope/Pkg@1", Location: []byte(`{"target":"/app/package-lock.json"}`)},
 			model.SeverityHigh,
 			model.VulnID{Source: "cve", Value: "CVE-2026-3449"},
+			"pkg:npm/%40scope/pkg@1",
 			`{"target":"package-lock.json"}`,
-			"severity@1+vulnid@1+path@1",
+			"severity@1+vulnid@1+component@1+path@1",
 		},
 		{
 			"sarif", normalizers.NewSARIF,
 			model.Finding{SeverityRaw: "error", Location: []byte(`{"uri":"/src/a.go"}`)},
 			model.SeverityHigh,
 			model.VulnID{},
+			"",
 			`{"uri":"a.go"}`,
 			"severity@1+path@1",
 		},
@@ -39,6 +42,7 @@ func TestToolNormalizers(t *testing.T) {
 			model.Finding{SeverityRaw: "warning", Location: []byte(`{"uri":"/app/a.go"}`)},
 			model.SeverityMedium,
 			model.VulnID{},
+			"",
 			`{"uri":"a.go"}`,
 			"severity@1+vulnid@1+path@1",
 		},
@@ -55,6 +59,9 @@ func TestToolNormalizers(t *testing.T) {
 			}
 			if got.Severity != c.wantSev || string(got.Location) != c.wantPath || n.Version() != c.wantVersion {
 				t.Fatalf("severity %v location %s version %s", got.Severity, got.Location, n.Version())
+			}
+			if got.Component.PURL != c.wantPURL {
+				t.Fatalf("component %+v, want purl %q", got.Component, c.wantPURL)
 			}
 			if got.VulnID != c.wantVuln {
 				t.Fatalf("vuln id %+v, want %+v", got.VulnID, c.wantVuln)

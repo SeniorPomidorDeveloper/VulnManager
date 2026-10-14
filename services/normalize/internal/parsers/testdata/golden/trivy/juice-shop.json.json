@@ -6,6 +6,7 @@
     "description": "Versions of the package @tootallnate/once before 3.0.1 are vulnerable to Incorrect Control Flow Scoping in promise resolving when AbortSignal option is used. The Promise remains in a permanently pending state after the signal is aborted, causing any await or .then() usage to hang indefinitely. This can cause a control-flow leak that can lead to stalled requests, blocked workers, or degraded application availability.",
     "severity_raw": "LOW",
     "vuln_id_raw": "CVE-2026-3449",
+    "purl_raw": "pkg:npm/%40tootallnate/once@1.1.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -23,6 +24,7 @@
     "description": "`base64url` allocates uninitialized Buffers when number is passed in input on Node.js 4.x and below",
     "severity_raw": "HIGH",
     "vuln_id_raw": "NSWG-ECO-428",
+    "purl_raw": "pkg:npm/base64url@0.0.6",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -40,6 +42,7 @@
     "description": "Versions of `base64url` before 3.0.0 are vulnerable to to out-of-bounds reads as it allocates uninitialized Buffers when number is passed in input on Node.js 4.x and below.\n\n\n## Recommendation\n\nUpdate to version 3.0.0 or later.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "GHSA-rvg8-pwq2-xj7q",
+    "purl_raw": "pkg:npm/base64url@0.0.6",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -57,6 +60,7 @@
     "description": "basic-ftp is an FTP client for Node.js. Prior to 6.2.1, Client.list() can be forced by a malicious or compromised FTP server to spend quadratic CPU time parsing a directory listing because the RE_LINE expression in src/parseListUnix.ts backtracks across adjacent variable-length owner and group fields when a long Unix-style line has a valid prefix but cannot satisfy the later size and date fields. parseList() selects a parser from the last nonblank line and then applies it to every line, so a normal final line can select the Unix parser while an earlier crafted line blocks the Node.js event loop and freezes the process. This issue is fixed in version 6.2.1.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-102990",
+    "purl_raw": "pkg:npm/basic-ftp@5.3.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -74,6 +78,7 @@
     "description": "crypto-js is a JavaScript library of crypto standards. Prior to version 4.2.0, crypto-js PBKDF2 is 1,000 times weaker than originally specified in 1993, and at least 1,300,000 times weaker than current industry standard. This is because it both defaults to SHA1, a cryptographic hash algorithm considered insecure since at least 2005, and defaults to one single iteration, a 'strength' or 'difficulty' value specified at 1,000 when specified in 1993. PBKDF2 relies on iteration count as a countermeasure to preimage and collision attacks. If used to protect passwords, the impact is high. If used to generate signatures, the impact is high. Version 4.2.0 contains a patch for this issue. As a workaround, configure crypto-js to use SHA256 with at least 250,000 iterations.",
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2023-46233",
+    "purl_raw": "pkg:npm/crypto-js@3.3.0",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -91,6 +96,7 @@
     "description": "crypto-js is a JavaScript library of crypto standards. Versions of crypto-js prior to 4.0.0 generate randomness in CryptoJS.lib.WordArray.random() using a custom variation of the Multiply-With-Carry pseudorandom number generator, seeded from Math.random(), instead of a cryptographically secure source. This generator was introduced in version 3.1.2-4 and remained present in nearly every 3.x release. Nominal requests for 128 or 256 bits of entropy through this function produce effective search spaces of approximately 2 to the 39th and 2 to the 47th possibilities, small enough to enumerate on commodity hardware. Downstream wallet applications that used CryptoJS.lib.WordArray.random() as the entropy source for BIP39 recovery phrases are affected, and an attacker who enumerates the reduced output space can recover the resulting private keys and control the associated funds. This issue is fixed in version 4.0.0.",
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2026-71851",
+    "purl_raw": "pkg:npm/crypto-js@3.3.0",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -108,6 +114,7 @@
     "description": "decode-uri-component through 0.4.1 is vulnerable to denial of service. The decode() function splits input on '%' producing N tokens and calls decodeComponents(), exhibiting super-linear parsing time: 200 '%ab' tokens takes approximately 0.7s, 700 tokens approximately 6s, and 1400 tokens approximately 33s. An attacker can cause significant CPU consumption and event-loop blocking via crafted input.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-45822",
+    "purl_raw": "pkg:npm/decode-uri-component@0.2.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -125,6 +132,7 @@
     "description": "The decompress package for Node.js extracts archives. Prior to 10.2.2 and 11.1.4, the default decompress(input, output) API relies on lexical containment checks that do not account for the kernel following a planted symlink chain. An attacker can supply a crafted archive containing chained symlink entries so that a later entry resolves outside the output directory. This allows files outside output to be read or written, and overwriting startup scripts or configuration can lead to remote code execution. The maintained @xhmikosr/decompress package is fixed in 10.2.2 and 11.1.4, but the separately affected unmaintained decompress package remains unpatched through 4.2.1. This vulnerability results from a bypass of the incomplete hardening for CVE-2026-53486. @xhmikosr/decompress is fixed in versions 10.2.2 and 11.1.4.",
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2026-101894",
+    "purl_raw": "pkg:npm/decompress@4.2.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -141,6 +149,7 @@
     "description": "The decompress package for Node.js extracts archives. Prior to 10.2.1 and 11.1.3, archive extraction can create files and links outside the target directory. When extracting an archive to a directory, a crafted archive can read or write files outside that directory because hardlink and symlink entries are created without checking where targets point, path containment used a string prefix comparison, and file modes failed to remove setuid, setgid, or sticky bits. This issue is fixed in @xhmikosr/decompress versions 10.2.1 and 11.1.3.",
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2026-53486",
+    "purl_raw": "pkg:npm/decompress@4.2.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -157,6 +166,7 @@
     "description": "All versions of the package decompress are vulnerable to Arbitrary File Write via Archive Extraction (Zip Slip) when extracting a ZIP archive containing two entries with the same path - the first being a symlink to an arbitrary target and the second being a regular file - the file content is written through the symlink to the target location outside the output directory. This is due to the microtask processing order that checks readlink for the second file before resolving symlink for the first file. An attacker can write arbitrary file on the host filesystem potentially leading to remote code execution by providing a specially crafted ZIP archive.\r\r**Note:**\r\rThis bypasses all existing path traversal protections including preventWritingThroughSymlink, added as a part of the fix for [CVE-2020-12265](https://security.snyk.io/vuln/SNYK-JS-DECOMPRESS-557358).",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-10732",
+    "purl_raw": "pkg:npm/decompress@4.2.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -173,6 +183,7 @@
     "description": "decompress before 4.2.2 allows arbitrary hardlink creation during archive extraction, enabling file read disclosure and file corruption. When processing hardlink entries (type === 'link'), the x.linkname field from the archive is passed directly to fs.link() without validation (index.js line 113). An attacker can craft an archive with a hardlink entry whose linkname is an absolute path to any file on the same filesystem. This creates a hardlink inside the extraction directory that shares the same inode as the target file, enabling both reading and overwriting the original file's content. Hardlinks are limited to files on the same filesystem and cannot target directories.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-39243",
+    "purl_raw": "pkg:npm/decompress@4.2.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -189,6 +200,7 @@
     "description": "In express-jwt (NPM package) up and including version 5.3.3, the algorithms entry to be specified in the configuration is not being enforced. When algorithms is not specified in the configuration, with the combination of jwks-rsa, it may lead to authorization bypass. You are affected by this vulnerability if all of the following conditions apply: - You are using express-jwt - You do not have **algorithms** configured in your express-jwt configuration. - You are using libraries such as jwks-rsa as the **secret**. You can fix this by specifying **algorithms** in the express-jwt configuration. See linked GHSA for example. This is also fixed in version 6.0.0.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2020-15084",
+    "purl_raw": "pkg:npm/express-jwt@0.1.3",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -206,6 +218,7 @@
     "description": "file-type detects the file type of a file, stream, or data. Prior to 21.3.1, a denial of service vulnerability exists in the ASF (WMV/WMA) file type detection parser. When parsing a crafted input where an ASF sub-header has a size field of zero, the parser enters an infinite loop. The payload value becomes negative (-24), causing tokenizer.ignore(payload) to move the read position backwards, so the same sub-header is read repeatedly forever. Any application that uses file-type to detect the type of untrusted/attacker-controlled input is affected. An attacker can stall the Node.js event loop with a 55-byte payload. Fixed in version 21.3.1.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-31808",
+    "purl_raw": "pkg:npm/file-type@16.5.4",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -223,6 +236,7 @@
     "description": "The got package before 12.1.0 (also fixed in 11.8.5) for Node.js allows a redirect to a UNIX socket.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2022-33987",
+    "purl_raw": "pkg:npm/got@8.3.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -240,6 +254,7 @@
     "description": "Handlebars provides the power necessary to let users build semantic templates. From 4.0.0 until 4.7.10, Handlebars lookupProperty returns Function.prototype.constructor before applying the prototype-access deny list because constructor is an own property of Function.prototype. When an attacker can render a controlled template with allowProtoMethodsByDefault enabled and an accessible function in the template context, the template can traverse from that function through its prototype to Function.prototype and then obtain the Function constructor through the own-property bypass. This permits attacker-controlled JavaScript to execute with the server application's privileges. This issue is fixed in version 4.7.10.",
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2026-106445",
+    "purl_raw": "pkg:npm/handlebars@4.7.9",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -257,6 +272,7 @@
     "description": "Handlebars provides the power necessary to let users build semantic templates. From 4.0.0 until 4.7.10, Handlebars.compile() and Handlebars.precompile() accept pre-parsed AST objects while validating only selected PathExpression, NumberLiteral, and BooleanLiteral values. This issue bypasses the AST validation introduced in version 4.7.9 for CVE-2026-33937. An attacker who can supply an object instead of a template string can place JavaScript expressions in unchecked values such as Program.blockParams.length, a non-PathExpression parameter depth, a non-string StringLiteral.value, or a non-string PathExpression.original. The compiler emits those values into generated JavaScript, causing code execution in the server process when compile output renders or wherever precompile output is loaded. Applications that pass only template strings are not affected. This issue is fixed in version 4.7.10.",
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2026-106446",
+    "purl_raw": "pkg:npm/handlebars@4.7.9",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -274,6 +290,7 @@
     "description": "Handlebars provides the power necessary to let users build semantic templates. From 4.0.0 until 4.7.10, Handlebars.precompile() uses quotedString() in lib/handlebars/compiler/code-gen.js to emit static template text into generated JavaScript without escaping sequences that terminate an enclosing HTML script element. When an application precompiles attacker-controlled template text and embeds the generated source directly in an inline script element, a closing script delimiter can end the element and cause following attacker-controlled markup to be parsed and executed. Ordinary server-side rendering and precompiled templates served as external JavaScript files are not affected. This issue is fixed in version 4.7.10.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-106444",
+    "purl_raw": "pkg:npm/handlebars@4.7.9",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -291,6 +308,7 @@
     "description": "This affects versions of the package http-cache-semantics before 4.1.1. The issue can be exploited via malicious request header values sent to a server, when that server reads the cache policy from the request using this library.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2022-25881",
+    "purl_raw": "pkg:npm/http-cache-semantics@3.8.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -308,6 +326,7 @@
     "description": "http-cache-semantics through 4.2.0 fails to properly validate security-zeroed cache entries when processing client max-stale directives, allowing unauthenticated attackers to retrieve cached responses belonging to other users. Attackers can request the same URL with a large max-stale value to obtain another user's Set-Cookie session credentials from shared-cache entries that were deliberately zeroed for security reasons.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-93748",
+    "purl_raw": "pkg:npm/http-cache-semantics@3.8.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -324,6 +343,7 @@
     "description": "In jsonwebtoken node module before 4.2.2 it is possible for an attacker to bypass verification when a token digitally signed with an asymmetric key (RS/ES family) of algorithms but instead the attacker send a token digitally signed with a symmetric algorithm (HS* family).",
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2015-9235",
+    "purl_raw": "pkg:npm/jsonwebtoken@0.1.0",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -341,6 +361,7 @@
     "description": "Versions `\u003c=8.5.1` of `jsonwebtoken` library could be misconfigured so that legacy, insecure key types are used for signature verification. For example, DSA keys could be used with the RS256 algorithm. You are affected if you are using an algorithm and a key type other than a combination listed in the GitHub Security Advisory as unaffected. This issue has been fixed, please update to version 9.0.0. This version validates for asymmetric key type and algorithm combinations. Please refer to the above mentioned algorithm / key type combinations for the valid secure configuration. After updating to version 9.0.0, if you still intend to continue with signing or verifying tokens using invalid key type/algorithm value combinations, you’ll need to set the `allowInvalidAsymmetricKeyTypes` option  to `true` in the `sign()` and/or `verify()` functions.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2022-23539",
+    "purl_raw": "pkg:npm/jsonwebtoken@0.1.0",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -358,6 +379,7 @@
     "description": "It is possible for an attacker to bypass verification when \"a token digitally signed with an asymetric key (RS/ES family) of algorithms but instead the attacker send a token digitally signed with a symmetric algorithm (HS* family)\" [1]",
     "severity_raw": "HIGH",
     "vuln_id_raw": "NSWG-ECO-17",
+    "purl_raw": "pkg:npm/jsonwebtoken@0.1.0",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -375,6 +397,7 @@
     "description": "In versions `\u003c=8.5.1` of `jsonwebtoken` library, lack of algorithm definition in the `jwt.verify()` function can lead to signature validation bypass due to defaulting to the `none` algorithm for signature verification. Users are affected if you do not specify algorithms in the `jwt.verify()` function. This issue has been fixed, please update to version 9.0.0 which removes the default support for the none algorithm in the `jwt.verify()` method. There will be no impact, if you update to version 9.0.0 and you don’t need to allow for the `none` algorithm. If you need 'none' algorithm, you have to explicitly specify that in `jwt.verify()` options.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2022-23540",
+    "purl_raw": "pkg:npm/jsonwebtoken@0.1.0",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -392,6 +415,7 @@
     "description": "jsonwebtoken is an implementation of JSON Web Tokens. Versions `\u003c= 8.5.1` of `jsonwebtoken` library can be misconfigured so that passing a poorly implemented key retrieval function referring to the `secretOrPublicKey` argument from the readme link will result in incorrect verification of tokens. There is a possibility of using a different algorithm and key combination in verification, other than the one that was used to sign the tokens. Specifically, tokens signed with an asymmetric public key could be verified with a symmetric HS256 algorithm. This can lead to successful validation of  forged tokens. If your application is supporting usage of both symmetric key and asymmetric key in jwt.verify() implementation with the same key retrieval function. This issue has been patched, please update to version 9.0.0.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2022-23541",
+    "purl_raw": "pkg:npm/jsonwebtoken@0.1.0",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -409,6 +433,7 @@
     "description": "In jsonwebtoken node module before 4.2.2 it is possible for an attacker to bypass verification when a token digitally signed with an asymmetric key (RS/ES family) of algorithms but instead the attacker send a token digitally signed with a symmetric algorithm (HS* family).",
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2015-9235",
+    "purl_raw": "pkg:npm/jsonwebtoken@0.4.0",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -426,6 +451,7 @@
     "description": "Versions `\u003c=8.5.1` of `jsonwebtoken` library could be misconfigured so that legacy, insecure key types are used for signature verification. For example, DSA keys could be used with the RS256 algorithm. You are affected if you are using an algorithm and a key type other than a combination listed in the GitHub Security Advisory as unaffected. This issue has been fixed, please update to version 9.0.0. This version validates for asymmetric key type and algorithm combinations. Please refer to the above mentioned algorithm / key type combinations for the valid secure configuration. After updating to version 9.0.0, if you still intend to continue with signing or verifying tokens using invalid key type/algorithm value combinations, you’ll need to set the `allowInvalidAsymmetricKeyTypes` option  to `true` in the `sign()` and/or `verify()` functions.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2022-23539",
+    "purl_raw": "pkg:npm/jsonwebtoken@0.4.0",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -443,6 +469,7 @@
     "description": "It is possible for an attacker to bypass verification when \"a token digitally signed with an asymetric key (RS/ES family) of algorithms but instead the attacker send a token digitally signed with a symmetric algorithm (HS* family)\" [1]",
     "severity_raw": "HIGH",
     "vuln_id_raw": "NSWG-ECO-17",
+    "purl_raw": "pkg:npm/jsonwebtoken@0.4.0",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -460,6 +487,7 @@
     "description": "In versions `\u003c=8.5.1` of `jsonwebtoken` library, lack of algorithm definition in the `jwt.verify()` function can lead to signature validation bypass due to defaulting to the `none` algorithm for signature verification. Users are affected if you do not specify algorithms in the `jwt.verify()` function. This issue has been fixed, please update to version 9.0.0 which removes the default support for the none algorithm in the `jwt.verify()` method. There will be no impact, if you update to version 9.0.0 and you don’t need to allow for the `none` algorithm. If you need 'none' algorithm, you have to explicitly specify that in `jwt.verify()` options.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2022-23540",
+    "purl_raw": "pkg:npm/jsonwebtoken@0.4.0",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -477,6 +505,7 @@
     "description": "jsonwebtoken is an implementation of JSON Web Tokens. Versions `\u003c= 8.5.1` of `jsonwebtoken` library can be misconfigured so that passing a poorly implemented key retrieval function referring to the `secretOrPublicKey` argument from the readme link will result in incorrect verification of tokens. There is a possibility of using a different algorithm and key combination in verification, other than the one that was used to sign the tokens. Specifically, tokens signed with an asymmetric public key could be verified with a symmetric HS256 algorithm. This can lead to successful validation of  forged tokens. If your application is supporting usage of both symmetric key and asymmetric key in jwt.verify() implementation with the same key retrieval function. This issue has been patched, please update to version 9.0.0.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2022-23541",
+    "purl_raw": "pkg:npm/jsonwebtoken@0.4.0",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -494,6 +523,7 @@
     "description": "Since \"algorithm\" isn't enforced in `jws.verify()`, a malicious user could choose what algorithm is sent to the server. If the server is expecting RSA but is sent HMAC-SHA with RSA's public key, the server will think the public key is actually an HMAC private key. This could be used to forge any data an attacker wants.\n\nIn addition, there is the `none` algorithm to be concerned about.  In versions prior to 3.0.0, verification of the token could be bypassed when the `alg` field is set to `none`.\n\n*Edit ( 7/29/16 ): A previous version of this advisory incorrectly stated that the vulnerability was patched in version 2.0.0 instead of 3.0.0. The advisory has been updated to reflect this new information. Thanks to Fabien Catteau for reporting the error.*",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2016-1000223",
+    "purl_raw": "pkg:npm/jws@0.2.6",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -511,6 +541,7 @@
     "description": "auth0/node-jws is a JSON Web Signature implementation for Node.js. In versions 3.2.2 and earlier and version 4.0.0, auth0/node-jws has an improper signature verification vulnerability when using the HS256 algorithm under specific conditions. Applications are affected when they use the jws.createVerify() function for HMAC algorithms and use user-provided data from the JSON Web Signature protected header or payload in HMAC secret lookup routines, which can allow attackers to bypass signature verification. This issue has been patched in versions 3.2.3 and 4.0.1.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2025-65945",
+    "purl_raw": "pkg:npm/jws@0.2.6",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -528,6 +559,7 @@
     "description": "Versions of lodash lower than 4.17.12 are vulnerable to Prototype Pollution. The function defaultsDeep could be tricked into adding or modifying properties of Object.prototype using a constructor payload.",
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2019-10744",
+    "purl_raw": "pkg:npm/lodash@2.4.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -545,6 +577,7 @@
     "description": "A prototype pollution vulnerability was found in lodash \u003c4.17.11 where the functions merge, mergeWith, and defaultsDeep can be tricked into adding or modifying properties of Object.prototype.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2018-16487",
+    "purl_raw": "pkg:npm/lodash@2.4.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -562,6 +595,7 @@
     "description": "Lodash versions prior to 4.17.21 are vulnerable to Command Injection via the template function.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2021-23337",
+    "purl_raw": "pkg:npm/lodash@2.4.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -579,6 +613,7 @@
     "description": "Impact:\n\nLodash versions 4.17.23 and earlier are vulnerable to prototype pollution in the _.unset and _.omit functions. The fix for (CVE-2025-13465: https://github.com/lodash/lodash/security/advisories/GHSA-xxjr-mmjv-4gpg) only guards against string key members, so an attacker can bypass the check by passing array-wrapped path segments. This allows deletion of properties from built-in prototypes such as Object.prototype, Number.prototype, and String.prototype.\n\nThe issue permits deletion of prototype properties but does not allow overwriting their original behavior.\n\nPatches:\n\nThis issue is patched in 4.18.0.\n\nWorkarounds:\n\nNone. Upgrade to the patched version.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-2950",
+    "purl_raw": "pkg:npm/lodash@2.4.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -596,6 +631,7 @@
     "description": "lodash node module before 4.17.5 suffers from a Modification of Assumed-Immutable Data (MAID) vulnerability via defaultsDeep, merge, and mergeWith functions, which allows a malicious user to modify the prototype of \"Object\" via __proto__, causing the addition or modification of an existing property that will exist on all objects.",
     "severity_raw": "LOW",
     "vuln_id_raw": "CVE-2018-3721",
+    "purl_raw": "pkg:npm/lodash@2.4.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -613,6 +649,7 @@
     "description": "All versions of `marsdb` are vulnerable to Command Injection. In the `DocumentMatcher` class, selectors on `$where` clauses are passed to a Function constructor unsanitized. This allows attackers to run arbitrary commands in the system when the function is executed.\n\n\n## Recommendation\n\nNo fix is currently available. Consider using an alternative package until a fix is made available.",
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "GHSA-5mrr-rgp6-x4gr",
+    "purl_raw": "pkg:npm/marsdb@0.6.11",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -629,6 +666,7 @@
     "description": "The messageformat package, an implementation of the Unicode MessageFormat 2 specification for JavaScript, is vulnerable to prototype pollution due to improper handling of message key paths in versions prior to 2.3.0. The flaw arises when processing nested message keys containing special characters (e.g., __proto__ ), which can lead to unintended modification of the JavaScript Object prototype. This vulnerability may allow a remote attacker to inject properties into the global object prototype via specially crafted message input, potentially causing denial of service or other undefined behaviors in applications using the affected component.",
     "severity_raw": "LOW",
     "vuln_id_raw": "CVE-2025-57349",
+    "purl_raw": "pkg:npm/messageformat@2.3.0",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -646,6 +684,7 @@
     "description": "minimatch is a minimal matching utility for converting glob expressions into JavaScript RegExp objects. Versions 10.2.0 and below are vulnerable to Regular Expression Denial of Service (ReDoS) when a glob pattern contains many consecutive * wildcards followed by a literal character that doesn't appear in the test string. Each * compiles to a separate [^/]*? regex group, and when the match fails, V8's regex engine backtracks exponentially across all possible splits. The time complexity is O(4^N) where N is the number of * characters. With N=15, a single minimatch() call takes ~2 seconds. With N=34, it hangs effectively forever. Any application that passes user-controlled strings to minimatch() as the pattern argument is vulnerable to DoS. This issue has been fixed in version 10.2.1.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-26996",
+    "purl_raw": "pkg:npm/minimatch@3.0.5",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -663,6 +702,7 @@
     "description": "minimatch is a minimal matching utility for converting glob expressions into JavaScript RegExp objects. Prior to version 10.2.3, 9.0.7, 8.0.6, 7.4.8, 6.2.2, 5.1.8, 4.2.5, and 3.1.3, `matchOne()` performs unbounded recursive backtracking when a glob pattern contains multiple non-adjacent `**` (GLOBSTAR) segments and the input path does not match. The time complexity is O(C(n, k)) -- binomial -- where `n` is the number of path segments and `k` is the number of globstars. With k=11 and n=30, a call to the default `minimatch()` API stalls for roughly 5 seconds. With k=13, it exceeds 15 seconds. No memoization or call budget exists to bound this behavior. Any application where an attacker can influence the glob pattern passed to `minimatch()` is vulnerable. The realistic attack surface includes build tools and task runners that accept user-supplied glob arguments (ESLint, Webpack, Rollup config), multi-tenant systems where one tenant configures glob-based rules that run in a shared process, admin or developer interfaces that accept ignore-rule or filter configuration as globs, and CI/CD pipelines that evaluate user-submitted config files containing glob patterns. An attacker who can place a crafted pattern into any of these paths can stall the Node.js event loop for tens of seconds per invocation. The pattern is 56 bytes for a 5-second stall and does not require authentication in contexts where pattern input is part of the feature. Versions 10.2.3, 9.0.7, 8.0.6, 7.4.8, 6.2.2, 5.1.8, 4.2.5, and 3.1.3 fix the issue.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-27903",
+    "purl_raw": "pkg:npm/minimatch@3.0.5",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -680,6 +720,7 @@
     "description": "minimatch is a minimal matching utility for converting glob expressions into JavaScript RegExp objects. Prior to version 10.2.3, 9.0.7, 8.0.6, 7.4.8, 6.2.2, 5.1.8, 4.2.5, and 3.1.4, nested `*()` extglobs produce regexps with nested unbounded quantifiers (e.g. `(?:(?:a|b)*)*`), which exhibit catastrophic backtracking in V8. With a 12-byte pattern `*(*(*(a|b)))` and an 18-byte non-matching input, `minimatch()` stalls for over 7 seconds. Adding a single nesting level or a few input characters pushes this to minutes. This is the most severe finding: it is triggered by the default `minimatch()` API with no special options, and the minimum viable pattern is only 12 bytes. The same issue affects `+()` extglobs equally. Versions 10.2.3, 9.0.7, 8.0.6, 7.4.8, 6.2.2, 5.1.8, 4.2.5, and 3.1.4 fix the issue.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-27904",
+    "purl_raw": "pkg:npm/minimatch@3.0.5",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -697,6 +738,7 @@
     "description": "The moment module before 2.19.3 for Node.js is prone to a regular expression denial of service via a crafted date string, a different vulnerability than CVE-2016-4055.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2017-18214",
+    "purl_raw": "pkg:npm/moment@2.0.0",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -714,6 +756,7 @@
     "description": "Moment.js is a JavaScript date library for parsing, validating, manipulating, and formatting dates. A path traversal vulnerability impacts npm (server) users of Moment.js between versions 1.0.1 and 2.29.1, especially if a user-provided locale string is directly used to switch moment locale. This problem is patched in 2.29.2, and the patch can be applied to all affected versions. As a workaround, sanitize the user-provided locale name before passing it to Moment.js.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2022-24785",
+    "purl_raw": "pkg:npm/moment@2.0.0",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -731,6 +774,7 @@
     "description": "The duration function in the moment package before 2.11.2 for Node.js allows remote attackers to cause a denial of service (CPU consumption) via a long string, aka a \"regular expression Denial of Service (ReDoS).\"",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2016-4055",
+    "purl_raw": "pkg:npm/moment@2.0.0",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -748,6 +792,7 @@
     "description": "This affects all versions of package notevil; all versions of package argencoders-notevil. It is vulnerable to Sandbox Escape leading to Prototype pollution. The package fails to restrict access to the main context, allowing an attacker to add or modify an object's prototype. **Note:** This vulnerability derives from an incomplete fix in [SNYK-JS-NOTEVIL-608878](https://security.snyk.io/vuln/SNYK-JS-NOTEVIL-608878).",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2021-23771",
+    "purl_raw": "pkg:npm/notevil@1.3.3",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -764,6 +809,7 @@
     "description": "The package sanitize-html before 2.7.1 are vulnerable to Regular Expression Denial of Service (ReDoS) due to insecure global regular expression replacement logic of HTML comment removal.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2022-25887",
+    "purl_raw": "pkg:npm/sanitize-html@1.4.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -781,6 +827,7 @@
     "description": "sanitize-html before 1.4.3 has XSS.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2016-1000237",
+    "purl_raw": "pkg:npm/sanitize-html@1.4.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -798,6 +845,7 @@
     "description": "Sanitize-html is a library for scrubbing html input of malicious values. Versions 1.11.1 and below are vulnerable to cross site scripting (XSS) in certain scenarios: If allowed at least one nonTextTags, the result is a potential XSS vulnerability.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2017-16016",
+    "purl_raw": "pkg:npm/sanitize-html@1.4.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -815,6 +863,7 @@
     "description": "`sanitize-html` prior to version 2.0.0-beta is vulnerable to Cross-site Scripting (XSS). The `sanitizeHtml()` function in `index.js` does not sanitize content when using the custom `transformTags` option, which is intended to convert attribute values into text. As a result, malicious input can be transformed into executable code.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2019-25225",
+    "purl_raw": "pkg:npm/sanitize-html@1.4.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -832,6 +881,7 @@
     "description": "Apostrophe Technologies sanitize-html before 2.3.1 does not properly handle internationalized domain name (IDN) which could allow an attacker to bypass hostname whitelist validation set by the \"allowedIframeHostnames\" option.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2021-26539",
+    "purl_raw": "pkg:npm/sanitize-html@1.4.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -849,6 +899,7 @@
     "description": "Apostrophe Technologies sanitize-html before 2.3.2 does not properly validate the hostnames set by the \"allowedIframeHostnames\" option when the \"allowIframeRelativeUrls\" is set to true, which allows attackers to bypass hostname whitelist for iframe element, related using an src value that starts with \"/\\\\example.com\".",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2021-26540",
+    "purl_raw": "pkg:npm/sanitize-html@1.4.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -866,6 +917,7 @@
     "description": "Versions of the package sanitize-html before 2.12.1 are vulnerable to Information Exposure when used on the backend and with the style attribute allowed, allowing enumeration of files in the system (including project dependencies). An attacker could exploit this vulnerability to gather details about the file system structure and dependencies of the targeted server.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2024-21501",
+    "purl_raw": "pkg:npm/sanitize-html@1.4.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -883,6 +935,7 @@
     "description": "ApostropheCMS is an open-source Node.js content management system. Prior to 2.17.6, sanitizeHtml() can pass disallowed executable markup through packages/sanitize-html/index.js when textarea or xmp is included in allowedTags because a literal solidus after the raw-text end-tag name is treated as text by htmlparser2 and the ontext handler emits that content without escaping, while a browser parses the following img onerror markup as active HTML. This issue is fixed in version 2.17.6.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-63670",
+    "purl_raw": "pkg:npm/sanitize-html@1.4.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -900,6 +953,7 @@
     "description": "Sanitize-html is a library for scrubbing html input of malicious values.\n\nVersions 1.11.1 and below are vulnerable to cross site scripting (XSS) in certain scenarios:\n\nIf allowed at least one nonTextTags, the result is a potential XSS vulnerability.\nPoC:\n\n```\nvar sanitizeHtml = require('sanitize-html');\n\nvar dirty = '!\u003ctextarea\u003e\u0026lt;/textarea\u0026gt;\u003csvg/onload=prompt`xs`\u0026gt;\u003c/textarea\u003e!';\nvar clean = sanitizeHtml(dirty, {\n    allowedTags: [ 'textarea' ]\n});\n\nconsole.log(clean);\n\n// !\u003ctextarea\u003e\u003c/textarea\u003e\u003csvg/onload=prompt`xs`\u003e\u003c/textarea\u003e!\n```",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "NSWG-ECO-154",
+    "purl_raw": "pkg:npm/sanitize-html@1.4.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -917,6 +971,7 @@
     "description": "sprintf-js through 1.1.3 passes unbounded precision specifiers to toFixed, toExponential, and toPrecision methods without validation, causing uncaught RangeError exceptions. Attackers who control format strings can inject precision values exceeding ECMAScript limits to abort calling operations with minimal payload.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-97058",
+    "purl_raw": "pkg:npm/sprintf-js@1.0.3",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -933,6 +988,7 @@
     "description": "sprintf-js through 1.1.3 passes unbounded precision specifiers to toFixed, toExponential, and toPrecision methods without validation, causing uncaught RangeError exceptions. Attackers who control format strings can inject precision values exceeding ECMAScript limits to abort calling operations with minimal payload.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-97058",
+    "purl_raw": "pkg:npm/sprintf-js@1.1.3",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -949,6 +1005,7 @@
     "description": "node-tar is a tar archive manipulation library for Node.js. Prior to 7.5.19, node-tar does not enforce hard upper bounds on total decompressed data, entry counts, or decompression ratio in extraction and parsing paths such as src/extract.ts, allowing a small crafted gzip bomb to exhaust disk space and CPU. This issue is fixed in version 7.5.19.",
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2026-59873",
+    "purl_raw": "pkg:npm/tar@6.2.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -966,6 +1023,7 @@
     "description": "node-tar is a Tar for Node.js. The node-tar library (\u003c= 7.5.2) fails to sanitize the linkpath of Link (hardlink) and SymbolicLink entries when preservePaths is false (the default secure behavior). This allows malicious archives to bypass the extraction root restriction, leading to Arbitrary File Overwrite via hardlinks and Symlink Poisoning via absolute symlink targets. This vulnerability is fixed in 7.5.3.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-23745",
+    "purl_raw": "pkg:npm/tar@6.2.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -983,6 +1041,7 @@
     "description": "node-tar,a Tar for Node.js, has a race condition vulnerability in versions up to and including 7.5.3. This is due to an incomplete handling of Unicode path collisions in the `path-reservations` system. On case-insensitive or normalization-insensitive filesystems (such as macOS APFS, In which it has been tested), the library fails to lock colliding paths (e.g., `ß` and `ss`), allowing them to be processed in parallel. This bypasses the library's internal concurrency safeguards and permits Symlink Poisoning attacks via race conditions. The library uses a `PathReservations` system to ensure that metadata checks and file operations for the same path are serialized. This prevents race conditions where one entry might clobber another concurrently. This is a Race Condition which enables Arbitrary File Overwrite. This vulnerability affects users and systems using node-tar on macOS (APFS/HFS+). Because of using `NFD` Unicode normalization (in which `ß` and `ss` are different), conflicting paths do not have their order properly preserved under filesystems that ignore Unicode normalization (e.g., APFS (in which `ß` causes an inode collision with `ss`)). This enables an attacker to circumvent internal parallelization locks (`PathReservations`) using conflicting filenames within a malicious tar archive. The patch in version 7.5.4 updates `path-reservations.js` to use a normalization form that matches the target filesystem's behavior (e.g., `NFKD`), followed by first `toLocaleLowerCase('en')` and then `toLocaleUpperCase('en')`. As a workaround, users who cannot upgrade promptly, and who are programmatically using `node-tar` to extract arbitrary tarball data should filter out all `SymbolicLink` entries (as npm does) to defend against arbitrary file writes via this file system entry name collision issue.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-23950",
+    "purl_raw": "pkg:npm/tar@6.2.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1000,6 +1059,7 @@
     "description": "node-tar,a Tar for Node.js, contains a vulnerability in versions prior to 7.5.7 where the security check for hardlink entries uses different path resolution semantics than the actual hardlink creation logic. This mismatch allows an attacker to craft a malicious TAR archive that bypasses path traversal protections and creates hardlinks to arbitrary files outside the extraction directory. Version 7.5.7 contains a fix for the issue.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-24842",
+    "purl_raw": "pkg:npm/tar@6.2.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1017,6 +1077,7 @@
     "description": "node-tar is a full-featured Tar for Node.js. When using default options in versions 7.5.7 and below, an attacker-controlled archive can create a hardlink inside the extraction directory that points to a file outside the extraction root, enabling arbitrary file read and write as the extracting user. Severity is high because the primitive bypasses path protections and turns archive extraction into a direct filesystem access primitive. This issue has been fixed in version 7.5.8.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-26960",
+    "purl_raw": "pkg:npm/tar@6.2.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1034,6 +1095,7 @@
     "description": "node-tar is a full-featured Tar for Node.js. Prior to version 7.5.10, tar can be tricked into creating a hardlink that points outside the extraction directory by using a drive-relative link target such as C:../target.txt, which enables file overwrite outside cwd during normal tar.x() extraction. This issue has been patched in version 7.5.10.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-29786",
+    "purl_raw": "pkg:npm/tar@6.2.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1051,6 +1113,7 @@
     "description": "node-tar is a full-featured Tar for Node.js. Prior to version 7.5.11, tar (npm) can be tricked into creating a symlink that points outside the extraction directory by using a drive-relative symlink target such as C:../../../target.txt, which enables file overwrite outside cwd during normal tar.x() extraction. This vulnerability is fixed in 7.5.11.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-31802",
+    "purl_raw": "pkg:npm/tar@6.2.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1068,6 +1131,7 @@
     "description": "node-tar is a tar archive manipulation library for Node.js. Prior to 7.5.18, tar.replace accepts a checksum-valid tar header with a negative base-256 encoded entry size, causing the archive scanner to make no progress while repeatedly parsing the same header. This issue is fixed in version 7.5.18.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-59874",
+    "purl_raw": "pkg:npm/tar@6.2.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1085,6 +1149,7 @@
     "description": "node-tar is a tar archive manipulation library for Node.js. Prior to 7.5.21, node-tar's filesFilter in src/list.ts uses the recursive mapHas helper to walk an archive entry path upward with path.dirname() and no segment cap when tar.t(...) or tar.x(...) receives a non-empty member-selection list. A crafted GNU L or PAX x long-path header with thousands of slash-separated segments reaches this.filter(entry.path, entry) in Parser[CONSUMEHEADER] in src/parse.ts before Unpack[CHECKPATH] applies maxDepth, causing an uncatchable RangeError stack overflow that terminates asynchronous and streaming Node.js consumers. This issue is fixed in version 7.5.21.",
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-73566",
+    "purl_raw": "pkg:npm/tar@6.2.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1102,6 +1167,7 @@
     "description": "node-tar is a full-featured Tar for Node.js. Prior to 7.5.16, tar (node-tar) applies a PAX extended header's size= record (and other PAX overrides) to the next header entry of any type, including intermediary metadata headers such as a GNU long-name (L) or long-link (K) entry. Per POSIX pax, a PAX extended header (x) describes the next file entry, not the intermediary extension headers that may sit between the x header and the file it annotates. Because node-tar lets the PAX size override the byte length of an intervening L/K/x header, an attacker can desynchronize node-tar's stream cursor relative to every other mainstream tar implementation (GNU tar, libarchive/bsdtar, Python tarfile, and the now-fixed tar-rs / astral-tokio-tar). The result is a tar parser interpretation differential (CWE-436): a single crafted archive yields a different set of members under node-tar than under the reference tar tools. An attacker can use this to hide a member from one parser while it is visible to another, which defeats security tooling whose scanner and extractor disagree on archive contents (e.g. a malware/secret scanner that lists entries with one library while a downstream step extracts with another) This vulnerability is fixed in 7.5.16.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-53655",
+    "purl_raw": "pkg:npm/tar@6.2.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1119,6 +1185,7 @@
     "description": "node-tar is a tar archive manipulation library for Node.js. Prior to 7.5.18, node-tar coerces all-digit PAX path and linkpath values in src/pax.ts to JavaScript numbers, causing downstream path handling such as normalizeWindowsPath(entry.path).split('/') to throw an uncaught TypeError. This issue is fixed in version 7.5.18.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-59871",
+    "purl_raw": "pkg:npm/tar@6.2.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1136,6 +1203,7 @@
     "description": "node-tar is a tar archive manipulation library for Node.js. Prior to 7.5.17, node-tar does not strip NUL bytes from PAX path and linkpath records in src/pax.ts, allowing a crafted archive with values to reach fs.lstat or fs.open and terminate the process with an uncaught exception. This issue is fixed in version 7.5.17.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-59875",
+    "purl_raw": "pkg:npm/tar@6.2.1",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1153,6 +1221,7 @@
     "description": "uuid is for the creation of RFC9562 (formerly RFC4122) UUIDs. Prior to 14.0.0, v3, v5, and v6 accept external output buffers but do not reject out-of-range writes (small buf or large offset). This allows silent partial writes into caller-provided buffers. This vulnerability is fixed in 14.0.0.",
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-41907",
+    "purl_raw": "pkg:npm/uuid@8.3.2",
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",

@@ -187,6 +187,7 @@ func (w *Worker) write(
 			Description:   raw.Description,
 			SeverityRaw:   raw.SeverityRaw,
 			VulnIDRaw:     raw.VulnIDRaw,
+			PURLRaw:       raw.PURLRaw,
 			Location:      raw.Location,
 			Raw:           raw.Raw,
 			Provenance:    model.Provenance{Tool: job.Tool, ScanID: job.ScanID},

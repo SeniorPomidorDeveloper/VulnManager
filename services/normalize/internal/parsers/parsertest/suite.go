@@ -31,6 +31,7 @@ type goldenFinding struct {
 	Description   string          `json:"description"`
 	SeverityRaw   string          `json:"severity_raw"`
 	VulnIDRaw     string          `json:"vuln_id_raw,omitempty"`
+	PURLRaw       string          `json:"purl_raw,omitempty"`
 	Location      json.RawMessage `json:"location"`
 	Diagnostics   []string        `json:"diagnostics"`
 }
@@ -122,6 +123,7 @@ func checkGolden(t *testing.T, path string, found []parsers.RawFinding) {
 			Description:   finding.Description,
 			SeverityRaw:   string(finding.SeverityRaw),
 			VulnIDRaw:     string(finding.VulnIDRaw),
+			PURLRaw:       string(finding.PURLRaw),
 			Location:      finding.Location,
 			Diagnostics:   diagnostics,
 		})

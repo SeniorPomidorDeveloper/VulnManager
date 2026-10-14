@@ -1,5 +1,5 @@
 package normalizers
 
 func NewTrivy() (Normalizer, error) {
-	return compose(severityStep(LabelScale()), vulnIDStep, pathStep("target"))
+	return compose(severityStep(LabelScale()), vulnIDStep, componentStep, pathStep("target"))
 }
