@@ -119,11 +119,18 @@ func (c *priorityCalculator) sourceRank(source model.CVSSSource) int {
 	return len(c.order)
 }
 
+var versionRanks = map[model.CVSSVersion]int{
+	model.CVSSVersion(cvss.V31): 0,
+	model.CVSSVersion(cvss.V30): 0,
+	model.CVSSVersion(cvss.V40): 1,
+	model.CVSSVersion(cvss.V2):  2,
+}
+
 func versionRank(version model.CVSSVersion) int {
-	if version == model.CVSSVersion(cvss.V2) {
-		return 1
+	if rank, known := versionRanks[version]; known {
+		return rank
 	}
-	return 0
+	return len(versionRanks)
 }
 
 func (c *priorityCalculator) fromLabel(finding *model.Finding) (model.Severity, bool) {

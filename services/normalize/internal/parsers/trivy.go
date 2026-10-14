@@ -57,8 +57,9 @@ type trivyVulnerability struct {
 }
 
 type trivyCVSS struct {
-	V2Vector string `json:"V2Vector"`
-	V3Vector string `json:"V3Vector"`
+	V2Vector  string `json:"V2Vector"`
+	V3Vector  string `json:"V3Vector"`
+	V40Vector string `json:"V40Vector"`
 }
 
 type trivyLocation struct {
@@ -171,7 +172,7 @@ func convertVulnerability(raw json.RawMessage, target, packageType string) RawFi
 func trivyCVSSCandidates(sources map[string]trivyCVSS) []model.CVSSCandidate {
 	var candidates []model.CVSSCandidate
 	for _, name := range slices.Sorted(maps.Keys(sources)) {
-		for _, vector := range []string{sources[name].V3Vector, sources[name].V2Vector} {
+		for _, vector := range []string{sources[name].V3Vector, sources[name].V40Vector, sources[name].V2Vector} {
 			if vector != "" {
 				candidates = append(candidates, model.CVSSCandidate{Source: model.CVSSSource(name), Vector: model.CVSSVectorRaw(vector)})
 			}

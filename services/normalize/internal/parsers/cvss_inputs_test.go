@@ -11,11 +11,14 @@ import (
 func TestTrivyCVSSCandidates_KeepEverySourceInStableOrder(t *testing.T) {
 	sources := map[string]trivyCVSS{
 		"redhat": {V3Vector: "v3-redhat"},
-		"nvd":    {V2Vector: "v2-nvd", V3Vector: "v3-nvd"},
+		"nvd":    {V2Vector: "v2-nvd", V3Vector: "v3-nvd", V40Vector: "v4-nvd"},
 		"ghsa":   {},
 	}
 	want := []model.CVSSCandidate{
-		{Source: "nvd", Vector: "v3-nvd"}, {Source: "nvd", Vector: "v2-nvd"}, {Source: "redhat", Vector: "v3-redhat"},
+		{Source: "nvd", Vector: "v3-nvd"},
+		{Source: "nvd", Vector: "v4-nvd"},
+		{Source: "nvd", Vector: "v2-nvd"},
+		{Source: "redhat", Vector: "v3-redhat"},
 	}
 	got := trivyCVSSCandidates(sources)
 	if !slices.Equal(got, want) {

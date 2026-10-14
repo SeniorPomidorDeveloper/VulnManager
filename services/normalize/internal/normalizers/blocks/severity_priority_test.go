@@ -129,6 +129,8 @@ func TestSeverity_CVSSPicksByVersionThenSourceOrder(t *testing.T) {
 		{"other order, other winner", blocks.CVSSSources("ghsa", "nvd"), []model.CVSSScore{cvssScore("ghsa", "3.1", 9.8), cvssScore("nvd", "3.1", 5)}, model.SeverityCritical},
 		{"v3 beats v2 of a better source", blocks.CVSSSources("nvd", "redhat"), []model.CVSSScore{cvssScore("nvd", "2.0", 9), cvssScore("redhat", "3.1", 3)}, model.SeverityLow},
 		{"unlisted sources go last by name", blocks.CVSSSources("nvd"), []model.CVSSScore{cvssScore("zzz", "3.1", 9.8), cvssScore("aaa", "3.1", 4)}, model.SeverityMedium},
+		{"v3 beats v4", blocks.CVSSSources("nvd"), []model.CVSSScore{cvssScore("nvd", "4.0", 9.8), cvssScore("nvd", "3.1", 5)}, model.SeverityMedium},
+		{"v4 beats v2", blocks.CVSSSources("nvd"), []model.CVSSScore{cvssScore("nvd", "2.0", 9), cvssScore("nvd", "4.0", 3)}, model.SeverityLow},
 		{"v2 bands have no critical", blocks.CVSSSources("nvd"), []model.CVSSScore{cvssScore("nvd", "2.0", 10)}, model.SeverityHigh},
 	}
 	for _, c := range cases {
