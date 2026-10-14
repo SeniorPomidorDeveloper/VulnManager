@@ -71,6 +71,9 @@ func Parse(vector string) (Result, error) {
 		}
 		version, body = Version(head[len(prefixV3):]), rest
 	}
+	if version == V40 {
+		return parseV4(vector, body)
+	}
 	vectorSpec, known := specs[version]
 	if !known {
 		return Result{}, fmt.Errorf("%w: unsupported version in %q", ErrInvalidVector, vector)

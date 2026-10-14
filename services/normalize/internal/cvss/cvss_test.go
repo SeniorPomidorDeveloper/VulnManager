@@ -98,10 +98,12 @@ type corpusReportShape struct {
 	Results []struct {
 		Vulnerabilities []struct {
 			CVSS map[string]struct {
-				V3Vector string  `json:"V3Vector"`
-				V3Score  float64 `json:"V3Score"`
-				V2Vector string  `json:"V2Vector"`
-				V2Score  float64 `json:"V2Score"`
+				V3Vector  string  `json:"V3Vector"`
+				V3Score   float64 `json:"V3Score"`
+				V2Vector  string  `json:"V2Vector"`
+				V2Score   float64 `json:"V2Score"`
+				V40Vector string  `json:"V40Vector"`
+				V40Score  float64 `json:"V40Score"`
 			} `json:"CVSS"`
 		} `json:"Vulnerabilities"`
 	} `json:"Results"`
@@ -122,7 +124,7 @@ func TestParse_MatchesScannerScoresOnCorpus(t *testing.T) {
 	for _, result := range report.Results {
 		for _, vulnerability := range result.Vulnerabilities {
 			for _, source := range vulnerability.CVSS {
-				for vector, want := range map[string]float64{source.V3Vector: source.V3Score, source.V2Vector: source.V2Score} {
+				for vector, want := range map[string]float64{source.V3Vector: source.V3Score, source.V2Vector: source.V2Score, source.V40Vector: source.V40Score} {
 					if vector == "" || vector == scannerDisagrees {
 						continue
 					}
@@ -144,5 +146,47 @@ func TestParse_DisagreesWithAWrongScannerScore(t *testing.T) {
 	got, err := cvss.Parse(scannerDisagrees)
 	if err != nil || got.BaseScore != 9.0 {
 		t.Fatalf("score %v err %v: the scanner reports 9.1, the specification gives 9.0", got.BaseScore, err)
+	}
+}
+
+func TestParse_V40(t *testing.T) {
+	cases := []struct {
+		vector string
+		want   cvss.Score
+	}{
+		{"CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N", 9.3},
+		{"CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:N/SC:N/SI:N/SA:N", 0},
+		{"CVSS:4.0/AV:L/AC:L/AT:N/PR:L/UI:N/VC:N/VI:N/VA:L/SC:N/SI:N/SA:N/E:P", 1.9},
+	}
+	for _, c := range cases {
+		t.Run(c.vector, func(t *testing.T) {
+			got, err := cvss.Parse(c.vector)
+			if err != nil || got.Version != cvss.V40 || got.BaseScore != c.want {
+				t.Fatalf("version %s score %v err %v, want %v", got.Version, got.BaseScore, err, c.want)
+			}
+		})
+	}
+}
+
+func TestParse_V40CanonicalVector(t *testing.T) {
+	got, err := cvss.Parse(" cvss:4.0/ui:n/av:n/ac:l/at:n/pr:n/vc:h/vi:h/va:h/sc:n/si:n/sa:n/e:x/s:p/u:green/cr:h ")
+	want := "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N/CR:H"
+	if err != nil || got.Vector != want {
+		t.Fatalf("vector %q err %v, want %q", got.Vector, err, want)
+	}
+}
+
+func TestParse_V40RejectsBrokenVectors(t *testing.T) {
+	const base = "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N"
+	for _, raw := range []string{
+		"CVSS:4.0/AV:N", base + "/AV:N", base + "/E:Q", base + "/U:Purple", base + "/ZZ:A",
+		"CVSS:4.0/AV:NA/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N",
+		"CVSS:4.0/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N",
+	} {
+		t.Run(raw, func(t *testing.T) {
+			if _, err := cvss.Parse(raw); !errors.Is(err, cvss.ErrInvalidVector) {
+				t.Fatalf("err=%v", err)
+			}
+		})
 	}
 }
