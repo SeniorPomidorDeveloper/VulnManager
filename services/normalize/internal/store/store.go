@@ -15,6 +15,11 @@ import (
 	"vulnmanager/services/normalize/gen/db"
 )
 
+const (
+	schemeCVSS    = "cvss"
+	schemeScanner = "scanner"
+)
+
 var ErrAlreadyCompleted = errors.New("store: report is already processed")
 
 type Store struct {
@@ -188,21 +193,46 @@ func (t *Tx) AddFinding(ctx context.Context, finding model.Finding) error {
 	if err != nil {
 		return fmt.Errorf("insert finding: %w", err)
 	}
-	return t.addCVSS(ctx, finding.Scope.TenantID, findingID, finding.CVSS)
+	return t.addRatings(ctx, finding.Scope.TenantID, findingID, ratingsOf(finding))
 }
 
-func (t *Tx) addCVSS(ctx context.Context, tenant model.TenantID, findingID uuid.UUID, scores []model.CVSSScore) error {
-	for _, score := range scores {
-		err := t.queries.InsertFindingCVSS(ctx, db.InsertFindingCVSSParams{
+type rating struct {
+	source  string
+	scheme  string
+	version string
+	vector  string
+	score   float64
+}
+
+func ratingsOf(finding model.Finding) []rating {
+	ratings := make([]rating, 0, len(finding.CVSS)+1)
+	for _, score := range finding.CVSS {
+		ratings = append(ratings, rating{
+			source: string(score.Source), scheme: schemeCVSS,
+			version: string(score.Version), vector: string(score.Vector), score: float64(score.BaseScore),
+		})
+	}
+	if finding.ScannerScore != nil {
+		ratings = append(ratings, rating{
+			source: string(finding.Provenance.Tool), scheme: schemeScanner, score: float64(*finding.ScannerScore),
+		})
+	}
+	return ratings
+}
+
+func (t *Tx) addRatings(ctx context.Context, tenant model.TenantID, findingID uuid.UUID, ratings []rating) error {
+	for _, r := range ratings {
+		err := t.queries.InsertFindingRating(ctx, db.InsertFindingRatingParams{
 			TenantID:  string(tenant),
 			FindingID: findingID,
-			Source:    string(score.Source),
-			Version:   string(score.Version),
-			Vector:    string(score.Vector),
-			Score:     float64(score.BaseScore),
+			Source:    r.source,
+			Scheme:    r.scheme,
+			Version:   r.version,
+			Vector:    r.vector,
+			Score:     r.score,
 		})
 		if err != nil {
-			return fmt.Errorf("insert finding cvss: %w", err)
+			return fmt.Errorf("insert finding rating: %w", err)
 		}
 	}
 	return nil

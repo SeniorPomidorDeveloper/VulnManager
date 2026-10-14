@@ -44,9 +44,8 @@ INSERT_FINDING_COMPONENT = (
     "VALUES ('acme', %s, 'scope', 'p', 'c', 'id', 'sca', 't', 'd', 'HIGH', "
     "'{}', '{}', 'trivy@1', now(), %s)"
 )
-INSERT_CVSS = (
-    'INSERT INTO finding_cvss (tenant_id, finding_id, source, version, '
-    'vector, score) '
-    "VALUES ('acme', %s, 'nvd', %s, "
-    "'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', %s)"
+INSERT_RATING = (
+    'INSERT INTO finding_rating (tenant_id, finding_id, source, scheme, '
+    'version, vector, score) '
+    "VALUES ('acme', %s, %s, %s, %s, %s, %s)"
 )
