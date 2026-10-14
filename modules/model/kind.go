@@ -66,6 +66,19 @@ func (s Severity) String() string {
 	return s.name
 }
 
+var severityRank = map[Severity]int{
+	SeverityInfo:     1,
+	SeverityUnknown:  2,
+	SeverityLow:      3,
+	SeverityMedium:   4,
+	SeverityHigh:     5,
+	SeverityCritical: 6,
+}
+
+func (s Severity) Rank() int {
+	return severityRank[s]
+}
+
 func ParseSeverity(s string) (Severity, error) {
 	if v, ok := severityByName[s]; ok {
 		return v, nil
