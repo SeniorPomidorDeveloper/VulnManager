@@ -6,5 +6,6 @@ import (
 )
 
 func semgrep() (Adapter, error) {
-	return adapterOf(parsers.NewSARIF(), normalizers.SARIF(normalizers.FromLabel))()
+	severity := normalizers.SeverityByPriority(normalizers.SARIFLevelScale(), nil, normalizers.FromLabel)
+	return adapterOf(parsers.NewSARIF(), normalizers.SARIF(severity))()
 }

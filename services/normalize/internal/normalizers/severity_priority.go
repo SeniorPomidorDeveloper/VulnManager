@@ -1,0 +1,111 @@
+package normalizers
+
+import (
+	"cmp"
+	"slices"
+	"strings"
+
+	"vulnmanager/modules/model"
+	"vulnmanager/services/normalize/internal/cvss"
+)
+
+const (
+	FromCVSS  SeveritySource = "cvss"
+	FromLabel SeveritySource = "label"
+)
+
+type (
+	SeveritySource string
+	SeverityPolicy []SeveritySource
+	CVSSOrder      []model.CVSSSource
+)
+
+type priorityCalculator struct {
+	scale     SeverityScale
+	order     CVSSOrder
+	policy    SeverityPolicy
+	resolvers map[SeveritySource]func(*model.Finding) (model.Severity, bool)
+}
+
+func CVSSFrom(sources ...string) CVSSOrder {
+	order := make(CVSSOrder, len(sources))
+	for i, source := range sources {
+		order[i] = model.CVSSSource(source)
+	}
+	return order
+}
+
+func SeverityByPriority(scale SeverityScale, order CVSSOrder, policy ...SeveritySource) SeverityCalculator {
+	c := &priorityCalculator{scale: scale, order: order, policy: policy}
+	c.resolvers = map[SeveritySource]func(*model.Finding) (model.Severity, bool){
+		FromCVSS:  c.fromCVSS,
+		FromLabel: c.fromLabel,
+	}
+	return c
+}
+
+func (c *priorityCalculator) Version() NormalizerVersion {
+	parts := make([]string, len(c.policy))
+	for i, source := range c.policy {
+		parts[i] = string(source)
+	}
+	version := NormalizerVersion(strings.Join(parts, ">"))
+	if len(c.order) > 0 {
+		sources := make([]string, len(c.order))
+		for i, source := range c.order {
+			sources[i] = string(source)
+		}
+		version += ";cvss=" + NormalizerVersion(strings.Join(sources, ","))
+	}
+	return version
+}
+
+func (c *priorityCalculator) Calculate(finding *model.Finding) (model.Severity, bool) {
+	for _, source := range c.policy {
+		resolve, known := c.resolvers[source]
+		if !known {
+			continue
+		}
+		if value, ok := resolve(finding); ok {
+			return value, true
+		}
+	}
+	return model.SeverityUnknown, false
+}
+
+func (c *priorityCalculator) fromCVSS(finding *model.Finding) (model.Severity, bool) {
+	if len(finding.CVSS) == 0 {
+		return model.SeverityUnknown, false
+	}
+	picked := slices.MinFunc(finding.CVSS, c.compareCVSS)
+	return cvss.SeverityFor(cvss.Score(picked.BaseScore), cvss.Version(picked.Version)), true
+}
+
+func (c *priorityCalculator) compareCVSS(a, b model.CVSSScore) int {
+	return cmp.Or(
+		cmp.Compare(versionRank(a.Version), versionRank(b.Version)),
+		cmp.Compare(c.sourceRank(a.Source), c.sourceRank(b.Source)),
+		cmp.Compare(a.Source, b.Source),
+		cmp.Compare(a.Vector, b.Vector),
+	)
+}
+
+func (c *priorityCalculator) sourceRank(source model.CVSSSource) int {
+	if index := slices.Index(c.order, source); index >= 0 {
+		return index
+	}
+	return len(c.order)
+}
+
+func versionRank(version model.CVSSVersion) int {
+	if version == model.CVSSVersion(cvss.V2) {
+		return 1
+	}
+	return 0
+}
+
+func (c *priorityCalculator) fromLabel(finding *model.Finding) (model.Severity, bool) {
+	label := model.SeverityRaw(strings.ToLower(strings.TrimSpace(string(finding.SeverityRaw))))
+	value, known := c.scale[label]
+	return value, known
+}

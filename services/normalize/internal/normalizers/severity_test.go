@@ -1,10 +1,13 @@
 package normalizers_test
 
 import (
+	"cmp"
 	"context"
+	"slices"
 	"testing"
 
 	"vulnmanager/modules/model"
+	"vulnmanager/services/normalize/internal/cvss"
 	"vulnmanager/services/normalize/internal/normalizers"
 	"vulnmanager/services/normalize/internal/normalizers/normtest"
 )
@@ -40,7 +43,7 @@ func TestSeverity_Label(t *testing.T) {
 		{"unknown label", finding("weird"), model.SeverityUnknown},
 		{"empty label", finding(""), model.SeverityUnknown},
 	}
-	n := normalizers.NewSeverity(testScale, normalizers.SeverityPolicy{normalizers.FromLabel}, nil)
+	n := normalizers.NewSeverity(normalizers.SeverityByPriority(testScale, nil, normalizers.FromLabel))
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			got := c.in
@@ -62,20 +65,20 @@ func TestSeverity_PolicyDecidesWhoWins(t *testing.T) {
 	both := withCVSS(finding("low"), cvssScore("nvd", "3.1", 9.8))
 	cases := []struct {
 		name   string
-		policy normalizers.SeverityPolicy
+		policy []normalizers.SeveritySource
 		in     model.Finding
 		want   model.Severity
 	}{
-		{"cvss first", normalizers.SeverityPolicy{vector, label}, both, model.SeverityCritical},
-		{"label first", normalizers.SeverityPolicy{label, vector}, both, model.SeverityLow},
-		{"skips missing cvss", normalizers.SeverityPolicy{vector, label}, finding("error"), model.SeverityHigh},
-		{"source not in policy is ignored", normalizers.SeverityPolicy{label}, both, model.SeverityLow},
-		{"nothing resolves", normalizers.SeverityPolicy{vector}, finding("low"), model.SeverityUnknown},
+		{"cvss first", []normalizers.SeveritySource{vector, label}, both, model.SeverityCritical},
+		{"label first", []normalizers.SeveritySource{label, vector}, both, model.SeverityLow},
+		{"skips missing cvss", []normalizers.SeveritySource{vector, label}, finding("error"), model.SeverityHigh},
+		{"source not in policy is ignored", []normalizers.SeveritySource{label}, both, model.SeverityLow},
+		{"nothing resolves", []normalizers.SeveritySource{vector}, finding("low"), model.SeverityUnknown},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			got := c.in
-			if err := normalizers.NewSeverity(testScale, c.policy, nil).Normalize(context.Background(), &got); err != nil {
+			if err := normalizers.NewSeverity(normalizers.SeverityByPriority(testScale, nil, c.policy...)).Normalize(context.Background(), &got); err != nil {
 				t.Fatalf("normalize: %v", err)
 			}
 			if got.Severity != c.want {
@@ -86,18 +89,18 @@ func TestSeverity_PolicyDecidesWhoWins(t *testing.T) {
 }
 
 func TestSeverity_VersionIncludesThePolicy(t *testing.T) {
-	policy := normalizers.SeverityPolicy{normalizers.FromCVSS, normalizers.FromLabel}
+	policy := []normalizers.SeveritySource{normalizers.FromCVSS, normalizers.FromLabel}
 	cases := map[string]normalizers.CVSSOrder{"2(cvss>label)": nil, "2(cvss>label;cvss=nvd,ghsa)": normalizers.CVSSFrom("nvd", "ghsa")}
 	for want, order := range cases {
-		if got := normalizers.NewSeverity(testScale, policy, order).Version(); got != normalizers.NormalizerVersion(want) {
+		if got := normalizers.NewSeverity(normalizers.SeverityByPriority(testScale, order, policy...)).Version(); got != normalizers.NormalizerVersion(want) {
 			t.Fatalf("version %q, want %q", got, want)
 		}
 	}
 }
 
 func TestSeverity_Suite(t *testing.T) {
-	policy := normalizers.SeverityPolicy{normalizers.FromCVSS, normalizers.FromLabel}
-	normtest.Suite(t, normalizers.NewSeverity(testScale, policy, normalizers.CVSSFrom("nvd")), []model.Finding{
+	policy := []normalizers.SeveritySource{normalizers.FromCVSS, normalizers.FromLabel}
+	normtest.Suite(t, normalizers.NewSeverity(normalizers.SeverityByPriority(testScale, normalizers.CVSSFrom("nvd"), policy...)), []model.Finding{
 		finding("error"), finding("weird"), withCVSS(finding("low"), cvssScore("nvd", "3.1", 7.5)),
 	})
 }
@@ -114,7 +117,7 @@ func TestStandardScales(t *testing.T) {
 }
 
 func TestSeverity_CVSSPicksByVersionThenSourceOrder(t *testing.T) {
-	policy := normalizers.SeverityPolicy{normalizers.FromCVSS}
+	policy := []normalizers.SeveritySource{normalizers.FromCVSS}
 	cases := []struct {
 		name   string
 		order  normalizers.CVSSOrder
@@ -130,12 +133,35 @@ func TestSeverity_CVSSPicksByVersionThenSourceOrder(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			got := withCVSS(finding(""), c.scores...)
-			if err := normalizers.NewSeverity(testScale, policy, c.order).Normalize(context.Background(), &got); err != nil {
+			if err := normalizers.NewSeverity(normalizers.SeverityByPriority(testScale, c.order, policy...)).Normalize(context.Background(), &got); err != nil {
 				t.Fatalf("normalize: %v", err)
 			}
 			if got.Severity != c.want {
 				t.Fatalf("got %v, want %v", got.Severity, c.want)
 			}
 		})
+	}
+}
+
+type maxScoreCalculator struct{}
+
+func (maxScoreCalculator) Version() normalizers.NormalizerVersion { return "max" }
+
+func (maxScoreCalculator) Calculate(f *model.Finding) (model.Severity, bool) {
+	if len(f.CVSS) == 0 {
+		return model.SeverityUnknown, false
+	}
+	top := slices.MaxFunc(f.CVSS, func(a, b model.CVSSScore) int { return cmp.Compare(a.BaseScore, b.BaseScore) })
+	return cvss.SeverityFor(cvss.Score(top.BaseScore), cvss.Version(top.Version)), true
+}
+
+func TestSeverity_AToolMayBringItsOwnCalculator(t *testing.T) {
+	n := normalizers.NewSeverity(maxScoreCalculator{})
+	got := withCVSS(finding(""), cvssScore("nvd", "3.1", 5), cvssScore("ghsa", "3.1", 9.8))
+	if err := n.Normalize(context.Background(), &got); err != nil {
+		t.Fatalf("normalize: %v", err)
+	}
+	if got.Severity != model.SeverityCritical || n.Version() != "2(max)" {
+		t.Fatalf("severity %v version %q", got.Severity, n.Version())
 	}
 }

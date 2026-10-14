@@ -1,7 +1,7 @@
 package normalizers
 
-func SARIF(policy ...SeveritySource) func() (Normalizer, error) {
+func SARIF(severity SeverityCalculator) func() (Normalizer, error) {
 	return func() (Normalizer, error) {
-		return compose(severityStep(SARIFLevelScale(), policy, nil), pathStep("uri"))
+		return compose(severityStep(severity), pathStep("uri"))
 	}
 }
