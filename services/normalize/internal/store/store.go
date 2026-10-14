@@ -163,7 +163,7 @@ func (t *Tx) AddFinding(ctx context.Context, finding model.Finding) error {
 	if err != nil {
 		return err
 	}
-	err = t.queries.InsertFinding(ctx, db.InsertFindingParams{
+	findingID, err := t.queries.InsertFinding(ctx, db.InsertFindingParams{
 		TenantID:      string(finding.Scope.TenantID),
 		ImportRunID:   runID,
 		ScopeKey:      string(finding.Scope.Key()),
@@ -187,6 +187,23 @@ func (t *Tx) AddFinding(ctx context.Context, finding model.Finding) error {
 	})
 	if err != nil {
 		return fmt.Errorf("insert finding: %w", err)
+	}
+	return t.addCVSS(ctx, finding.Scope.TenantID, findingID, finding.CVSS)
+}
+
+func (t *Tx) addCVSS(ctx context.Context, tenant model.TenantID, findingID uuid.UUID, scores []model.CVSSScore) error {
+	for _, score := range scores {
+		err := t.queries.InsertFindingCVSS(ctx, db.InsertFindingCVSSParams{
+			TenantID:  string(tenant),
+			FindingID: findingID,
+			Source:    string(score.Source),
+			Version:   string(score.Version),
+			Vector:    string(score.Vector),
+			Score:     float64(score.BaseScore),
+		})
+		if err != nil {
+			return fmt.Errorf("insert finding cvss: %w", err)
+		}
 	}
 	return nil
 }

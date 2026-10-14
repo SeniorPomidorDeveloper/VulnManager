@@ -21,6 +21,13 @@ COMPONENTS = (
     'ON r.id = f.import_run_id AND r.tenant_id = f.tenant_id '
     'WHERE r.raw_sha256 = %s'
 )
+CVSS_SCORES = (
+    'SELECT count(*), count(DISTINCT c.finding_id) FROM finding_cvss c '
+    'JOIN finding f ON f.id = c.finding_id AND f.tenant_id = c.tenant_id '
+    'JOIN import_run r ON r.id = f.import_run_id '
+    'AND r.tenant_id = f.tenant_id '
+    'WHERE r.raw_sha256 = %s'
+)
 
 
 def unique_report():
@@ -64,4 +71,15 @@ def test_trivy_findings_share_components(database):
     assert fetch_one(database, COMPONENTS, sha256) == (
         settings.EXPECTED_FINDINGS,
         settings.EXPECTED_COMPONENTS,
+    )
+
+
+def test_trivy_findings_keep_cvss_per_source(database):
+    _, answer = send(unique_report())
+
+    sha256 = answer['sha256']
+    waiting.until(lambda: fetch_one(database, COMPLETED_RUN, sha256))
+    assert fetch_one(database, CVSS_SCORES, sha256) == (
+        settings.EXPECTED_CVSS_ROWS,
+        settings.EXPECTED_CVSS_FINDINGS,
     )
