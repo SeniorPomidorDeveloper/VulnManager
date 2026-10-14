@@ -1,7 +1,6 @@
 package worker
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
@@ -13,13 +12,12 @@ import (
 	"github.com/google/uuid"
 
 	"vulnmanager/modules/model"
+	"vulnmanager/services/normalize/internal/adapters"
 	"vulnmanager/services/normalize/internal/normalizers"
 	"vulnmanager/services/normalize/internal/parsers"
 	"vulnmanager/services/normalize/internal/queue"
 	"vulnmanager/services/normalize/internal/store"
 )
-
-const headSize = 4096
 
 var ErrInvalidConfig = errors.New("worker: invalid config")
 
@@ -53,8 +51,7 @@ type Deps struct {
 	Jobs     JobSource
 	Raw      RawReader
 	Store    FindingStore
-	Parsers  *parsers.Registry
-	Profiles normalizers.Profiles
+	Adapters *adapters.Registry
 	Clock    func() time.Time
 	Log      *slog.Logger
 }
@@ -106,7 +103,7 @@ func (c Config) valid() bool {
 }
 
 func (d Deps) valid() bool {
-	return d.Jobs != nil && d.Raw != nil && d.Store != nil && d.Parsers != nil && d.Clock != nil
+	return d.Jobs != nil && d.Raw != nil && d.Store != nil && d.Adapters != nil && d.Clock != nil
 }
 
 func New(cfg Config, deps Deps) (*Worker, error) {
@@ -153,16 +150,11 @@ func (w *Worker) process(ctx context.Context, job queue.Job, run store.Run) erro
 	}
 	defer object.Close()
 
-	reader := bufio.NewReaderSize(object, headSize)
-	head, err := reader.Peek(headSize)
-	if err != nil && !errors.Is(err, io.EOF) {
-		return fmt.Errorf("read head: %w", err)
-	}
-	parser := w.deps.Parsers.Detect(head)
+	resolution := w.deps.Adapters.Resolve(job.Tool)
 	meta := parsers.ScanMeta{Tool: job.Tool, ScanID: job.ScanID}
 
 	err = w.deps.Store.InTx(ctx, func(tx Tx) error {
-		return w.write(ctx, tx, job, run, parser, reader, meta)
+		return w.write(ctx, tx, job, run, resolution, object, meta)
 	})
 	if errors.Is(err, store.ErrAlreadyCompleted) {
 		return nil
@@ -172,14 +164,14 @@ func (w *Worker) process(ctx context.Context, job queue.Job, run store.Run) erro
 
 func (w *Worker) write(
 	ctx context.Context, tx Tx, job queue.Job, run store.Run,
-	parser parsers.Parser, reader io.Reader, meta parsers.ScanMeta,
+	resolution adapters.Resolution, reader io.Reader, meta parsers.ScanMeta,
 ) error {
 	runID, err := tx.StartRun(ctx, run)
 	if err != nil {
 		return err
 	}
-	chain := w.deps.Profiles.For(job.Tool)
-	algoVersion := algoVersion(parser, chain)
+	parser, normalizer := resolution.Adapter.Parser, resolution.Adapter.Normalizer
+	algoVersion := algoVersion(parser, normalizer)
 	detectedAt := w.deps.Clock()
 	count := 0
 	for raw, err := range parser.Parse(ctx, reader, meta) {
@@ -200,9 +192,9 @@ func (w *Worker) write(
 			Provenance:    model.Provenance{Tool: job.Tool, ScanID: job.ScanID},
 			AlgoVersion:   algoVersion,
 			DetectedAt:    detectedAt,
-			Diagnostics:   raw.Diagnostics,
+			Diagnostics:   slices.Concat(raw.Diagnostics, resolution.Diagnostics),
 		}
-		if err := chain.Apply(ctx, &finding); err != nil {
+		if err := normalizer.Normalize(ctx, &finding); err != nil {
 			return fmt.Errorf("normalize: %w", err)
 		}
 		if err := tx.AddFinding(ctx, finding); err != nil {
@@ -213,10 +205,10 @@ func (w *Worker) write(
 	return tx.CompleteRun(ctx, runID, count)
 }
 
-func algoVersion(parser parsers.Parser, chain normalizers.Chain) string {
+func algoVersion(parser parsers.Parser, normalizer normalizers.Normalizer) string {
 	version := fmt.Sprintf("%s@%s", parser.ID(), parser.Version())
-	if steps := chain.Version(); steps != "" {
-		version += "/" + steps
+	if steps := normalizer.Version(); steps != "" {
+		version += "/" + string(steps)
 	}
 	return version
 }

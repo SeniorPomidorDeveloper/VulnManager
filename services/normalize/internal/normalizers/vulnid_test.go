@@ -99,3 +99,24 @@ func TestNewVulnFormat_RejectsBrokenSpecs(t *testing.T) {
 		})
 	}
 }
+
+func TestStandardVulnFormats(t *testing.T) {
+	formats, err := normalizers.StandardVulnFormats()
+	if err != nil {
+		t.Fatalf("formats: %v", err)
+	}
+	n := normalizers.NewVulnID(formats)
+	for raw, want := range map[model.VulnIDRaw]model.VulnID{
+		"cve-2026-3449":       {Source: "cve", Value: "CVE-2026-3449"},
+		"GHSA-RVG8-PWQ2-XJ7Q": {Source: "ghsa", Value: "GHSA-rvg8-pwq2-xj7q"},
+		"nswg-eco-428":        {Source: "nswg", Value: "NSWG-ECO-428"},
+		"osv-2020-111":        {Source: "osv", Value: "OSV-2020-111"},
+		"pysec-2021-1":        {Source: "pysec", Value: "PYSEC-2021-1"},
+		"BDU:2021-01234":      {Source: "bdu", Value: "BDU:2021-01234"},
+	} {
+		got := vulnFinding(raw)
+		if err := n.Normalize(context.Background(), &got); err != nil || got.VulnID != want {
+			t.Fatalf("%s: got %+v err=%v, want %+v", raw, got.VulnID, err, want)
+		}
+	}
+}
