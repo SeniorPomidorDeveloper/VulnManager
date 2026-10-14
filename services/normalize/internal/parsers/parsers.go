@@ -13,7 +13,6 @@ type (
 	FormatName    string
 	ParserID      string
 	ParserVersion string
-	SniffScore    float64
 )
 
 const (
@@ -50,6 +49,5 @@ type Parser interface {
 	ID() ParserID
 	Version() ParserVersion
 	Capabilities() Capabilities
-	Sniff(head []byte) SniffScore
 	Parse(ctx context.Context, r io.Reader, meta ScanMeta) iter.Seq2[RawFinding, error]
 }

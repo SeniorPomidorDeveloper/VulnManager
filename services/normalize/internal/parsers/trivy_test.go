@@ -14,7 +14,6 @@ import (
 func TestTrivy_Suite(t *testing.T) {
 	parsertest.Suite(t, parsers.NewTrivy(), parsertest.Options{
 		Corpus:    []string{corpus + "/trivy/0.75.0/juice-shop.json"},
-		Foreign:   []string{corpus + "/semgrep/1.180.0/juice-shop.sarif", corpus + "/rules/semgrep.yaml"},
 		GoldenDir: "testdata/golden/trivy",
 	})
 }

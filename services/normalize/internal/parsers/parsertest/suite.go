@@ -14,18 +14,14 @@ import (
 )
 
 const (
-	defaultMinSniff = 0.5
-	headSize        = 4096
-	goldenMode      = 0o644
+	goldenMode = 0o644
 )
 
 var update = flag.Bool("update", false, "rewrite golden files")
 
 type Options struct {
 	Corpus    []string
-	Foreign   []string
 	GoldenDir string
-	MinSniff  parsers.SniffScore
 }
 
 type goldenFinding struct {
@@ -41,9 +37,6 @@ type goldenFinding struct {
 
 func Suite(t *testing.T, p parsers.Parser, opts Options) {
 	t.Helper()
-	if opts.MinSniff == 0 {
-		opts.MinSniff = defaultMinSniff
-	}
 
 	t.Run("identity", func(t *testing.T) {
 		id, version := p.ID(), p.Version()
@@ -55,19 +48,6 @@ func Suite(t *testing.T, p parsers.Parser, opts Options) {
 		}
 		if again := p.Version(); again != version {
 			t.Fatalf("version is not stable: %q then %q", version, again)
-		}
-	})
-
-	t.Run("sniff", func(t *testing.T) {
-		for _, path := range opts.Corpus {
-			if got := p.Sniff(head(t, path)); got < opts.MinSniff {
-				t.Errorf("sniff(%s) = %v, want >= %v", path, got, opts.MinSniff)
-			}
-		}
-		for _, path := range opts.Foreign {
-			if got := p.Sniff(head(t, path)); got >= opts.MinSniff {
-				t.Errorf("sniff(%s) = %v, want < %v", path, got, opts.MinSniff)
-			}
 		}
 	})
 
@@ -172,10 +152,4 @@ func read(t *testing.T, path string) []byte {
 		t.Fatal(err)
 	}
 	return data
-}
-
-func head(t *testing.T, path string) []byte {
-	t.Helper()
-	data := read(t, path)
-	return data[:min(len(data), headSize)]
 }

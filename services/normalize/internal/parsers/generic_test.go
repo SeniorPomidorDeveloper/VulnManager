@@ -14,9 +14,7 @@ const corpus = "../../../../testdata/corpus"
 func TestGenericJSON_Suite(t *testing.T) {
 	parsertest.Suite(t, parsers.NewGenericJSON(), parsertest.Options{
 		Corpus:    []string{corpus + "/trivy/0.75.0/juice-shop.json", corpus + "/semgrep/1.180.0/juice-shop.sarif"},
-		Foreign:   []string{corpus + "/rules/semgrep.yaml"},
 		GoldenDir: "testdata/golden/generic-json",
-		MinSniff:  0.1,
 	})
 }
 

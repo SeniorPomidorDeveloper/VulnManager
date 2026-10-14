@@ -1,7 +1,6 @@
 package parsers
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -19,18 +18,11 @@ const (
 	trivyVersion ParserVersion = "1"
 
 	trivySchemaVersion = 2
-	trivyRequiredMark  = "schemaversion"
 
 	codeTrivySchema          = "trivy_schema_version"
 	codeInvalidVulnerability = "invalid_vulnerability"
 	codeUnsupportedSection   = "unsupported_section"
 )
-
-var trivySniffMarkers = map[string]SniffScore{
-	"artifacttype": 0.9,
-	`"results"`:    0.9,
-	`"trivy"`:      0.6,
-}
 
 type Trivy struct{}
 
@@ -83,20 +75,6 @@ func (Trivy) Version() ParserVersion {
 
 func (Trivy) Capabilities() Capabilities {
 	return Capabilities{Formats: []FormatName{FormatTrivyJSON}, Kinds: []model.Kind{model.KindSCA}}
-}
-
-func (Trivy) Sniff(head []byte) SniffScore {
-	lower := bytes.ToLower(head)
-	if !bytes.Contains(lower, []byte(trivyRequiredMark)) {
-		return 0
-	}
-	var best SniffScore
-	for marker, score := range trivySniffMarkers {
-		if bytes.Contains(lower, []byte(marker)) {
-			best = max(best, score)
-		}
-	}
-	return best
 }
 
 func (Trivy) Parse(ctx context.Context, r io.Reader, _ ScanMeta) iter.Seq2[RawFinding, error] {
