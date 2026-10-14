@@ -36,6 +36,7 @@ type RawFinding struct {
 	VulnIDRaw     model.VulnIDRaw
 	PURLRaw       model.PURLRaw
 	CVSSVectors   []model.CVSSCandidate
+	ScannerScore  *model.Score
 	Location      json.RawMessage
 	Raw           json.RawMessage
 	Diagnostics   model.Diagnostics

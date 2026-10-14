@@ -52,6 +52,9 @@ type sarifRule struct {
 	DefaultLevel     struct {
 		Level string `json:"level"`
 	} `json:"defaultConfiguration"`
+	Properties struct {
+		SecuritySeverity json.RawMessage `json:"security-severity"`
+	} `json:"properties"`
 }
 
 type sarifResult struct {
@@ -148,6 +151,7 @@ func convertResult(raw json.RawMessage, rules []sarifRule) RawFinding {
 		Title:         title(result, rule),
 		Description:   result.Message.Text,
 		SeverityRaw:   severity(result, rule),
+		ScannerScore:  securityScore(rule.Properties.SecuritySeverity),
 		Location:      location.json(),
 		Raw:           raw,
 		Diagnostics:   diagnostics,
@@ -164,6 +168,19 @@ func lookupRule(result sarifResult, rules []sarifRule) sarifRule {
 		}
 	}
 	return sarifRule{}
+}
+
+func securityScore(raw json.RawMessage) *model.Score {
+	var text string
+	if err := json.Unmarshal(raw, &text); err != nil {
+		text = string(raw)
+	}
+	value, err := strconv.ParseFloat(strings.TrimSpace(text), 64)
+	if err != nil {
+		return nil
+	}
+	score := model.Score(value)
+	return &score
 }
 
 func title(result sarifResult, rule sarifRule) string {

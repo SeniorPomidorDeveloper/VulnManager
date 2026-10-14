@@ -18,6 +18,7 @@ type Finding struct {
 	VulnIDRaw     VulnIDRaw
 	VulnID        VulnID
 	CVSSRaw       []CVSSCandidate
+	ScannerScore  *Score
 	PURLRaw       PURLRaw
 	Component     Component
 	CVSS          []CVSSScore

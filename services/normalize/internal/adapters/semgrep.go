@@ -6,7 +6,7 @@ import (
 )
 
 func semgrep() (Adapter, error) {
-	severity := blocks.SeverityByPriority(blocks.SARIFLevelScale(), nil, blocks.SeverityFromLabel)
+	severity := blocks.SeverityByPriority(blocks.SARIFLevelScale(), nil, blocks.SeverityFromScore, blocks.SeverityFromLabel)
 	normalizer := blocks.Compose(blocks.Severity(severity), blocks.Path("uri"))
 	return adapterOf(parsers.NewSARIF(), normalizer)()
 }

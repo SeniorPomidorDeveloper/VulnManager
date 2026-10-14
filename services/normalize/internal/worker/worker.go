@@ -189,6 +189,7 @@ func (w *Worker) write(
 			VulnIDRaw:     raw.VulnIDRaw,
 			PURLRaw:       raw.PURLRaw,
 			CVSSRaw:       raw.CVSSVectors,
+			ScannerScore:  raw.ScannerScore,
 			Location:      raw.Location,
 			Raw:           raw.Raw,
 			Provenance:    model.Provenance{Tool: job.Tool, ScanID: job.ScanID},
