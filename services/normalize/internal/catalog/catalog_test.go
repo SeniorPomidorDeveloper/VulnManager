@@ -10,8 +10,11 @@ import (
 	"vulnmanager/services/normalize/internal/catalog"
 )
 
+const formatsYAML = "formats:\n  - {source: cve, prefix: 'CVE-', body: '\\d+', case: upper}\n"
+
 func fixture(scale, profile string) fstest.MapFS {
 	return fstest.MapFS{
+		"vuln_id_formats.yaml":       {Data: []byte(formatsYAML)},
 		"severity_maps/default.yaml": {Data: []byte(scale)},
 		"severity_maps/newtool.yaml": {Data: []byte("scale:\n  Sev-1: critical\n")},
 		"tool_profiles/default.yaml": {Data: []byte(profile)},
@@ -61,6 +64,7 @@ func TestLoad_RejectsBrokenFiles(t *testing.T) {
 
 func TestLoad_RequiresDefaults(t *testing.T) {
 	_, err := catalog.Load(fstest.MapFS{
+		"vuln_id_formats.yaml":     {Data: []byte(formatsYAML)},
 		"severity_maps/other.yaml": {Data: []byte("scale: {}\n")},
 		"tool_profiles/other.yaml": {Data: []byte("chain: []\n")},
 	})
@@ -74,7 +78,24 @@ func TestLoad_EmbeddedData(t *testing.T) {
 	if err != nil {
 		t.Fatalf("embedded data: %v", err)
 	}
-	if loaded.Scales.Default["error"] != model.SeverityHigh || len(loaded.Profiles.Default) == 0 {
+	if loaded.Scales.Default["error"] != model.SeverityHigh || len(loaded.Profiles.Default) == 0 || len(loaded.VulnFormats) == 0 {
 		t.Fatalf("unexpected embedded catalog %+v", loaded)
+	}
+}
+
+func TestLoad_RejectsBrokenVulnFormats(t *testing.T) {
+	cases := map[string]string{
+		"duplicate prefix": "formats:\n  - {source: a, prefix: 'X-', body: '.+', case: keep}\n  - {source: b, prefix: 'x-', body: '.+', case: keep}\n",
+		"unknown case":     "formats:\n  - {source: a, prefix: 'X-', body: '.+', case: title}\n",
+		"unknown field":    "formats:\n  - {source: a, prefix: 'X-', body: '.+', case: keep, extra: 1}\n",
+	}
+	for name, yamlText := range cases {
+		t.Run(name, func(t *testing.T) {
+			files := fixture("scale: {}\n", "chain: [severity]\n")
+			files["vuln_id_formats.yaml"] = &fstest.MapFile{Data: []byte(yamlText)}
+			if _, err := catalog.Load(files); err == nil {
+				t.Fatal("want error")
+			}
+		})
 	}
 }

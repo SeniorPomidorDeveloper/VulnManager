@@ -172,6 +172,7 @@ func convertVulnerability(raw json.RawMessage, target, packageType string) RawFi
 		Title:       vulnerabilityTitle(vulnerability),
 		Description: vulnerability.Description,
 		SeverityRaw: model.SeverityRaw(vulnerability.Severity),
+		VulnIDRaw:   model.VulnIDRaw(vulnerability.VulnerabilityID),
 		Location:    location,
 		Raw:         raw,
 	}

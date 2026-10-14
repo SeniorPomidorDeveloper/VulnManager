@@ -151,8 +151,13 @@ func newProfiles() (normalizers.Profiles, error) {
 		return normalizers.Profiles{}, fmt.Errorf("catalog: %w", err)
 	}
 	registry := normalizers.NewRegistry()
-	if err := registry.Register(normalizers.NewSeverity(loaded.Scales)); err != nil {
-		return normalizers.Profiles{}, fmt.Errorf("normalizers: %w", err)
+	for _, normalizer := range []normalizers.Normalizer{
+		normalizers.NewSeverity(loaded.Scales),
+		normalizers.NewVulnID(loaded.VulnFormats),
+	} {
+		if err := registry.Register(normalizer); err != nil {
+			return normalizers.Profiles{}, fmt.Errorf("normalizers: %w", err)
+		}
 	}
 	profiles, err := registry.Profiles(loaded.Profiles)
 	if err != nil {
