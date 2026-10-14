@@ -17,14 +17,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"vulnmanager/services/normalize/data"
 	"vulnmanager/services/normalize/gen/db"
-	"vulnmanager/services/normalize/internal/catalog"
+	"vulnmanager/services/normalize/internal/adapters"
 	"vulnmanager/services/normalize/internal/config"
 	"vulnmanager/services/normalize/internal/consumer"
 	"vulnmanager/services/normalize/internal/metrics"
-	"vulnmanager/services/normalize/internal/normalizers"
-	"vulnmanager/services/normalize/internal/parsers"
 	"vulnmanager/services/normalize/internal/queue"
 	"vulnmanager/services/normalize/internal/rawread"
 	"vulnmanager/services/normalize/internal/store"
@@ -106,16 +103,9 @@ func newWorker(cfg config.Config, pool *pgxpool.Pool, log *slog.Logger) (*worker
 		return nil, nil, fmt.Errorf("rawstore: %w", err)
 	}
 
-	registry := parsers.NewRegistry(parsers.NewGenericJSON())
-	for _, parser := range []parsers.Parser{parsers.NewSARIF(), parsers.NewTrivy()} {
-		if err := registry.Register(parser); err != nil {
-			return nil, nil, fmt.Errorf("parsers: %w", err)
-		}
-	}
-
-	profiles, err := newProfiles()
+	registry, err := adapters.Builtin()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("adapters: %w", err)
 	}
 
 	reg := prometheus.NewRegistry()
@@ -133,8 +123,7 @@ func newWorker(cfg config.Config, pool *pgxpool.Pool, log *slog.Logger) (*worker
 			Jobs:     m.WrapJobs(queue.New(db.New(pool)), time.Now),
 			Raw:      raw,
 			Store:    m.WrapStore(worker.NewStore(store.New(pool))),
-			Parsers:  registry,
-			Profiles: profiles,
+			Adapters: registry,
 			Clock:    time.Now,
 			Log:      log,
 		},
@@ -143,28 +132,6 @@ func newWorker(cfg config.Config, pool *pgxpool.Pool, log *slog.Logger) (*worker
 		return nil, nil, fmt.Errorf("worker: %w", err)
 	}
 	return w, reg, nil
-}
-
-func newProfiles() (normalizers.Profiles, error) {
-	loaded, err := catalog.Load(data.FS)
-	if err != nil {
-		return normalizers.Profiles{}, fmt.Errorf("catalog: %w", err)
-	}
-	registry := normalizers.NewRegistry()
-	for _, normalizer := range []normalizers.Normalizer{
-		normalizers.NewSeverity(loaded.Scales),
-		normalizers.NewVulnID(loaded.VulnFormats),
-		normalizers.NewPath(loaded.PathRules),
-	} {
-		if err := registry.Register(normalizer); err != nil {
-			return normalizers.Profiles{}, fmt.Errorf("normalizers: %w", err)
-		}
-	}
-	profiles, err := registry.Profiles(loaded.Profiles)
-	if err != nil {
-		return normalizers.Profiles{}, fmt.Errorf("profiles: %w", err)
-	}
-	return profiles, nil
 }
 
 func newMux(reg *prometheus.Registry) *http.ServeMux {

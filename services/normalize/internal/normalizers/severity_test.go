@@ -9,23 +9,14 @@ import (
 	"vulnmanager/services/normalize/internal/normalizers/normtest"
 )
 
-var testScales = normalizers.SeverityScales{
-	ByTool: map[model.ToolName]normalizers.SeverityScale{
-		"semgrep": {"error": model.SeverityHigh, "warning": model.SeverityMedium},
-	},
-	Default: normalizers.SeverityScale{
-		"critical": model.SeverityCritical,
-		"high":     model.SeverityHigh,
-		"low":      model.SeverityLow,
-	},
+var testScale = normalizers.SeverityScale{
+	"error":    model.SeverityHigh,
+	"warning":  model.SeverityMedium,
+	"critical": model.SeverityCritical,
 }
 
-func finding(tool model.ToolName, raw model.SeverityRaw) model.Finding {
-	return model.Finding{
-		ToolFindingID: model.ToolFindingID(string(tool) + "/" + string(raw)),
-		SeverityRaw:   raw,
-		Provenance:    model.Provenance{Tool: tool},
-	}
+func finding(raw model.SeverityRaw) model.Finding {
+	return model.Finding{ToolFindingID: model.ToolFindingID("id/" + string(raw)), SeverityRaw: raw}
 }
 
 func TestSeverity_Normalize(t *testing.T) {
@@ -34,18 +25,17 @@ func TestSeverity_Normalize(t *testing.T) {
 		in   model.Finding
 		want model.Severity
 	}{
-		{"tool scale", finding("semgrep", "ERROR"), model.SeverityHigh},
-		{"tool scale ignores default labels", finding("semgrep", "critical"), model.SeverityUnknown},
-		{"default scale", finding("trivy", " Critical "), model.SeverityCritical},
-		{"unknown label", finding("trivy", "weird"), model.SeverityUnknown},
-		{"empty label", finding("trivy", ""), model.SeverityUnknown},
+		{"label", finding("ERROR"), model.SeverityHigh},
+		{"trimmed", finding(" Critical "), model.SeverityCritical},
+		{"unknown label", finding("weird"), model.SeverityUnknown},
+		{"empty label", finding(""), model.SeverityUnknown},
 	}
-	n := normalizers.NewSeverity(testScales)
+	n := normalizers.NewSeverity(testScale)
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			got := c.in
 			if err := n.Normalize(context.Background(), &got); err != nil {
-				t.Fatalf("normalizers: %v", err)
+				t.Fatalf("normalize: %v", err)
 			}
 			if got.Severity != c.want {
 				t.Fatalf("got %v, want %v", got.Severity, c.want)
@@ -58,9 +48,20 @@ func TestSeverity_Normalize(t *testing.T) {
 }
 
 func TestSeverity_Suite(t *testing.T) {
-	normtest.Suite(t, normalizers.NewSeverity(testScales), []model.Finding{
-		finding("semgrep", "error"),
-		finding("trivy", "HIGH"),
-		finding("trivy", "weird"),
+	normtest.Suite(t, normalizers.NewSeverity(testScale), []model.Finding{
+		finding("error"),
+		finding("CRITICAL"),
+		finding("weird"),
 	})
+}
+
+func TestStandardScales(t *testing.T) {
+	merged := normalizers.MergeScales(normalizers.LabelScale(), normalizers.SARIFLevelScale())
+	for label, want := range map[model.SeverityRaw]model.Severity{
+		"critical": model.SeverityCritical, "moderate": model.SeverityMedium, "error": model.SeverityHigh, "note": model.SeverityLow,
+	} {
+		if merged[label] != want {
+			t.Fatalf("%s: got %v, want %v", label, merged[label], want)
+		}
+	}
 }

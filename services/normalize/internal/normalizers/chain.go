@@ -8,12 +8,10 @@ import (
 	"vulnmanager/modules/model"
 )
 
+const ChainID NormalizerID = "chain"
+
 type Chain struct {
 	steps []Normalizer
-}
-
-type Registry struct {
-	byID map[NormalizerID]Normalizer
 }
 
 func NewChain(steps ...Normalizer) (Chain, error) {
@@ -27,7 +25,15 @@ func NewChain(steps ...Normalizer) (Chain, error) {
 	return Chain{steps: append([]Normalizer(nil), steps...)}, nil
 }
 
-func (c Chain) Apply(ctx context.Context, finding *model.Finding) error {
+func (Chain) ID() NormalizerID {
+	return ChainID
+}
+
+func (Chain) Applies(model.Kind) bool {
+	return true
+}
+
+func (c Chain) Normalize(ctx context.Context, finding *model.Finding) error {
 	for _, step := range c.steps {
 		if !step.Applies(finding.Kind) {
 			continue
@@ -39,34 +45,10 @@ func (c Chain) Apply(ctx context.Context, finding *model.Finding) error {
 	return nil
 }
 
-func (c Chain) Version() string {
+func (c Chain) Version() NormalizerVersion {
 	parts := make([]string, len(c.steps))
 	for i, step := range c.steps {
 		parts[i] = fmt.Sprintf("%s@%s", step.ID(), step.Version())
 	}
-	return strings.Join(parts, "+")
-}
-
-func NewRegistry() *Registry {
-	return &Registry{byID: make(map[NormalizerID]Normalizer)}
-}
-
-func (r *Registry) Register(n Normalizer) error {
-	if _, dup := r.byID[n.ID()]; dup {
-		return fmt.Errorf("%w: %q", ErrDuplicateNormalizer, n.ID())
-	}
-	r.byID[n.ID()] = n
-	return nil
-}
-
-func (r *Registry) Chain(ids ...NormalizerID) (Chain, error) {
-	steps := make([]Normalizer, 0, len(ids))
-	for _, id := range ids {
-		n, ok := r.byID[id]
-		if !ok {
-			return Chain{}, fmt.Errorf("%w: %q", ErrUnknownNormalizer, id)
-		}
-		steps = append(steps, n)
-	}
-	return NewChain(steps...)
+	return NormalizerVersion(strings.Join(parts, "+"))
 }

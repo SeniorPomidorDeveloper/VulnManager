@@ -24,15 +24,15 @@ const (
 var ErrInvalidPathRules = errors.New("normalizers: invalid path rules")
 
 type PathRules struct {
-	fields   []string
 	prefixes [][]string
 }
 
 type pathNormalizer struct {
-	rules PathRules
+	rules  PathRules
+	fields []string
 }
 
-func NewPathRules(fields, prefixes []string) (PathRules, error) {
+func NewPathRules(prefixes []string) (PathRules, error) {
 	parsed := make([][]string, 0, len(prefixes))
 	for _, prefix := range prefixes {
 		segments, err := prefixSegments(prefix)
@@ -42,7 +42,7 @@ func NewPathRules(fields, prefixes []string) (PathRules, error) {
 		parsed = append(parsed, segments)
 	}
 	slices.SortStableFunc(parsed, func(a, b []string) int { return len(b) - len(a) })
-	return PathRules{fields: slices.Clone(fields), prefixes: parsed}, nil
+	return PathRules{prefixes: parsed}, nil
 }
 
 func prefixSegments(prefix string) ([]string, error) {
@@ -86,8 +86,8 @@ func matchesPrefix(segments, prefix []string) bool {
 	return true
 }
 
-func NewPath(rules PathRules) Normalizer {
-	return pathNormalizer{rules: rules}
+func NewPath(rules PathRules, fields ...string) Normalizer {
+	return pathNormalizer{rules: rules, fields: slices.Clone(fields)}
 }
 
 func (pathNormalizer) ID() NormalizerID {
@@ -108,7 +108,7 @@ func (n pathNormalizer) Normalize(_ context.Context, finding *model.Finding) err
 		return nil
 	}
 	changed := false
-	for _, field := range n.rules.fields {
+	for _, field := range n.fields {
 		var value string
 		if raw, ok := location[field]; !ok || json.Unmarshal(raw, &value) != nil {
 			continue

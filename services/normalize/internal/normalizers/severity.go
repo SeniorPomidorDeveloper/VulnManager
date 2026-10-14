@@ -2,6 +2,7 @@ package normalizers
 
 import (
 	"context"
+	"maps"
 	"strings"
 
 	"vulnmanager/modules/model"
@@ -17,17 +18,42 @@ const codeUnknownSeverity = "unknown_severity"
 
 type SeverityScale map[model.SeverityRaw]model.Severity
 
-type SeverityScales struct {
-	ByTool  map[model.ToolName]SeverityScale
-	Default SeverityScale
-}
-
 type severity struct {
-	scales SeverityScales
+	scale SeverityScale
 }
 
-func NewSeverity(scales SeverityScales) Normalizer {
-	return severity{scales: scales}
+func LabelScale() SeverityScale {
+	return SeverityScale{
+		"critical":      model.SeverityCritical,
+		"high":          model.SeverityHigh,
+		"medium":        model.SeverityMedium,
+		"moderate":      model.SeverityMedium,
+		"low":           model.SeverityLow,
+		"info":          model.SeverityInfo,
+		"informational": model.SeverityInfo,
+		"unknown":       model.SeverityUnknown,
+	}
+}
+
+func SARIFLevelScale() SeverityScale {
+	return SeverityScale{
+		"error":   model.SeverityHigh,
+		"warning": model.SeverityMedium,
+		"note":    model.SeverityLow,
+		"none":    model.SeverityInfo,
+	}
+}
+
+func MergeScales(scales ...SeverityScale) SeverityScale {
+	merged := SeverityScale{}
+	for _, scale := range scales {
+		maps.Copy(merged, scale)
+	}
+	return merged
+}
+
+func NewSeverity(scale SeverityScale) Normalizer {
+	return severity{scale: scale}
 }
 
 func (severity) ID() NormalizerID {
@@ -44,11 +70,7 @@ func (severity) Applies(model.Kind) bool {
 
 func (s severity) Normalize(_ context.Context, finding *model.Finding) error {
 	label := model.SeverityRaw(strings.ToLower(strings.TrimSpace(string(finding.SeverityRaw))))
-	scale, ok := s.scales.ByTool[finding.Provenance.Tool]
-	if !ok {
-		scale = s.scales.Default
-	}
-	value, known := scale[label]
+	value, known := s.scale[label]
 	finding.Severity = value
 	if !known && !finding.Diagnostics.Has(codeUnknownSeverity) {
 		finding.Diagnostics = finding.Diagnostics.Append(
