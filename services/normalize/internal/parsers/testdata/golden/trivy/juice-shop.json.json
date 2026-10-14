@@ -7,6 +7,16 @@
     "severity_raw": "LOW",
     "vuln_id_raw": "CVE-2026-3449",
     "purl_raw": "pkg:npm/%40tootallnate/once@1.1.2",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -61,6 +71,12 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-102990",
     "purl_raw": "pkg:npm/basic-ftp@5.3.1",
+    "cvss_raw": [
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -79,6 +95,20 @@
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2023-46233",
     "purl_raw": "pkg:npm/crypto-js@3.3.0",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -97,6 +127,16 @@
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2026-71851",
     "purl_raw": "pkg:npm/crypto-js@3.3.0",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -115,6 +155,12 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-45822",
     "purl_raw": "pkg:npm/decode-uri-component@0.2.2",
+    "cvss_raw": [
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -133,6 +179,16 @@
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2026-101894",
     "purl_raw": "pkg:npm/decompress@4.2.1",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -150,6 +206,16 @@
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2026-53486",
     "purl_raw": "pkg:npm/decompress@4.2.1",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -167,6 +233,16 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-10732",
     "purl_raw": "pkg:npm/decompress@4.2.1",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:H/A:L"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -184,6 +260,16 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-39243",
     "purl_raw": "pkg:npm/decompress@4.2.1",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:L/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -201,6 +287,20 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2020-15084",
     "purl_raw": "pkg:npm/express-jwt@0.1.3",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:C/C:H/I:H/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "AV:N/AC:M/Au:N/C:N/I:P/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -219,6 +319,16 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-31808",
     "purl_raw": "pkg:npm/file-type@16.5.4",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -237,6 +347,24 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2022-33987",
     "purl_raw": "pkg:npm/got@8.3.2",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "AV:N/AC:L/Au:N/C:N/I:P/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -255,6 +383,12 @@
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2026-106445",
     "purl_raw": "pkg:npm/handlebars@4.7.9",
+    "cvss_raw": [
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -273,6 +407,16 @@
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2026-106446",
     "purl_raw": "pkg:npm/handlebars@4.7.9",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -291,6 +435,16 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-106444",
     "purl_raw": "pkg:npm/handlebars@4.7.9",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:L/I:L/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:L/I:L/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -309,6 +463,20 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2022-25881",
     "purl_raw": "pkg:npm/http-cache-semantics@3.8.1",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -327,6 +495,16 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-93748",
     "purl_raw": "pkg:npm/http-cache-semantics@3.8.1",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -344,6 +522,20 @@
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2015-9235",
     "purl_raw": "pkg:npm/jsonwebtoken@0.1.0",
+    "cvss_raw": [
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      },
+      {
+        "source": "nvd",
+        "vector": "AV:N/AC:L/Au:N/C:P/I:P/A:P"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -362,6 +554,20 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2022-23539",
     "purl_raw": "pkg:npm/jsonwebtoken@0.1.0",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -398,6 +604,20 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2022-23540",
     "purl_raw": "pkg:npm/jsonwebtoken@0.1.0",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:H/A:L"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:H/A:L"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:H/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -416,6 +636,20 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2022-23541",
     "purl_raw": "pkg:npm/jsonwebtoken@0.1.0",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:L"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:L"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -434,6 +668,20 @@
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2015-9235",
     "purl_raw": "pkg:npm/jsonwebtoken@0.4.0",
+    "cvss_raw": [
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      },
+      {
+        "source": "nvd",
+        "vector": "AV:N/AC:L/Au:N/C:P/I:P/A:P"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -452,6 +700,20 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2022-23539",
     "purl_raw": "pkg:npm/jsonwebtoken@0.4.0",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -488,6 +750,20 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2022-23540",
     "purl_raw": "pkg:npm/jsonwebtoken@0.4.0",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:H/A:L"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:H/A:L"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:H/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -506,6 +782,20 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2022-23541",
     "purl_raw": "pkg:npm/jsonwebtoken@0.4.0",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:L"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:L"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -524,6 +814,12 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2016-1000223",
     "purl_raw": "pkg:npm/jws@0.2.6",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -542,6 +838,16 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2025-65945",
     "purl_raw": "pkg:npm/jws@0.2.6",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -560,6 +866,24 @@
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2019-10744",
     "purl_raw": "pkg:npm/lodash@2.4.2",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:H"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:H"
+      },
+      {
+        "source": "nvd",
+        "vector": "AV:N/AC:L/Au:N/C:N/I:P/A:P"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -578,6 +902,20 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2018-16487",
     "purl_raw": "pkg:npm/lodash@2.4.2",
+    "cvss_raw": [
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:L"
+      },
+      {
+        "source": "nvd",
+        "vector": "AV:N/AC:M/Au:N/C:P/I:P/A:P"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -596,6 +934,24 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2021-23337",
     "purl_raw": "pkg:npm/lodash@2.4.2",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H"
+      },
+      {
+        "source": "nvd",
+        "vector": "AV:N/AC:L/Au:S/C:P/I:P/A:P"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -614,6 +970,20 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-2950",
     "purl_raw": "pkg:npm/lodash@2.4.2",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:L"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -632,6 +1002,24 @@
     "severity_raw": "LOW",
     "vuln_id_raw": "CVE-2018-3721",
     "purl_raw": "pkg:npm/lodash@2.4.2",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "AV:N/AC:L/Au:S/C:N/I:P/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.0/AV:L/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -685,6 +1073,16 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-26996",
     "purl_raw": "pkg:npm/minimatch@3.0.5",
+    "cvss_raw": [
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -703,6 +1101,16 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-27903",
     "purl_raw": "pkg:npm/minimatch@3.0.5",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -721,6 +1129,16 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-27904",
     "purl_raw": "pkg:npm/minimatch@3.0.5",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -739,6 +1157,24 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2017-18214",
     "purl_raw": "pkg:npm/moment@2.0.0",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "nvd",
+        "vector": "AV:N/AC:L/Au:N/C:N/I:N/A:P"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -757,6 +1193,24 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2022-24785",
     "purl_raw": "pkg:npm/moment@2.0.0",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "AV:N/AC:L/Au:N/C:N/I:P/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -775,6 +1229,24 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2016-4055",
     "purl_raw": "pkg:npm/moment@2.0.0",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.0/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "nvd",
+        "vector": "AV:N/AC:L/Au:N/C:N/I:N/A:C"
+      },
+      {
+        "source": "redhat",
+        "vector": "AV:N/AC:M/Au:N/C:N/I:N/A:P"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -793,6 +1265,20 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2021-23771",
     "purl_raw": "pkg:npm/notevil@1.3.3",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "AV:N/AC:L/Au:N/C:P/I:P/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -810,6 +1296,20 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2022-25887",
     "purl_raw": "pkg:npm/sanitize-html@1.4.2",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -828,6 +1328,20 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2016-1000237",
     "purl_raw": "pkg:npm/sanitize-html@1.4.2",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "AV:N/AC:M/Au:N/C:N/I:P/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -846,6 +1360,16 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2017-16016",
     "purl_raw": "pkg:npm/sanitize-html@1.4.2",
+    "cvss_raw": [
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "AV:N/AC:M/Au:N/C:N/I:P/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -864,6 +1388,16 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2019-25225",
     "purl_raw": "pkg:npm/sanitize-html@1.4.2",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -882,6 +1416,24 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2021-26539",
     "purl_raw": "pkg:npm/sanitize-html@1.4.2",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "AV:N/AC:L/Au:N/C:N/I:P/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -900,6 +1452,24 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2021-26540",
     "purl_raw": "pkg:npm/sanitize-html@1.4.2",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "AV:N/AC:L/Au:N/C:N/I:P/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -918,6 +1488,20 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2024-21501",
     "purl_raw": "pkg:npm/sanitize-html@1.4.2",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -936,6 +1520,12 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-63670",
     "purl_raw": "pkg:npm/sanitize-html@1.4.2",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -972,6 +1562,16 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-97058",
     "purl_raw": "pkg:npm/sprintf-js@1.0.3",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -989,6 +1589,16 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-97058",
     "purl_raw": "pkg:npm/sprintf-js@1.1.3",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1006,6 +1616,20 @@
     "severity_raw": "CRITICAL",
     "vuln_id_raw": "CVE-2026-59873",
     "purl_raw": "pkg:npm/tar@6.2.1",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1024,6 +1648,16 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-23745",
     "purl_raw": "pkg:npm/tar@6.2.1",
+    "cvss_raw": [
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:L/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:R/S:C/C:H/I:H/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1042,6 +1676,20 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-23950",
     "purl_raw": "pkg:npm/tar@6.2.1",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:H/A:L"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:H/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:H/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1060,6 +1708,16 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-24842",
     "purl_raw": "pkg:npm/tar@6.2.1",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:L/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:L/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1078,6 +1736,20 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-26960",
     "purl_raw": "pkg:npm/tar@6.2.1",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1096,6 +1768,16 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-29786",
     "purl_raw": "pkg:npm/tar@6.2.1",
+    "cvss_raw": [
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:C/C:N/I:H/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:N/I:H/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1114,6 +1796,16 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-31802",
     "purl_raw": "pkg:npm/tar@6.2.1",
+    "cvss_raw": [
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1132,6 +1824,20 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-59874",
     "purl_raw": "pkg:npm/tar@6.2.1",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1150,6 +1856,16 @@
     "severity_raw": "HIGH",
     "vuln_id_raw": "CVE-2026-73566",
     "purl_raw": "pkg:npm/tar@6.2.1",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1168,6 +1884,16 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-53655",
     "purl_raw": "pkg:npm/tar@6.2.1",
+    "cvss_raw": [
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:L/I:H/A:N"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1186,6 +1912,20 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-59871",
     "purl_raw": "pkg:npm/tar@6.2.1",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1204,6 +1944,16 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-59875",
     "purl_raw": "pkg:npm/tar@6.2.1",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",
@@ -1222,6 +1972,20 @@
     "severity_raw": "MEDIUM",
     "vuln_id_raw": "CVE-2026-41907",
     "purl_raw": "pkg:npm/uuid@8.3.2",
+    "cvss_raw": [
+      {
+        "source": "ghsa",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+      },
+      {
+        "source": "nvd",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+      },
+      {
+        "source": "redhat",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+      }
+    ],
     "location": {
       "target": "package-lock.json",
       "package_type": "npm",

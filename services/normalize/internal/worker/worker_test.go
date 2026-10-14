@@ -91,7 +91,7 @@ func (s *fakeStore) FailRun(_ context.Context, _ store.Run, reason string) error
 func newAdapters(t *testing.T) *adapters.Registry {
 	t.Helper()
 	scale := normalizers.SeverityScale{"warning": model.SeverityMedium}
-	chain, err := normalizers.NewChain(normalizers.NewSeverity(scale))
+	chain, err := normalizers.NewChain(normalizers.NewSeverity(scale, normalizers.SeverityPolicy{normalizers.FromLabel}, nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -155,7 +155,7 @@ func TestHandle_WritesFindingsAndAcks(t *testing.T) {
 		t.Fatalf("unexpected finding: %+v", first)
 	}
 	if !strings.HasPrefix(first.AlgoVersion, string(parsers.NewSARIF().ID())+"@") ||
-		!strings.HasSuffix(first.AlgoVersion, "/severity@1") {
+		!strings.HasSuffix(first.AlgoVersion, "/severity@2(label)") {
 		t.Fatalf("algo version = %q", first.AlgoVersion)
 	}
 	if first.Severity != model.SeverityMedium {

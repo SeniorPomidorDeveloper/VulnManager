@@ -20,31 +20,31 @@ func TestToolNormalizers(t *testing.T) {
 		wantVersion normalizers.NormalizerVersion
 	}{
 		{
-			"trivy", normalizers.NewTrivy,
+			"trivy", normalizers.Trivy(normalizers.CVSSFrom("nvd", "ghsa"), normalizers.FromCVSS, normalizers.FromLabel),
 			model.Finding{SeverityRaw: "HIGH", VulnIDRaw: "cve-2026-3449", PURLRaw: "pkg:npm/%40Scope/Pkg@1", Location: []byte(`{"target":"/app/package-lock.json"}`)},
 			model.SeverityHigh,
 			model.VulnID{Source: "cve", Value: "CVE-2026-3449"},
 			"pkg:npm/%40scope/pkg@1",
 			`{"target":"package-lock.json"}`,
-			"severity@1+vulnid@1+component@1+path@1",
+			"cvss@1+severity@2(cvss>label;cvss=nvd,ghsa)+vulnid@1+component@1+path@1",
 		},
 		{
-			"sarif", normalizers.NewSARIF,
+			"sarif", normalizers.SARIF(normalizers.FromLabel),
 			model.Finding{SeverityRaw: "error", Location: []byte(`{"uri":"/src/a.go"}`)},
 			model.SeverityHigh,
 			model.VulnID{},
 			"",
 			`{"uri":"a.go"}`,
-			"severity@1+path@1",
+			"severity@2(label)+path@1",
 		},
 		{
-			"generic", normalizers.NewGeneric,
+			"generic", normalizers.Generic(normalizers.FromLabel),
 			model.Finding{SeverityRaw: "warning", Location: []byte(`{"uri":"/app/a.go"}`)},
 			model.SeverityMedium,
 			model.VulnID{},
 			"",
 			`{"uri":"a.go"}`,
-			"severity@1+vulnid@1+path@1",
+			"severity@2(label)+vulnid@1+path@1",
 		},
 	}
 	for _, c := range cases {

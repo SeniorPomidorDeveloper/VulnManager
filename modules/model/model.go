@@ -17,8 +17,10 @@ type Finding struct {
 	Severity      Severity
 	VulnIDRaw     VulnIDRaw
 	VulnID        VulnID
+	CVSSRaw       []CVSSCandidate
 	PURLRaw       PURLRaw
 	Component     Component
+	CVSS          []CVSSScore
 	Location      json.RawMessage
 	Raw           json.RawMessage
 	Provenance    Provenance
