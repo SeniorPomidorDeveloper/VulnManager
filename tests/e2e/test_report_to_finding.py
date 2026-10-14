@@ -15,6 +15,12 @@ FINDINGS = (
     'ON r.id = f.import_run_id AND r.tenant_id = f.tenant_id '
     'WHERE r.raw_sha256 = %s'
 )
+COMPONENTS = (
+    'SELECT count(f.component_id), count(DISTINCT f.component_id) '
+    'FROM finding f JOIN import_run r '
+    'ON r.id = f.import_run_id AND r.tenant_id = f.tenant_id '
+    'WHERE r.raw_sha256 = %s'
+)
 
 
 def unique_report():
@@ -47,4 +53,15 @@ def test_trivy_report_becomes_findings(database):
     waiting.until(lambda: fetch_one(database, COMPLETED_RUN, sha256))
     assert fetch_one(database, FINDINGS, sha256) == (
         settings.EXPECTED_FINDINGS,
+    )
+
+
+def test_trivy_findings_share_components(database):
+    _, answer = send(unique_report())
+
+    sha256 = answer['sha256']
+    waiting.until(lambda: fetch_one(database, COMPLETED_RUN, sha256))
+    assert fetch_one(database, COMPONENTS, sha256) == (
+        settings.EXPECTED_FINDINGS,
+        settings.EXPECTED_COMPONENTS,
     )

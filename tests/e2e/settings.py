@@ -12,5 +12,6 @@ CORPUS = (
     / 'testdata/corpus/trivy/0.75.0/juice-shop.json'
 )
 EXPECTED_FINDINGS = 69
+EXPECTED_COMPONENTS = 25
 WAIT_SECONDS = 60
 POLL_SECONDS = 0.5

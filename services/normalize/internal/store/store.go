@@ -22,7 +22,8 @@ type Store struct {
 }
 
 type Tx struct {
-	queries *db.Queries
+	queries    *db.Queries
+	components map[string]uuid.UUID
 }
 
 type Run struct {
@@ -63,7 +64,7 @@ func (s *Store) InTx(ctx context.Context, fn func(*Tx) error) error {
 	defer func() { _ = tx.Rollback(ctx) }()
 
 	queries := db.New(tx)
-	if err := fn(&Tx{queries: queries}); err != nil {
+	if err := fn(&Tx{queries: queries, components: map[string]uuid.UUID{}}); err != nil {
 		return err
 	}
 	return commit(ctx, tx)
@@ -121,6 +122,29 @@ func vulnColumns(id model.VulnID) (source, value pgtype.Text) {
 	return pgtype.Text{String: string(id.Source), Valid: valid}, pgtype.Text{String: id.Value, Valid: valid}
 }
 
+func (t *Tx) componentID(ctx context.Context, tenant model.TenantID, component model.Component) (pgtype.UUID, error) {
+	if component.IsZero() {
+		return pgtype.UUID{}, nil
+	}
+	key := string(tenant) + "|" + string(component.PURL)
+	if id, cached := t.components[key]; cached {
+		return pgtype.UUID{Bytes: id, Valid: true}, nil
+	}
+	id, err := t.queries.UpsertComponent(ctx, db.UpsertComponentParams{
+		TenantID:  string(tenant),
+		Purl:      string(component.PURL),
+		Type:      string(component.Type),
+		Namespace: component.Namespace,
+		Name:      component.Name,
+		Version:   component.Version,
+	})
+	if err != nil {
+		return pgtype.UUID{}, fmt.Errorf("upsert component: %w", err)
+	}
+	t.components[key] = id
+	return pgtype.UUID{Bytes: id, Valid: true}, nil
+}
+
 func (t *Tx) AddFinding(ctx context.Context, finding model.Finding) error {
 	runID, err := uuid.Parse(string(finding.ImportRunID))
 	if err != nil {
@@ -135,6 +159,10 @@ func (t *Tx) AddFinding(ctx context.Context, finding model.Finding) error {
 		return err
 	}
 	vulnSource, vulnValue := vulnColumns(finding.VulnID)
+	componentID, err := t.componentID(ctx, finding.Scope.TenantID, finding.Component)
+	if err != nil {
+		return err
+	}
 	err = t.queries.InsertFinding(ctx, db.InsertFindingParams{
 		TenantID:      string(finding.Scope.TenantID),
 		ImportRunID:   runID,
@@ -149,6 +177,7 @@ func (t *Tx) AddFinding(ctx context.Context, finding model.Finding) error {
 		Severity:      finding.Severity.String(),
 		VulnSource:    vulnSource,
 		VulnID:        vulnValue,
+		ComponentID:   componentID,
 		Location:      finding.Location,
 		Raw:           finding.Raw,
 		Provenance:    provenance,
