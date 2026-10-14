@@ -1,0 +1,13 @@
+scale:
+  critical: critical
+  high: high
+  medium: medium
+  moderate: medium
+  low: low
+  info: info
+  informational: info
+  error: high
+  warning: medium
+  note: low
+  none: info
+  unknown: unknown
