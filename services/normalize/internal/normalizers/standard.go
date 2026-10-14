@@ -2,8 +2,8 @@ package normalizers
 
 type stepFactory func() (Normalizer, error)
 
-func severityStep(scale SeverityScale) stepFactory {
-	return func() (Normalizer, error) { return NewSeverity(scale), nil }
+func severityStep(scale SeverityScale, policy SeverityPolicy, order CVSSOrder) stepFactory {
+	return func() (Normalizer, error) { return NewSeverity(scale, policy, order), nil }
 }
 
 func vulnIDStep() (Normalizer, error) {

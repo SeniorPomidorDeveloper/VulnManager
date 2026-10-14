@@ -1,18 +1,14 @@
 package adapters
 
-import (
-	"vulnmanager/modules/model"
-	"vulnmanager/services/normalize/internal/normalizers"
-	"vulnmanager/services/normalize/internal/parsers"
-)
+import "vulnmanager/modules/model"
 
 func registered() map[model.ToolName]factory {
 	return map[model.ToolName]factory{
-		"trivy":   adapterOf(parsers.NewTrivy(), normalizers.NewTrivy),
-		"semgrep": adapterOf(parsers.NewSARIF(), normalizers.NewSARIF),
+		"trivy":   trivy,
+		"semgrep": semgrep,
 	}
 }
 
 func fallback() factory {
-	return adapterOf(parsers.NewGenericJSON(), normalizers.NewGeneric)
+	return generic
 }

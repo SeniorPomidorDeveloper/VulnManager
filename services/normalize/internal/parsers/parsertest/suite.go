@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"testing"
 
+	"vulnmanager/modules/model"
 	"vulnmanager/services/normalize/internal/parsers"
 )
 
@@ -24,6 +25,11 @@ type Options struct {
 	GoldenDir string
 }
 
+type goldenCVSS struct {
+	Source string `json:"source"`
+	Vector string `json:"vector"`
+}
+
 type goldenFinding struct {
 	ToolFindingID string          `json:"tool_finding_id"`
 	Kind          string          `json:"kind"`
@@ -32,6 +38,7 @@ type goldenFinding struct {
 	SeverityRaw   string          `json:"severity_raw"`
 	VulnIDRaw     string          `json:"vuln_id_raw,omitempty"`
 	PURLRaw       string          `json:"purl_raw,omitempty"`
+	CVSSRaw       []goldenCVSS    `json:"cvss_raw,omitempty"`
 	Location      json.RawMessage `json:"location"`
 	Diagnostics   []string        `json:"diagnostics"`
 }
@@ -124,6 +131,7 @@ func checkGolden(t *testing.T, path string, found []parsers.RawFinding) {
 			SeverityRaw:   string(finding.SeverityRaw),
 			VulnIDRaw:     string(finding.VulnIDRaw),
 			PURLRaw:       string(finding.PURLRaw),
+			CVSSRaw:       goldenCVSSList(finding.CVSSVectors),
 			Location:      finding.Location,
 			Diagnostics:   diagnostics,
 		})
@@ -154,4 +162,12 @@ func read(t *testing.T, path string) []byte {
 		t.Fatal(err)
 	}
 	return data
+}
+
+func goldenCVSSList(candidates []model.CVSSCandidate) []goldenCVSS {
+	var list []goldenCVSS
+	for _, candidate := range candidates {
+		list = append(list, goldenCVSS{Source: string(candidate.Source), Vector: string(candidate.Vector)})
+	}
+	return list
 }

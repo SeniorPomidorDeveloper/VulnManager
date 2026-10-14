@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"iter"
+	"maps"
+	"slices"
 	"strings"
 
 	"vulnmanager/modules/model"
@@ -47,9 +49,16 @@ type trivyVulnerability struct {
 	Severity         string `json:"Severity"`
 	Title            string `json:"Title"`
 	Description      string `json:"Description"`
-	PkgIdentifier    struct {
+
+	CVSS          map[string]trivyCVSS `json:"CVSS"`
+	PkgIdentifier struct {
 		PURL string `json:"PURL"`
 	} `json:"PkgIdentifier"`
+}
+
+type trivyCVSS struct {
+	V2Vector string `json:"V2Vector"`
+	V3Vector string `json:"V3Vector"`
 }
 
 type trivyLocation struct {
@@ -154,7 +163,21 @@ func convertVulnerability(raw json.RawMessage, target, packageType string) RawFi
 		PURLRaw:     model.PURLRaw(vulnerability.PkgIdentifier.PURL),
 		Location:    location,
 		Raw:         raw,
+
+		CVSSVectors: trivyCVSSCandidates(vulnerability.CVSS),
 	}
+}
+
+func trivyCVSSCandidates(sources map[string]trivyCVSS) []model.CVSSCandidate {
+	var candidates []model.CVSSCandidate
+	for _, name := range slices.Sorted(maps.Keys(sources)) {
+		for _, vector := range []string{sources[name].V3Vector, sources[name].V2Vector} {
+			if vector != "" {
+				candidates = append(candidates, model.CVSSCandidate{Source: model.CVSSSource(name), Vector: model.CVSSVectorRaw(vector)})
+			}
+		}
+	}
+	return candidates
 }
 
 func vulnerabilityTitle(vulnerability trivyVulnerability) string {
