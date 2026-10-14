@@ -6,5 +6,7 @@ import (
 )
 
 func generic() (Adapter, error) {
-	return adapterOf(parsers.NewGenericJSON(), normalizers.Generic(normalizers.FromLabel))()
+	scale := normalizers.MergeScales(normalizers.LabelScale(), normalizers.SARIFLevelScale())
+	severity := normalizers.SeverityByPriority(scale, nil, normalizers.FromLabel)
+	return adapterOf(parsers.NewGenericJSON(), normalizers.Generic(severity))()
 }

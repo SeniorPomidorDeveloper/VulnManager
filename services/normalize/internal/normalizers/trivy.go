@@ -1,7 +1,7 @@
 package normalizers
 
-func Trivy(order CVSSOrder, policy ...SeveritySource) func() (Normalizer, error) {
+func Trivy(severity SeverityCalculator) func() (Normalizer, error) {
 	return func() (Normalizer, error) {
-		return compose(cvssStep, severityStep(LabelScale(), policy, order), vulnIDStep, componentStep, pathStep("target"))
+		return compose(cvssStep, severityStep(severity), vulnIDStep, componentStep, pathStep("target"))
 	}
 }

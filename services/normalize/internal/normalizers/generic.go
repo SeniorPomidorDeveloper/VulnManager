@@ -1,8 +1,7 @@
 package normalizers
 
-func Generic(policy ...SeveritySource) func() (Normalizer, error) {
+func Generic(severity SeverityCalculator) func() (Normalizer, error) {
 	return func() (Normalizer, error) {
-		scale := MergeScales(LabelScale(), SARIFLevelScale())
-		return compose(severityStep(scale, policy, nil), vulnIDStep, pathStep("uri", "target"))
+		return compose(severityStep(severity), vulnIDStep, pathStep("uri", "target"))
 	}
 }

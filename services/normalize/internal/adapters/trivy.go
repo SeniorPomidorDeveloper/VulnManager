@@ -6,11 +6,10 @@ import (
 )
 
 func trivy() (Adapter, error) {
-	return adapterOf(
-		parsers.NewTrivy(),
-		normalizers.Trivy(
-			normalizers.CVSSFrom("nvd", "ghsa", "redhat", "bitnami"),
-			normalizers.FromCVSS, normalizers.FromLabel,
-		),
-	)()
+	severity := normalizers.SeverityByPriority(
+		normalizers.LabelScale(),
+		normalizers.CVSSFrom("nvd", "ghsa", "redhat", "bitnami"),
+		normalizers.FromCVSS, normalizers.FromLabel,
+	)
+	return adapterOf(parsers.NewTrivy(), normalizers.Trivy(severity))()
 }

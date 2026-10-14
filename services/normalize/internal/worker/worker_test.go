@@ -91,7 +91,7 @@ func (s *fakeStore) FailRun(_ context.Context, _ store.Run, reason string) error
 func newAdapters(t *testing.T) *adapters.Registry {
 	t.Helper()
 	scale := normalizers.SeverityScale{"warning": model.SeverityMedium}
-	chain, err := normalizers.NewChain(normalizers.NewSeverity(scale, normalizers.SeverityPolicy{normalizers.FromLabel}, nil))
+	chain, err := normalizers.NewChain(normalizers.NewSeverity(normalizers.SeverityByPriority(scale, nil, normalizers.FromLabel)))
 	if err != nil {
 		t.Fatal(err)
 	}

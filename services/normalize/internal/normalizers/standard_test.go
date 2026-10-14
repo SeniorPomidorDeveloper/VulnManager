@@ -20,7 +20,7 @@ func TestToolNormalizers(t *testing.T) {
 		wantVersion normalizers.NormalizerVersion
 	}{
 		{
-			"trivy", normalizers.Trivy(normalizers.CVSSFrom("nvd", "ghsa"), normalizers.FromCVSS, normalizers.FromLabel),
+			"trivy", normalizers.Trivy(normalizers.SeverityByPriority(normalizers.LabelScale(), normalizers.CVSSFrom("nvd", "ghsa"), normalizers.FromCVSS, normalizers.FromLabel)),
 			model.Finding{SeverityRaw: "HIGH", VulnIDRaw: "cve-2026-3449", PURLRaw: "pkg:npm/%40Scope/Pkg@1", Location: []byte(`{"target":"/app/package-lock.json"}`)},
 			model.SeverityHigh,
 			model.VulnID{Source: "cve", Value: "CVE-2026-3449"},
@@ -29,7 +29,7 @@ func TestToolNormalizers(t *testing.T) {
 			"cvss@1+severity@2(cvss>label;cvss=nvd,ghsa)+vulnid@1+component@1+path@1",
 		},
 		{
-			"sarif", normalizers.SARIF(normalizers.FromLabel),
+			"sarif", normalizers.SARIF(normalizers.SeverityByPriority(normalizers.SARIFLevelScale(), nil, normalizers.FromLabel)),
 			model.Finding{SeverityRaw: "error", Location: []byte(`{"uri":"/src/a.go"}`)},
 			model.SeverityHigh,
 			model.VulnID{},
@@ -38,7 +38,7 @@ func TestToolNormalizers(t *testing.T) {
 			"severity@2(label)+path@1",
 		},
 		{
-			"generic", normalizers.Generic(normalizers.FromLabel),
+			"generic", normalizers.Generic(normalizers.SeverityByPriority(normalizers.MergeScales(normalizers.LabelScale(), normalizers.SARIFLevelScale()), nil, normalizers.FromLabel)),
 			model.Finding{SeverityRaw: "warning", Location: []byte(`{"uri":"/app/a.go"}`)},
 			model.SeverityMedium,
 			model.VulnID{},
