@@ -1,6 +1,7 @@
 package parsers
 
 import (
+	"encoding/json"
 	"slices"
 	"testing"
 
@@ -22,5 +23,25 @@ func TestTrivyCVSSCandidates_KeepEverySourceInStableOrder(t *testing.T) {
 	}
 	if trivyCVSSCandidates(nil) != nil {
 		t.Fatal("no sources must give no candidates")
+	}
+}
+
+func TestSecurityScore(t *testing.T) {
+	score := func(value model.Score) *model.Score { return &value }
+	cases := map[string]*model.Score{
+		`"7.5"`:  score(7.5),
+		`9.8`:    score(9.8),
+		`"0"`:    score(0),
+		`"high"`: nil,
+		`null`:   nil,
+		``:       nil,
+	}
+	for raw, want := range cases {
+		t.Run(raw, func(t *testing.T) {
+			got := securityScore(json.RawMessage(raw))
+			if (got == nil) != (want == nil) || got != nil && *got != *want {
+				t.Fatalf("got %v, want %v", got, want)
+			}
+		})
 	}
 }

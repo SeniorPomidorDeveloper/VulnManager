@@ -184,3 +184,23 @@ func TestSARIF_CanceledContext(t *testing.T) {
 	}
 	t.Fatal("expected at least one yielded value")
 }
+
+func TestSARIF_SecuritySeverityBecomesTheScannerScore(t *testing.T) {
+	doc := `{"version":"2.1.0","runs":[{"tool":{"driver":{"rules":[
+		{"id":"scored","properties":{"security-severity":"8.5"}},
+		{"id":"numeric","properties":{"security-severity":4.2}},
+		{"id":"plain"}]}},"results":[
+		{"ruleId":"scored","ruleIndex":0,"message":{"text":"a"}},
+		{"ruleId":"numeric","ruleIndex":1,"message":{"text":"b"}},
+		{"ruleId":"plain","ruleIndex":2,"message":{"text":"c"}}]}]}`
+	var got []*model.Score
+	for finding, err := range parsers.NewSARIF().Parse(context.Background(), strings.NewReader(doc), parsers.ScanMeta{}) {
+		if err != nil {
+			t.Fatalf("parse: %v", err)
+		}
+		got = append(got, finding.ScannerScore)
+	}
+	if len(got) != 3 || got[0] == nil || *got[0] != 8.5 || got[1] == nil || *got[1] != 4.2 || got[2] != nil {
+		t.Fatalf("scores %v", got)
+	}
+}

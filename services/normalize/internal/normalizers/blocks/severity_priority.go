@@ -12,7 +12,13 @@ import (
 
 const (
 	SeverityFromCVSS  SeveritySource = "cvss"
+	SeverityFromScore SeveritySource = "score"
 	SeverityFromLabel SeveritySource = "label"
+)
+
+const (
+	maxScore         = 10
+	codeInvalidScore = "invalid_score"
 )
 
 type (
@@ -40,6 +46,7 @@ func SeverityByPriority(scale SeverityScale, order CVSSOrder, policy ...Severity
 	c := &priorityCalculator{scale: scale, order: order, policy: policy}
 	c.resolvers = map[SeveritySource]func(*model.Finding) (model.Severity, bool){
 		SeverityFromCVSS:  c.fromCVSS,
+		SeverityFromScore: c.fromScore,
 		SeverityFromLabel: c.fromLabel,
 	}
 	return c
@@ -80,6 +87,20 @@ func (c *priorityCalculator) fromCVSS(finding *model.Finding) (model.Severity, b
 	}
 	picked := slices.MinFunc(finding.CVSS, c.compareCVSS)
 	return cvss.SeverityFor(cvss.Score(picked.BaseScore), cvss.Version(picked.Version)), true
+}
+
+func (*priorityCalculator) fromScore(finding *model.Finding) (model.Severity, bool) {
+	if finding.ScannerScore == nil {
+		return model.SeverityUnknown, false
+	}
+	score := *finding.ScannerScore
+	if score < 0 || score > maxScore {
+		if !finding.Diagnostics.Has(codeInvalidScore) {
+			finding.Diagnostics = finding.Diagnostics.Append(model.DiagLevelWarn, codeInvalidScore, "scanner score is outside 0..10")
+		}
+		return model.SeverityUnknown, false
+	}
+	return cvss.SeverityFor(cvss.Score(score), cvss.V31), true
 }
 
 func (c *priorityCalculator) compareCVSS(a, b model.CVSSScore) int {

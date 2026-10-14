@@ -166,3 +166,37 @@ func TestSeverity_AToolMayBringItsOwnCalculator(t *testing.T) {
 		t.Fatalf("severity %v version %q", got.Severity, n.Version())
 	}
 }
+
+func TestSeverity_ScannerScoreFollowsThePolicyPosition(t *testing.T) {
+	score, label, vector := blocks.SeverityFromScore, blocks.SeverityFromLabel, blocks.SeverityFromCVSS
+	scored := func(value model.Score) model.Finding {
+		f := finding("low")
+		f.ScannerScore = &value
+		return f
+	}
+	cases := []struct {
+		name   string
+		policy []blocks.SeveritySource
+		in     model.Finding
+		want   model.Severity
+		diag   bool
+	}{
+		{"score before label", []blocks.SeveritySource{score, label}, scored(9.1), model.SeverityCritical, false},
+		{"label before score", []blocks.SeveritySource{label, score}, scored(9.1), model.SeverityLow, false},
+		{"zero is info", []blocks.SeveritySource{score}, scored(0), model.SeverityInfo, false},
+		{"no score falls back", []blocks.SeveritySource{score, label}, finding("error"), model.SeverityHigh, false},
+		{"above range is skipped with a warning", []blocks.SeveritySource{score, label}, scored(11), model.SeverityLow, true},
+		{"cvss beats score", []blocks.SeveritySource{vector, score}, withCVSS(scored(2), cvssScore("nvd", "3.1", 9.8)), model.SeverityCritical, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got := c.in
+			if err := normalizers.NewSeverity(blocks.SeverityByPriority(testScale, nil, c.policy...)).Normalize(context.Background(), &got); err != nil {
+				t.Fatalf("normalize: %v", err)
+			}
+			if got.Severity != c.want || got.Diagnostics.Has("invalid_score") != c.diag {
+				t.Fatalf("severity %v diagnostics %+v", got.Severity, got.Diagnostics)
+			}
+		})
+	}
+}

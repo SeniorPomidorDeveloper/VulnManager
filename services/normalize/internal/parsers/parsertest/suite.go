@@ -39,6 +39,7 @@ type goldenFinding struct {
 	VulnIDRaw     string          `json:"vuln_id_raw,omitempty"`
 	PURLRaw       string          `json:"purl_raw,omitempty"`
 	CVSSRaw       []goldenCVSS    `json:"cvss_raw,omitempty"`
+	ScannerScore  *float64        `json:"scanner_score,omitempty"`
 	Location      json.RawMessage `json:"location"`
 	Diagnostics   []string        `json:"diagnostics"`
 }
@@ -132,6 +133,7 @@ func checkGolden(t *testing.T, path string, found []parsers.RawFinding) {
 			VulnIDRaw:     string(finding.VulnIDRaw),
 			PURLRaw:       string(finding.PURLRaw),
 			CVSSRaw:       goldenCVSSList(finding.CVSSVectors),
+			ScannerScore:  scoreValue(finding.ScannerScore),
 			Location:      finding.Location,
 			Diagnostics:   diagnostics,
 		})
@@ -170,4 +172,12 @@ func goldenCVSSList(candidates []model.CVSSCandidate) []goldenCVSS {
 		list = append(list, goldenCVSS{Source: string(candidate.Source), Vector: string(candidate.Vector)})
 	}
 	return list
+}
+
+func scoreValue(score *model.Score) *float64 {
+	if score == nil {
+		return nil
+	}
+	value := float64(*score)
+	return &value
 }

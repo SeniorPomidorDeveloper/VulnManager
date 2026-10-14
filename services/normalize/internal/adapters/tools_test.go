@@ -33,11 +33,11 @@ func TestToolNormalizers(t *testing.T) {
 		},
 		{
 			"semgrep", semgrep,
-			model.Finding{SeverityRaw: "error", Location: []byte(`{"uri":"/src/a.go"}`)},
-			model.SeverityHigh,
+			model.Finding{SeverityRaw: "note", ScannerScore: scoreOf(9.1), Location: []byte(`{"uri":"/src/a.go"}`)},
+			model.SeverityCritical,
 			model.VulnID{},
 			"", `{"uri":"a.go"}`,
-			"severity@2(label)+path@1",
+			"severity@2(score>label)+path@1",
 		},
 		{
 			"generic", generic,
@@ -66,4 +66,8 @@ func TestToolNormalizers(t *testing.T) {
 			}
 		})
 	}
+}
+
+func scoreOf(value model.Score) *model.Score {
+	return &value
 }
