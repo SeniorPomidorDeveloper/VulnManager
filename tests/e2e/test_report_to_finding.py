@@ -22,11 +22,11 @@ COMPONENTS = (
     'WHERE r.raw_sha256 = %s'
 )
 CVSS_SCORES = (
-    'SELECT count(*), count(DISTINCT c.finding_id) FROM finding_cvss c '
+    'SELECT count(*), count(DISTINCT c.finding_id) FROM finding_rating c '
     'JOIN finding f ON f.id = c.finding_id AND f.tenant_id = c.tenant_id '
     'JOIN import_run r ON r.id = f.import_run_id '
     'AND r.tenant_id = f.tenant_id '
-    'WHERE r.raw_sha256 = %s'
+    "WHERE c.scheme = 'cvss' AND r.raw_sha256 = %s"
 )
 
 
