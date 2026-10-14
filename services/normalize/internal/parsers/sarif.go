@@ -1,7 +1,6 @@
 package parsers
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -21,16 +20,10 @@ const (
 
 	sarifSpecVersion                    = "2.1.0"
 	sarifDefaultLevel model.SeverityRaw = "warning"
-	sarifRunsMarker                     = `"runs"`
 
 	codeSARIFVersion  = "sarif_version"
 	codeInvalidResult = "invalid_result"
 )
-
-var sarifSniffMarkers = map[string]SniffScore{
-	"sarif":     0.9,
-	`"version"`: 0.6,
-}
 
 type SARIF struct{}
 
@@ -105,20 +98,6 @@ func (SARIF) Version() ParserVersion {
 
 func (SARIF) Capabilities() Capabilities {
 	return Capabilities{Formats: []FormatName{FormatSARIF}, Kinds: []model.Kind{model.KindSAST}}
-}
-
-func (SARIF) Sniff(head []byte) SniffScore {
-	lower := bytes.ToLower(head)
-	if !bytes.Contains(lower, []byte(sarifRunsMarker)) {
-		return 0
-	}
-	var best SniffScore
-	for marker, score := range sarifSniffMarkers {
-		if bytes.Contains(lower, []byte(marker)) {
-			best = max(best, score)
-		}
-	}
-	return best
 }
 
 func (SARIF) Parse(ctx context.Context, r io.Reader, _ ScanMeta) iter.Seq2[RawFinding, error] {

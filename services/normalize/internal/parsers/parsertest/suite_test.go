@@ -1,7 +1,6 @@
 package parsertest_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"io"
@@ -24,13 +23,6 @@ func (fake) Version() parsers.ParserVersion { return "1" }
 
 func (fake) Capabilities() parsers.Capabilities { return parsers.Capabilities{} }
 
-func (fake) Sniff(head []byte) parsers.SniffScore {
-	if bytes.HasPrefix(head, []byte("{")) {
-		return 1
-	}
-	return 0
-}
-
 func (fake) Parse(_ context.Context, r io.Reader, _ parsers.ScanMeta) iter.Seq2[parsers.RawFinding, error] {
 	return func(yield func(parsers.RawFinding, error) bool) {
 		if _, err := io.Copy(io.Discard, r); err != nil {
@@ -52,7 +44,6 @@ func write(t *testing.T, name, content string) string {
 
 func TestSuite_AcceptsAConformingParser(t *testing.T) {
 	parsertest.Suite(t, fake{}, parsertest.Options{
-		Corpus:  []string{write(t, "report.json", `{"results":[1,2,3]}`)},
-		Foreign: []string{write(t, "notes.txt", "plain text")},
+		Corpus: []string{write(t, "report.json", `{"results":[1,2,3]}`)},
 	})
 }

@@ -14,7 +14,6 @@ import (
 func TestSARIF_Suite(t *testing.T) {
 	parsertest.Suite(t, parsers.NewSARIF(), parsertest.Options{
 		Corpus:    []string{corpus + "/semgrep/1.180.0/juice-shop.sarif"},
-		Foreign:   []string{corpus + "/trivy/0.75.0/juice-shop.json", corpus + "/rules/semgrep.yaml"},
 		GoldenDir: "testdata/golden/sarif",
 	})
 }

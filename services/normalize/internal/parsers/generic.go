@@ -1,7 +1,6 @@
 package parsers
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -14,7 +13,6 @@ import (
 const (
 	genericID      ParserID      = "generic-json"
 	genericVersion ParserVersion = "1"
-	genericSniff   SniffScore    = 0.1
 	codeUnknown                  = "unknown_format"
 )
 
@@ -34,14 +32,6 @@ func (GenericJSON) Version() ParserVersion {
 
 func (GenericJSON) Capabilities() Capabilities {
 	return Capabilities{Formats: []FormatName{FormatJSON}}
-}
-
-func (GenericJSON) Sniff(head []byte) SniffScore {
-	trimmed := bytes.TrimSpace(head)
-	if len(trimmed) > 0 && (trimmed[0] == '{' || trimmed[0] == '[') {
-		return genericSniff
-	}
-	return 0
 }
 
 func (GenericJSON) Parse(ctx context.Context, r io.Reader, _ ScanMeta) iter.Seq2[RawFinding, error] {
