@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"vulnmanager/modules/model"
@@ -115,6 +116,11 @@ func (t *Tx) StartRun(ctx context.Context, run Run) (model.ImportRunID, error) {
 	return model.ImportRunID(id.String()), nil
 }
 
+func vulnColumns(id model.VulnID) (source, value pgtype.Text) {
+	valid := !id.IsZero()
+	return pgtype.Text{String: string(id.Source), Valid: valid}, pgtype.Text{String: id.Value, Valid: valid}
+}
+
 func (t *Tx) AddFinding(ctx context.Context, finding model.Finding) error {
 	runID, err := uuid.Parse(string(finding.ImportRunID))
 	if err != nil {
@@ -128,6 +134,7 @@ func (t *Tx) AddFinding(ctx context.Context, finding model.Finding) error {
 	if err != nil {
 		return err
 	}
+	vulnSource, vulnValue := vulnColumns(finding.VulnID)
 	err = t.queries.InsertFinding(ctx, db.InsertFindingParams{
 		TenantID:      string(finding.Scope.TenantID),
 		ImportRunID:   runID,
@@ -140,6 +147,8 @@ func (t *Tx) AddFinding(ctx context.Context, finding model.Finding) error {
 		Description:   finding.Description,
 		SeverityRaw:   string(finding.SeverityRaw),
 		Severity:      finding.Severity.String(),
+		VulnSource:    vulnSource,
+		VulnID:        vulnValue,
 		Location:      finding.Location,
 		Raw:           finding.Raw,
 		Provenance:    provenance,

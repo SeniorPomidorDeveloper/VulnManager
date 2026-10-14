@@ -17,11 +17,13 @@ const (
 	profilesDir = "tool_profiles"
 	defaultName = "default"
 	fileSuffix  = ".yaml"
+	formatsPath = "vuln_id_formats.yaml"
 )
 
 type Catalog struct {
-	Scales   normalizers.SeverityScales
-	Profiles normalizers.ProfileSpec
+	Scales      normalizers.SeverityScales
+	Profiles    normalizers.ProfileSpec
+	VulnFormats []normalizers.VulnFormat
 }
 
 type scaleFile struct {
@@ -30,6 +32,15 @@ type scaleFile struct {
 
 type profileFile struct {
 	Chain []string `yaml:"chain"`
+}
+
+type formatsFile struct {
+	Formats []struct {
+		Source string `yaml:"source"`
+		Prefix string `yaml:"prefix"`
+		Body   string `yaml:"body"`
+		Case   string `yaml:"case"`
+	} `yaml:"formats"`
 }
 
 func Load(fsys fs.FS) (Catalog, error) {
@@ -41,7 +52,11 @@ func Load(fsys fs.FS) (Catalog, error) {
 	if err != nil {
 		return Catalog{}, err
 	}
-	catalog := Catalog{Scales: normalizers.SeverityScales{ByTool: map[model.ToolName]normalizers.SeverityScale{}}}
+	formats, err := loadFormats(fsys)
+	if err != nil {
+		return Catalog{}, err
+	}
+	catalog := Catalog{VulnFormats: formats, Scales: normalizers.SeverityScales{ByTool: map[model.ToolName]normalizers.SeverityScale{}}}
 	catalog.Profiles.ByTool = map[model.ToolName][]normalizers.NormalizerID{}
 	for name, scale := range scales {
 		if name == defaultName {
@@ -121,4 +136,32 @@ func parseProfile(content []byte) ([]normalizers.NormalizerID, error) {
 		chain[i] = normalizers.NormalizerID(id)
 	}
 	return chain, nil
+}
+
+func loadFormats(fsys fs.FS) ([]normalizers.VulnFormat, error) {
+	content, err := fs.ReadFile(fsys, formatsPath)
+	if err != nil {
+		return nil, fmt.Errorf("read %s: %w", formatsPath, err)
+	}
+	var file formatsFile
+	if err := decodeStrict(content, &file); err != nil {
+		return nil, fmt.Errorf("%s: %w", formatsPath, err)
+	}
+	formats := make([]normalizers.VulnFormat, 0, len(file.Formats))
+	seen := make(map[string]struct{}, len(file.Formats))
+	for _, spec := range file.Formats {
+		prefix := strings.ToUpper(spec.Prefix)
+		if _, dup := seen[prefix]; dup {
+			return nil, fmt.Errorf("%s: duplicate prefix %q", formatsPath, spec.Prefix)
+		}
+		seen[prefix] = struct{}{}
+		format, err := normalizers.NewVulnFormat(
+			model.VulnSource(spec.Source), spec.Prefix, spec.Body, normalizers.CaseRule(spec.Case),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", formatsPath, err)
+		}
+		formats = append(formats, format)
+	}
+	return formats, nil
 }

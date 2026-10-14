@@ -34,6 +34,7 @@ type RawFinding struct {
 	Title         string
 	Description   string
 	SeverityRaw   model.SeverityRaw
+	VulnIDRaw     model.VulnIDRaw
 	Location      json.RawMessage
 	Raw           json.RawMessage
 	Diagnostics   model.Diagnostics

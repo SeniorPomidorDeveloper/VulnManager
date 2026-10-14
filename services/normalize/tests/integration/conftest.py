@@ -1,6 +1,7 @@
 import pytest
 from testsuite.databases.pgsql import discover
 
+import finding_sql
 import ingest_jobs
 import settings
 
@@ -25,3 +26,14 @@ def consumer(pgsql):
 def job_id(pgsql):
     cursor = pgsql[settings.DATABASE].cursor()
     return ingest_jobs.insert_job(cursor, settings.TENANT)
+
+
+@pytest.fixture
+def cursor(pgsql):
+    return pgsql[settings.DATABASE].cursor()
+
+
+@pytest.fixture
+def run_id(cursor):
+    cursor.execute(finding_sql.INSERT_RUN, ('completed',))
+    return cursor.fetchone()[0]

@@ -1,29 +1,13 @@
 import psycopg2
 import pytest
 
+from finding_sql import (
+    INSERT_FINDING,
+    INSERT_FINDING_SEVERITY,
+    INSERT_RUN,
+    MISSING_RUN,
+)
 from settings import DATABASE
-
-MISSING_RUN = '00000000-0000-0000-0000-000000000000'
-INSERT_RUN = (
-    'INSERT INTO import_run (tenant_id, scope_key, product_id, context_id, '
-    'tool_name, scan_id, raw_key, raw_sha256, status) '
-    "VALUES ('acme', 'scope', 'p', 'c', 'trivy', 's', 'key', 'sha', %s) "
-    'RETURNING id'
-)
-INSERT_FINDING = (
-    'INSERT INTO finding (tenant_id, import_run_id, scope_key, product_id, '
-    'context_id, tool_finding_id, kind, title, description, severity_raw, '
-    'raw, provenance, algo_version, detected_at) '
-    "VALUES ('acme', %s, 'scope', 'p', 'c', 'id', 'sca', 't', 'd', 'HIGH', "
-    "'{}', '{}', 'trivy@1', now())"
-)
-INSERT_FINDING_SEVERITY = (
-    'INSERT INTO finding (tenant_id, import_run_id, scope_key, product_id, '
-    'context_id, tool_finding_id, kind, title, description, severity_raw, '
-    'raw, provenance, algo_version, detected_at, severity) '
-    "VALUES ('acme', %s, 'scope', 'p', 'c', 'id', 'sca', 't', 'd', 'HIGH', "
-    "'{}', '{}', 'trivy@1', now(), %s)"
-)
 
 
 def test_report_key_is_unique(pgsql):
