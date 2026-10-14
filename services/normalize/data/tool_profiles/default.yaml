@@ -1,1 +1,1 @@
-chain: [severity, vulnid]
+chain: [severity, vulnid, path]

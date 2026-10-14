@@ -154,6 +154,7 @@ func newProfiles() (normalizers.Profiles, error) {
 	for _, normalizer := range []normalizers.Normalizer{
 		normalizers.NewSeverity(loaded.Scales),
 		normalizers.NewVulnID(loaded.VulnFormats),
+		normalizers.NewPath(loaded.PathRules),
 	} {
 		if err := registry.Register(normalizer); err != nil {
 			return normalizers.Profiles{}, fmt.Errorf("normalizers: %w", err)

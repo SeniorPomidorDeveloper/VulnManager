@@ -10,11 +10,14 @@ import (
 	"vulnmanager/services/normalize/internal/catalog"
 )
 
+const pathsYAML = "fields: [uri]\nstrip_prefixes:\n  - /src/\n"
+
 const formatsYAML = "formats:\n  - {source: cve, prefix: 'CVE-', body: '\\d+', case: upper}\n"
 
 func fixture(scale, profile string) fstest.MapFS {
 	return fstest.MapFS{
 		"vuln_id_formats.yaml":       {Data: []byte(formatsYAML)},
+		"path_rules.yaml":            {Data: []byte(pathsYAML)},
 		"severity_maps/default.yaml": {Data: []byte(scale)},
 		"severity_maps/newtool.yaml": {Data: []byte("scale:\n  Sev-1: critical\n")},
 		"tool_profiles/default.yaml": {Data: []byte(profile)},
@@ -65,6 +68,7 @@ func TestLoad_RejectsBrokenFiles(t *testing.T) {
 func TestLoad_RequiresDefaults(t *testing.T) {
 	_, err := catalog.Load(fstest.MapFS{
 		"vuln_id_formats.yaml":     {Data: []byte(formatsYAML)},
+		"path_rules.yaml":          {Data: []byte(pathsYAML)},
 		"severity_maps/other.yaml": {Data: []byte("scale: {}\n")},
 		"tool_profiles/other.yaml": {Data: []byte("chain: []\n")},
 	})
@@ -93,6 +97,22 @@ func TestLoad_RejectsBrokenVulnFormats(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			files := fixture("scale: {}\n", "chain: [severity]\n")
 			files["vuln_id_formats.yaml"] = &fstest.MapFile{Data: []byte(yamlText)}
+			if _, err := catalog.Load(files); err == nil {
+				t.Fatal("want error")
+			}
+		})
+	}
+}
+
+func TestLoad_RejectsBrokenPathRules(t *testing.T) {
+	cases := map[string]string{
+		"bad prefix":    "fields: [uri]\nstrip_prefixes: [src]\n",
+		"unknown field": "fields: [uri]\nextra: 1\n",
+	}
+	for name, yamlText := range cases {
+		t.Run(name, func(t *testing.T) {
+			files := fixture("scale: {}\n", "chain: [severity]\n")
+			files["path_rules.yaml"] = &fstest.MapFile{Data: []byte(yamlText)}
 			if _, err := catalog.Load(files); err == nil {
 				t.Fatal("want error")
 			}

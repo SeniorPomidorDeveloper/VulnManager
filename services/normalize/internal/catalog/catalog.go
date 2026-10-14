@@ -18,12 +18,14 @@ const (
 	defaultName = "default"
 	fileSuffix  = ".yaml"
 	formatsPath = "vuln_id_formats.yaml"
+	pathsPath   = "path_rules.yaml"
 )
 
 type Catalog struct {
 	Scales      normalizers.SeverityScales
 	Profiles    normalizers.ProfileSpec
 	VulnFormats []normalizers.VulnFormat
+	PathRules   normalizers.PathRules
 }
 
 type scaleFile struct {
@@ -32,6 +34,11 @@ type scaleFile struct {
 
 type profileFile struct {
 	Chain []string `yaml:"chain"`
+}
+
+type pathRulesFile struct {
+	Fields        []string `yaml:"fields"`
+	StripPrefixes []string `yaml:"strip_prefixes"`
 }
 
 type formatsFile struct {
@@ -56,7 +63,11 @@ func Load(fsys fs.FS) (Catalog, error) {
 	if err != nil {
 		return Catalog{}, err
 	}
-	catalog := Catalog{VulnFormats: formats, Scales: normalizers.SeverityScales{ByTool: map[model.ToolName]normalizers.SeverityScale{}}}
+	pathRules, err := loadPathRules(fsys)
+	if err != nil {
+		return Catalog{}, err
+	}
+	catalog := Catalog{VulnFormats: formats, PathRules: pathRules, Scales: normalizers.SeverityScales{ByTool: map[model.ToolName]normalizers.SeverityScale{}}}
 	catalog.Profiles.ByTool = map[model.ToolName][]normalizers.NormalizerID{}
 	for name, scale := range scales {
 		if name == defaultName {
@@ -164,4 +175,20 @@ func loadFormats(fsys fs.FS) ([]normalizers.VulnFormat, error) {
 		formats = append(formats, format)
 	}
 	return formats, nil
+}
+
+func loadPathRules(fsys fs.FS) (normalizers.PathRules, error) {
+	content, err := fs.ReadFile(fsys, pathsPath)
+	if err != nil {
+		return normalizers.PathRules{}, fmt.Errorf("read %s: %w", pathsPath, err)
+	}
+	var file pathRulesFile
+	if err := decodeStrict(content, &file); err != nil {
+		return normalizers.PathRules{}, fmt.Errorf("%s: %w", pathsPath, err)
+	}
+	rules, err := normalizers.NewPathRules(file.Fields, file.StripPrefixes)
+	if err != nil {
+		return normalizers.PathRules{}, fmt.Errorf("%s: %w", pathsPath, err)
+	}
+	return rules, nil
 }
