@@ -17,6 +17,8 @@ type Finding struct {
 	Severity      Severity
 	VulnIDRaw     VulnIDRaw
 	VulnID        VulnID
+	PURLRaw       PURLRaw
+	Component     Component
 	Location      json.RawMessage
 	Raw           json.RawMessage
 	Provenance    Provenance
