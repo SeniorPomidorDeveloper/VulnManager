@@ -1,4 +1,4 @@
-package normalizers
+package blocks
 
 import (
 	"context"
@@ -10,12 +10,13 @@ import (
 	"strings"
 
 	"vulnmanager/modules/model"
+	"vulnmanager/services/normalize/internal/normalizers"
 )
 
 const (
-	PathNormalizer NormalizerID = "path"
+	PathNormalizer normalizers.NormalizerID = "path"
 
-	pathVersion NormalizerVersion = "1"
+	pathVersion normalizers.NormalizerVersion = "1"
 
 	wildcardSegment = "*"
 	separator       = "/"
@@ -86,15 +87,15 @@ func matchesPrefix(segments, prefix []string) bool {
 	return true
 }
 
-func NewPath(rules PathRules, fields ...string) Normalizer {
+func NewPath(rules PathRules, fields ...string) normalizers.Normalizer {
 	return pathNormalizer{rules: rules, fields: slices.Clone(fields)}
 }
 
-func (pathNormalizer) ID() NormalizerID {
+func (pathNormalizer) ID() normalizers.NormalizerID {
 	return PathNormalizer
 }
 
-func (pathNormalizer) Version() NormalizerVersion {
+func (pathNormalizer) Version() normalizers.NormalizerVersion {
 	return pathVersion
 }
 

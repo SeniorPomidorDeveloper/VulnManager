@@ -1,31 +1,32 @@
-package normalizers
+package blocks
 
 import (
 	"context"
 
 	"vulnmanager/modules/model"
 	"vulnmanager/services/normalize/internal/cvss"
+	"vulnmanager/services/normalize/internal/normalizers"
 )
 
 const (
-	CVSSNormalizer NormalizerID = "cvss"
+	CVSSNormalizer normalizers.NormalizerID = "cvss"
 
-	cvssVersion NormalizerVersion = "1"
+	cvssVersion normalizers.NormalizerVersion = "1"
 )
 
 const codeInvalidCVSS = "invalid_cvss"
 
 type cvssNormalizer struct{}
 
-func NewCVSS() Normalizer {
+func NewCVSS() normalizers.Normalizer {
 	return cvssNormalizer{}
 }
 
-func (cvssNormalizer) ID() NormalizerID {
+func (cvssNormalizer) ID() normalizers.NormalizerID {
 	return CVSSNormalizer
 }
 
-func (cvssNormalizer) Version() NormalizerVersion {
+func (cvssNormalizer) Version() normalizers.NormalizerVersion {
 	return cvssVersion
 }
 
@@ -53,6 +54,6 @@ func (cvssNormalizer) Normalize(_ context.Context, finding *model.Finding) error
 	return nil
 }
 
-func cvssStep() (Normalizer, error) {
+func CVSS() (normalizers.Normalizer, error) {
 	return NewCVSS(), nil
 }

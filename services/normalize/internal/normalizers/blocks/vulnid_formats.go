@@ -1,4 +1,4 @@
-package normalizers
+package blocks
 
 import "vulnmanager/modules/model"
 

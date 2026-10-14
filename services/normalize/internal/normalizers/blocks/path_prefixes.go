@@ -1,4 +1,4 @@
-package normalizers
+package blocks
 
 func StandardPathRules() (PathRules, error) {
 	return NewPathRules([]string{

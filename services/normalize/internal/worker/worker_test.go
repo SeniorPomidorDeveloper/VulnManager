@@ -13,6 +13,7 @@ import (
 	"vulnmanager/modules/model"
 	"vulnmanager/services/normalize/internal/adapters"
 	"vulnmanager/services/normalize/internal/normalizers"
+	"vulnmanager/services/normalize/internal/normalizers/blocks"
 	"vulnmanager/services/normalize/internal/parsers"
 	"vulnmanager/services/normalize/internal/queue"
 	"vulnmanager/services/normalize/internal/store"
@@ -90,8 +91,8 @@ func (s *fakeStore) FailRun(_ context.Context, _ store.Run, reason string) error
 
 func newAdapters(t *testing.T) *adapters.Registry {
 	t.Helper()
-	scale := normalizers.SeverityScale{"warning": model.SeverityMedium}
-	chain, err := normalizers.NewChain(normalizers.NewSeverity(normalizers.SeverityByPriority(scale, nil, normalizers.FromLabel)))
+	scale := blocks.SeverityScale{"warning": model.SeverityMedium}
+	chain, err := normalizers.NewChain(normalizers.NewSeverity(blocks.SeverityByPriority(scale, nil, blocks.SeverityFromLabel)))
 	if err != nil {
 		t.Fatal(err)
 	}
