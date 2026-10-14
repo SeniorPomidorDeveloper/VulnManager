@@ -26,3 +26,21 @@ INSERT_FINDING_VULN = (
     "VALUES ('acme', %s, 'scope', 'p', 'c', 'id', 'sca', 't', 'd', 'HIGH', "
     "'{}', '{}', 'trivy@1', now(), %s, %s)"
 )
+INSERT_COMPONENT = (
+    'INSERT INTO component (tenant_id, purl, type, name, version) '
+    "VALUES (%s, 'pkg:npm/lodash@4.17.21', 'npm', 'lodash', '4.17.21') "
+    'RETURNING id'
+)
+UPSERT_COMPONENT = (
+    'INSERT INTO component (tenant_id, purl, type, namespace, name, version) '
+    "VALUES (%s, 'pkg:npm/lodash@4.17.21', 'npm', '', 'lodash', '4.17.21') "
+    'ON CONFLICT (tenant_id, purl) DO UPDATE SET purl = EXCLUDED.purl '
+    'RETURNING id'
+)
+INSERT_FINDING_COMPONENT = (
+    'INSERT INTO finding (tenant_id, import_run_id, scope_key, product_id, '
+    'context_id, tool_finding_id, kind, title, description, severity_raw, '
+    'raw, provenance, algo_version, detected_at, component_id) '
+    "VALUES ('acme', %s, 'scope', 'p', 'c', 'id', 'sca', 't', 'd', 'HIGH', "
+    "'{}', '{}', 'trivy@1', now(), %s)"
+)
