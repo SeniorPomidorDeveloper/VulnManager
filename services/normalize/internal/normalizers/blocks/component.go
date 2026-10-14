@@ -1,4 +1,4 @@
-package normalizers
+package blocks
 
 import (
 	"context"
@@ -9,12 +9,13 @@ import (
 	"strings"
 
 	"vulnmanager/modules/model"
+	"vulnmanager/services/normalize/internal/normalizers"
 )
 
 const (
-	ComponentNormalizer NormalizerID = "component"
+	ComponentNormalizer normalizers.NormalizerID = "component"
 
-	componentVersion NormalizerVersion = "1"
+	componentVersion normalizers.NormalizerVersion = "1"
 
 	purlScheme = "pkg:"
 	unreserved = "-._~"
@@ -40,15 +41,15 @@ var namespaceRules = map[model.ComponentType]func(string) string{
 
 type componentNormalizer struct{}
 
-func NewComponent() Normalizer {
+func NewComponent() normalizers.Normalizer {
 	return componentNormalizer{}
 }
 
-func (componentNormalizer) ID() NormalizerID {
+func (componentNormalizer) ID() normalizers.NormalizerID {
 	return ComponentNormalizer
 }
 
-func (componentNormalizer) Version() NormalizerVersion {
+func (componentNormalizer) Version() normalizers.NormalizerVersion {
 	return componentVersion
 }
 
@@ -73,7 +74,7 @@ func (componentNormalizer) Normalize(_ context.Context, finding *model.Finding) 
 	return nil
 }
 
-func componentStep() (Normalizer, error) {
+func Component() (normalizers.Normalizer, error) {
 	return NewComponent(), nil
 }
 

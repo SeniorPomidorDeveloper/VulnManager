@@ -1,4 +1,4 @@
-package normalizers_test
+package blocks_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"vulnmanager/modules/model"
-	"vulnmanager/services/normalize/internal/normalizers"
+	"vulnmanager/services/normalize/internal/normalizers/blocks"
 	"vulnmanager/services/normalize/internal/normalizers/normtest"
 )
 
@@ -22,7 +22,7 @@ func TestCVSS_KeepsEveryValidCandidateWithItsSource(t *testing.T) {
 		model.CVSSCandidate{Source: "nvd", Vector: "AV:N/AC:M/Au:N/C:P/I:P/A:P"},
 		model.CVSSCandidate{Source: "ghsa", Vector: "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"},
 	)
-	if err := normalizers.NewCVSS().Normalize(context.Background(), &got); err != nil {
+	if err := blocks.NewCVSS().Normalize(context.Background(), &got); err != nil {
 		t.Fatalf("normalize: %v", err)
 	}
 	want := []model.CVSSScore{
@@ -41,7 +41,7 @@ func TestCVSS_SkipsInvalidCandidatesWithOneWarning(t *testing.T) {
 		model.CVSSCandidate{Source: "b", Vector: v31Vector},
 		model.CVSSCandidate{Source: "c", Vector: "garbage"},
 	)
-	if err := normalizers.NewCVSS().Normalize(context.Background(), &got); err != nil {
+	if err := blocks.NewCVSS().Normalize(context.Background(), &got); err != nil {
 		t.Fatalf("normalize: %v", err)
 	}
 	if len(got.CVSS) != 1 || got.CVSS[0].Source != "b" || len(got.Diagnostics) != 1 || !got.Diagnostics.Has("invalid_cvss") {
@@ -50,7 +50,7 @@ func TestCVSS_SkipsInvalidCandidatesWithOneWarning(t *testing.T) {
 }
 
 func TestCVSS_Suite(t *testing.T) {
-	normtest.Suite(t, normalizers.NewCVSS(), []model.Finding{
+	normtest.Suite(t, blocks.NewCVSS(), []model.Finding{
 		cvssFinding(model.CVSSCandidate{Source: "nvd", Vector: v31Vector}),
 		cvssFinding(model.CVSSCandidate{Source: "x", Vector: "garbage"}),
 		cvssFinding(),

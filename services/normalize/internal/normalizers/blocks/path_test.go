@@ -1,4 +1,4 @@
-package normalizers_test
+package blocks_test
 
 import (
 	"context"
@@ -6,13 +6,13 @@ import (
 	"testing"
 
 	"vulnmanager/modules/model"
-	"vulnmanager/services/normalize/internal/normalizers"
+	"vulnmanager/services/normalize/internal/normalizers/blocks"
 	"vulnmanager/services/normalize/internal/normalizers/normtest"
 )
 
-func testPathRules(t *testing.T) normalizers.PathRules {
+func testPathRules(t *testing.T) blocks.PathRules {
 	t.Helper()
-	rules, err := normalizers.NewPathRules([]string{"/src/", "/home/runner/work/*/*/", "/app/"})
+	rules, err := blocks.NewPathRules([]string{"/src/", "/home/runner/work/*/*/", "/app/"})
 	if err != nil {
 		t.Fatalf("rules: %v", err)
 	}
@@ -42,7 +42,7 @@ func TestPath_Normalize(t *testing.T) {
 		{"not a string", `{"uri":42}`, `{"uri":42}`},
 		{"empty", ``, ``},
 	}
-	n := normalizers.NewPath(testPathRules(t), "uri", "target")
+	n := blocks.NewPath(testPathRules(t), "uri", "target")
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			got := pathFinding(c.in)
@@ -57,7 +57,7 @@ func TestPath_Normalize(t *testing.T) {
 }
 
 func TestPath_Suite(t *testing.T) {
-	normtest.Suite(t, normalizers.NewPath(testPathRules(t), "uri", "target"), []model.Finding{
+	normtest.Suite(t, blocks.NewPath(testPathRules(t), "uri", "target"), []model.Finding{
 		pathFinding(`{"uri":"/home/runner/work/repo/repo/pkg/a.go","start_line":3}`),
 		pathFinding(`{"uri":"pkg\\a.go"}`),
 		pathFinding(`{"target":"/app/app/package-lock.json"}`),
@@ -69,7 +69,7 @@ func TestPath_Suite(t *testing.T) {
 func TestNewPathRules_RejectsBadPrefixes(t *testing.T) {
 	for _, prefix := range []string{"src/", "/src", "/", "/a//b/", ""} {
 		t.Run(prefix, func(t *testing.T) {
-			if _, err := normalizers.NewPathRules([]string{prefix}); !errors.Is(err, normalizers.ErrInvalidPathRules) {
+			if _, err := blocks.NewPathRules([]string{prefix}); !errors.Is(err, blocks.ErrInvalidPathRules) {
 				t.Fatalf("err=%v", err)
 			}
 		})
@@ -77,12 +77,12 @@ func TestNewPathRules_RejectsBadPrefixes(t *testing.T) {
 }
 
 func TestStandardPathRules(t *testing.T) {
-	rules, err := normalizers.StandardPathRules()
+	rules, err := blocks.StandardPathRules()
 	if err != nil {
 		t.Fatalf("rules: %v", err)
 	}
 	got := pathFinding(`{"uri":"/home/runner/work/repo/repo/pkg/a.go"}`)
-	if err := normalizers.NewPath(rules, "uri").Normalize(context.Background(), &got); err != nil {
+	if err := blocks.NewPath(rules, "uri").Normalize(context.Background(), &got); err != nil {
 		t.Fatalf("normalize: %v", err)
 	}
 	if string(got.Location) != `{"uri":"pkg/a.go"}` {

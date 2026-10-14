@@ -1,4 +1,4 @@
-package normalizers
+package blocks
 
 import (
 	"cmp"
@@ -7,11 +7,12 @@ import (
 
 	"vulnmanager/modules/model"
 	"vulnmanager/services/normalize/internal/cvss"
+	"vulnmanager/services/normalize/internal/normalizers"
 )
 
 const (
-	FromCVSS  SeveritySource = "cvss"
-	FromLabel SeveritySource = "label"
+	SeverityFromCVSS  SeveritySource = "cvss"
+	SeverityFromLabel SeveritySource = "label"
 )
 
 type (
@@ -27,7 +28,7 @@ type priorityCalculator struct {
 	resolvers map[SeveritySource]func(*model.Finding) (model.Severity, bool)
 }
 
-func CVSSFrom(sources ...string) CVSSOrder {
+func CVSSSources(sources ...string) CVSSOrder {
 	order := make(CVSSOrder, len(sources))
 	for i, source := range sources {
 		order[i] = model.CVSSSource(source)
@@ -35,27 +36,27 @@ func CVSSFrom(sources ...string) CVSSOrder {
 	return order
 }
 
-func SeverityByPriority(scale SeverityScale, order CVSSOrder, policy ...SeveritySource) SeverityCalculator {
+func SeverityByPriority(scale SeverityScale, order CVSSOrder, policy ...SeveritySource) normalizers.SeverityCalculator {
 	c := &priorityCalculator{scale: scale, order: order, policy: policy}
 	c.resolvers = map[SeveritySource]func(*model.Finding) (model.Severity, bool){
-		FromCVSS:  c.fromCVSS,
-		FromLabel: c.fromLabel,
+		SeverityFromCVSS:  c.fromCVSS,
+		SeverityFromLabel: c.fromLabel,
 	}
 	return c
 }
 
-func (c *priorityCalculator) Version() NormalizerVersion {
+func (c *priorityCalculator) Version() normalizers.NormalizerVersion {
 	parts := make([]string, len(c.policy))
 	for i, source := range c.policy {
 		parts[i] = string(source)
 	}
-	version := NormalizerVersion(strings.Join(parts, ">"))
+	version := normalizers.NormalizerVersion(strings.Join(parts, ">"))
 	if len(c.order) > 0 {
 		sources := make([]string, len(c.order))
 		for i, source := range c.order {
 			sources[i] = string(source)
 		}
-		version += ";cvss=" + NormalizerVersion(strings.Join(sources, ","))
+		version += ";cvss=" + normalizers.NormalizerVersion(strings.Join(sources, ","))
 	}
 	return version
 }

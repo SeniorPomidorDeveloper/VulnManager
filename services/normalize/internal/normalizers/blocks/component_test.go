@@ -1,11 +1,11 @@
-package normalizers_test
+package blocks_test
 
 import (
 	"context"
 	"testing"
 
 	"vulnmanager/modules/model"
-	"vulnmanager/services/normalize/internal/normalizers"
+	"vulnmanager/services/normalize/internal/normalizers/blocks"
 	"vulnmanager/services/normalize/internal/normalizers/normtest"
 )
 
@@ -49,7 +49,7 @@ func TestComponent_Normalize(t *testing.T) {
 		},
 		{"empty", "  ", model.Component{}},
 	}
-	n := normalizers.NewComponent()
+	n := blocks.NewComponent()
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			got := componentFinding(c.raw)
@@ -70,7 +70,7 @@ func TestComponent_InvalidPURLDegradesWithDiagnostic(t *testing.T) {
 	for _, raw := range []model.PURLRaw{"npm/lodash@1", "pkg:npm", "pkg:npm//lodash", "pkg:npm/lo%zzdash@1", "pkg:npm/lodash@1?bad"} {
 		t.Run(string(raw), func(t *testing.T) {
 			got := componentFinding(raw)
-			if err := normalizers.NewComponent().Normalize(context.Background(), &got); err != nil {
+			if err := blocks.NewComponent().Normalize(context.Background(), &got); err != nil {
 				t.Fatalf("normalize: %v", err)
 			}
 			if !got.Component.IsZero() || !got.Diagnostics.Has("invalid_purl") {
@@ -81,7 +81,7 @@ func TestComponent_InvalidPURLDegradesWithDiagnostic(t *testing.T) {
 }
 
 func TestComponent_Suite(t *testing.T) {
-	normtest.Suite(t, normalizers.NewComponent(), []model.Finding{
+	normtest.Suite(t, blocks.NewComponent(), []model.Finding{
 		componentFinding("pkg:npm/%40Scope/Pkg@1.0.0"),
 		componentFinding("pkg:deb/debian/curl@7.88.1?distro=debian-12&arch=amd64"),
 		componentFinding("garbage"),

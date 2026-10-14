@@ -1,4 +1,4 @@
-package normalizers
+package blocks
 
 import (
 	"context"
@@ -8,12 +8,13 @@ import (
 	"strings"
 
 	"vulnmanager/modules/model"
+	"vulnmanager/services/normalize/internal/normalizers"
 )
 
 const (
-	VulnIDNormalizer NormalizerID = "vulnid"
+	VulnIDNormalizer normalizers.NormalizerID = "vulnid"
 
-	vulnIDVersion NormalizerVersion = "1"
+	vulnIDVersion normalizers.NormalizerVersion = "1"
 
 	CaseUpper CaseRule = "upper"
 	CaseLower CaseRule = "lower"
@@ -66,15 +67,15 @@ func (f VulnFormat) canonical(raw string) (model.VulnID, bool) {
 	return model.VulnID{Source: f.source, Value: f.prefix + f.rule(body)}, true
 }
 
-func NewVulnID(formats []VulnFormat) Normalizer {
+func NewVulnID(formats []VulnFormat) normalizers.Normalizer {
 	return vulnID{formats: formats}
 }
 
-func (vulnID) ID() NormalizerID {
+func (vulnID) ID() normalizers.NormalizerID {
 	return VulnIDNormalizer
 }
 
-func (vulnID) Version() NormalizerVersion {
+func (vulnID) Version() normalizers.NormalizerVersion {
 	return vulnIDVersion
 }
 

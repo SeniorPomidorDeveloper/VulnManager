@@ -1,15 +1,16 @@
 package adapters
 
 import (
-	"vulnmanager/services/normalize/internal/normalizers"
+	"vulnmanager/services/normalize/internal/normalizers/blocks"
 	"vulnmanager/services/normalize/internal/parsers"
 )
 
 func trivy() (Adapter, error) {
-	severity := normalizers.SeverityByPriority(
-		normalizers.LabelScale(),
-		normalizers.CVSSFrom("nvd", "ghsa", "redhat", "bitnami"),
-		normalizers.FromCVSS, normalizers.FromLabel,
+	severity := blocks.SeverityByPriority(
+		blocks.LabelScale(),
+		blocks.CVSSSources("nvd", "ghsa", "redhat", "bitnami"),
+		blocks.SeverityFromCVSS, blocks.SeverityFromLabel,
 	)
-	return adapterOf(parsers.NewTrivy(), normalizers.Trivy(severity))()
+	normalizer := blocks.Compose(blocks.CVSS, blocks.Severity(severity), blocks.VulnID, blocks.Component, blocks.Path("target"))
+	return adapterOf(parsers.NewTrivy(), normalizer)()
 }

@@ -1,4 +1,4 @@
-package normalizers_test
+package blocks_test
 
 import (
 	"context"
@@ -6,25 +6,25 @@ import (
 	"testing"
 
 	"vulnmanager/modules/model"
-	"vulnmanager/services/normalize/internal/normalizers"
+	"vulnmanager/services/normalize/internal/normalizers/blocks"
 	"vulnmanager/services/normalize/internal/normalizers/normtest"
 )
 
-func testFormats(t *testing.T) []normalizers.VulnFormat {
+func testFormats(t *testing.T) []blocks.VulnFormat {
 	t.Helper()
 	specs := []struct {
 		source model.VulnSource
 		prefix string
 		body   string
-		rule   normalizers.CaseRule
+		rule   blocks.CaseRule
 	}{
-		{"cve", "CVE-", `\d{4}-\d{4,}`, normalizers.CaseUpper},
-		{"ghsa", "GHSA-", `([2-9cfghjmpqrvwx]{4}-){2}[2-9cfghjmpqrvwx]{4}`, normalizers.CaseLower},
-		{"bdu", "BDU:", `\d{4}-\d{5}`, normalizers.CaseKeep},
+		{"cve", "CVE-", `\d{4}-\d{4,}`, blocks.CaseUpper},
+		{"ghsa", "GHSA-", `([2-9cfghjmpqrvwx]{4}-){2}[2-9cfghjmpqrvwx]{4}`, blocks.CaseLower},
+		{"bdu", "BDU:", `\d{4}-\d{5}`, blocks.CaseKeep},
 	}
-	formats := make([]normalizers.VulnFormat, 0, len(specs))
+	formats := make([]blocks.VulnFormat, 0, len(specs))
 	for _, spec := range specs {
-		format, err := normalizers.NewVulnFormat(spec.source, spec.prefix, spec.body, spec.rule)
+		format, err := blocks.NewVulnFormat(spec.source, spec.prefix, spec.body, spec.rule)
 		if err != nil {
 			t.Fatalf("format %s: %v", spec.source, err)
 		}
@@ -52,7 +52,7 @@ func TestVulnID_Normalize(t *testing.T) {
 		{"prefix only", "CVE-", model.VulnID{Source: model.VulnSourceUnknown, Value: "CVE-"}, true},
 		{"empty", "  ", model.VulnID{}, false},
 	}
-	n := normalizers.NewVulnID(testFormats(t))
+	n := blocks.NewVulnID(testFormats(t))
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			got := vulnFinding(c.raw)
@@ -70,7 +70,7 @@ func TestVulnID_Normalize(t *testing.T) {
 }
 
 func TestVulnID_Suite(t *testing.T) {
-	normtest.Suite(t, normalizers.NewVulnID(testFormats(t)), []model.Finding{
+	normtest.Suite(t, blocks.NewVulnID(testFormats(t)), []model.Finding{
 		vulnFinding("cve-2021-0001"),
 		vulnFinding("GHSA-RVG8-PWQ2-XJ7Q"),
 		vulnFinding("NSWG-ECO-428"),
@@ -83,17 +83,17 @@ func TestNewVulnFormat_RejectsBrokenSpecs(t *testing.T) {
 		source model.VulnSource
 		prefix string
 		body   string
-		rule   normalizers.CaseRule
+		rule   blocks.CaseRule
 	}{
-		"empty prefix": {"cve", "", `\d+`, normalizers.CaseUpper},
-		"empty source": {"", "CVE-", `\d+`, normalizers.CaseUpper},
+		"empty prefix": {"cve", "", `\d+`, blocks.CaseUpper},
+		"empty source": {"", "CVE-", `\d+`, blocks.CaseUpper},
 		"unknown rule": {"cve", "CVE-", `\d+`, "title"},
-		"bad regexp":   {"cve", "CVE-", `(`, normalizers.CaseUpper},
+		"bad regexp":   {"cve", "CVE-", `(`, blocks.CaseUpper},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			_, err := normalizers.NewVulnFormat(c.source, c.prefix, c.body, c.rule)
-			if !errors.Is(err, normalizers.ErrInvalidVulnFormat) {
+			_, err := blocks.NewVulnFormat(c.source, c.prefix, c.body, c.rule)
+			if !errors.Is(err, blocks.ErrInvalidVulnFormat) {
 				t.Fatalf("err=%v", err)
 			}
 		})
@@ -101,11 +101,11 @@ func TestNewVulnFormat_RejectsBrokenSpecs(t *testing.T) {
 }
 
 func TestStandardVulnFormats(t *testing.T) {
-	formats, err := normalizers.StandardVulnFormats()
+	formats, err := blocks.StandardVulnFormats()
 	if err != nil {
 		t.Fatalf("formats: %v", err)
 	}
-	n := normalizers.NewVulnID(formats)
+	n := blocks.NewVulnID(formats)
 	for raw, want := range map[model.VulnIDRaw]model.VulnID{
 		"cve-2026-3449":       {Source: "cve", Value: "CVE-2026-3449"},
 		"GHSA-RVG8-PWQ2-XJ7Q": {Source: "ghsa", Value: "GHSA-rvg8-pwq2-xj7q"},
