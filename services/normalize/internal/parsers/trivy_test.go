@@ -133,3 +133,15 @@ func TestTrivy_CanceledContext(t *testing.T) {
 	}
 	t.Fatal("expected at least one yielded value")
 }
+
+func TestTrivy_ToolVersionComesFromTheReport(t *testing.T) {
+	doc := `{"SchemaVersion":2,"Trivy":{"Version":"0.75.0"},"Results":[{"Target":"package-lock.json","Vulnerabilities":[{"VulnerabilityID":"CVE-2026-1","PkgName":"a"}]}]}`
+	for finding, err := range parsers.NewTrivy().Parse(context.Background(), strings.NewReader(doc), parsers.ScanMeta{}) {
+		if err != nil {
+			t.Fatalf("parse: %v", err)
+		}
+		if finding.ToolVersion != "0.75.0" {
+			t.Fatalf("tool version %q", finding.ToolVersion)
+		}
+	}
+}

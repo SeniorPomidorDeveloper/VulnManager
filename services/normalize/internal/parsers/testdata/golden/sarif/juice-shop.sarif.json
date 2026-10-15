@@ -5,6 +5,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "data/datacreator.ts",
@@ -22,6 +23,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "data/datacreator.ts",
@@ -39,6 +41,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "data/datacreator.ts",
@@ -56,6 +59,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "data/datacreator.ts",
@@ -73,6 +77,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "frontend/src/app/Services/conversation-storage.service.ts",
@@ -90,6 +95,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "frontend/src/app/chatbot/chat-welcome-screen/chat-welcome-screen.component.ts",
@@ -107,6 +113,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "frontend/src/app/coding-challenge-page/components/coding-challenge-fix-it/coding-challenge-fix-it.component.ts",
@@ -124,6 +131,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-child-process-exec",
     "description": "Shell command built from a variable",
     "severity_raw": "error",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-child-process-exec",
     "location": {
       "uri": "frontend/src/assets/private/three.js",
@@ -141,6 +149,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-child-process-exec",
     "description": "Shell command built from a variable",
     "severity_raw": "error",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-child-process-exec",
     "location": {
       "uri": "frontend/src/assets/private/three.js",
@@ -158,6 +167,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-child-process-exec",
     "description": "Shell command built from a variable",
     "severity_raw": "error",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-child-process-exec",
     "location": {
       "uri": "frontend/src/assets/private/three.js",
@@ -175,6 +185,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-child-process-exec",
     "description": "Shell command built from a variable",
     "severity_raw": "error",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-child-process-exec",
     "location": {
       "uri": "frontend/src/assets/private/three.js",
@@ -192,6 +203,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "frontend/src/assets/private/three.js",
@@ -209,6 +221,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "frontend/src/assets/private/three.js",
@@ -226,6 +239,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "frontend/src/assets/private/three.js",
@@ -243,6 +257,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "frontend/src/assets/private/three.js",
@@ -260,6 +275,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "frontend/src/assets/private/three.js",
@@ -277,6 +293,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "frontend/src/assets/private/three.js",
@@ -294,6 +311,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "frontend/src/assets/private/three.js",
@@ -311,6 +329,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "frontend/src/assets/private/three.js",
@@ -328,6 +347,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "frontend/src/assets/private/three.js",
@@ -345,6 +365,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-child-process-exec",
     "description": "Shell command built from a variable",
     "severity_raw": "error",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-child-process-exec",
     "location": {
       "uri": "lib/codingChallenges.ts",
@@ -362,6 +383,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-child-process-exec",
     "description": "Shell command built from a variable",
     "severity_raw": "error",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-child-process-exec",
     "location": {
       "uri": "lib/codingChallenges.ts",
@@ -379,6 +401,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-insecure-hash",
     "description": "Weak hash algorithm",
     "severity_raw": "warning",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-insecure-hash",
     "location": {
       "uri": "lib/insecurity.ts",
@@ -396,6 +419,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "lib/insecurity.ts",
@@ -413,6 +437,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-hardcoded-jwt-secret",
     "description": "JWT signed or verified with a string literal secret",
     "severity_raw": "warning",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-hardcoded-jwt-secret",
     "location": {
       "uri": "lib/insecurity.ts",
@@ -430,6 +455,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "routes/captcha.ts",
@@ -447,6 +473,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "routes/captcha.ts",
@@ -464,6 +491,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "routes/captcha.ts",
@@ -481,6 +509,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "routes/captcha.ts",
@@ -498,6 +527,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-math-random",
     "description": "Math.random is not a secure random source",
     "severity_raw": "note",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-math-random",
     "location": {
       "uri": "routes/captcha.ts",
@@ -515,6 +545,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-eval",
     "description": "Call to eval on dynamic input",
     "severity_raw": "error",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-eval",
     "location": {
       "uri": "routes/captcha.ts",
@@ -532,6 +563,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-eval",
     "description": "Call to eval on dynamic input",
     "severity_raw": "error",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-eval",
     "location": {
       "uri": "routes/userProfile.ts",
@@ -549,6 +581,7 @@
     "title": "Semgrep Finding: rules.vulnmanager.js-insecure-hash",
     "description": "Weak hash algorithm",
     "severity_raw": "warning",
+    "tool_version": "1.180.0",
     "rule_id": "rules.vulnmanager.js-insecure-hash",
     "location": {
       "uri": "scripts/package.mjs",

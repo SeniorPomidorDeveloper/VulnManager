@@ -19,7 +19,7 @@ import (
 	"vulnmanager/services/normalize/internal/store"
 )
 
-const sarifReport = `{"$schema":"https://json.schemastore.org/sarif-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"semgrep","rules":[]}},"results":[
+const sarifReport = `{"$schema":"https://json.schemastore.org/sarif-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"semgrep","semanticVersion":"1.180.0","rules":[]}},"results":[
 {"ruleId":"r1","message":{"text":"first"},"locations":[{"physicalLocation":{"artifactLocation":{"uri":"a.go"},"region":{"startLine":1}}}]},
 {"ruleId":"r2","message":{"text":"second"},"locations":[{"physicalLocation":{"artifactLocation":{"uri":"b.go"},"region":{"startLine":2}}}]}]}]}`
 
@@ -152,7 +152,7 @@ func TestHandle_WritesFindingsAndAcks(t *testing.T) {
 		t.Fatalf("completed = %v, want [2]", got)
 	}
 	first := findings.tx.findings[0]
-	if first.Scope.TenantID != "t1" || first.ImportRunID != "run-1" || first.Provenance.ScanID != "scan-1" {
+	if first.Scope.TenantID != "t1" || first.ImportRunID != "run-1" || first.Provenance.ScanID != "scan-1" || first.Provenance.ToolVersion != "1.180.0" {
 		t.Fatalf("unexpected finding: %+v", first)
 	}
 	if !strings.HasPrefix(first.AlgoVersion, string(parsers.NewSARIF().ID())+"@") ||

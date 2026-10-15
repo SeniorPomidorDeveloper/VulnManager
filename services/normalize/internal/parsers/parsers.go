@@ -37,6 +37,7 @@ type RawFinding struct {
 	PURLRaw       model.PURLRaw
 	CVSSVectors   []model.CVSSCandidate
 	ScannerScore  *model.Score
+	ToolVersion   model.ToolVersion
 	RuleID        model.RuleID
 	CWEs          []model.CWERaw
 	Location      json.RawMessage

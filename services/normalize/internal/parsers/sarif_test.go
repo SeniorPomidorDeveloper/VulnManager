@@ -229,3 +229,20 @@ func TestSARIF_SnippetIsKeptInTheLocation(t *testing.T) {
 		t.Fatalf("locations %s | %s", found[0].Location, found[1].Location)
 	}
 }
+
+func TestSARIF_ToolVersionPrefersVersionOverSemanticVersion(t *testing.T) {
+	cases := map[string]model.ToolVersion{
+		`{"version":"1.2","semanticVersion":"1.2.3"}`: "1.2",
+		`{"semanticVersion":"1.2.3"}`:                 "1.2.3",
+		`{}`:                                          "",
+	}
+	for driver, want := range cases {
+		t.Run(driver, func(t *testing.T) {
+			doc := `{"version":"2.1.0","runs":[{"tool":{"driver":` + driver + `},"results":[{"ruleId":"a","message":{"text":"1"}}]}]}`
+			found := parseSARIF(t, doc)
+			if len(found) != 1 || found[0].ToolVersion != want {
+				t.Fatalf("found %+v, want version %q", found, want)
+			}
+		})
+	}
+}
