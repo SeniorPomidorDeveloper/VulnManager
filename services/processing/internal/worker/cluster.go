@@ -19,6 +19,7 @@ type Dedup struct {
 }
 
 type ClusterStats struct {
+	AlgoVersion string
 	Candidates  []int
 	Verdicts    map[dedup.Verdict]int
 	Confidences []float64
@@ -42,7 +43,7 @@ func (d Dedup) AlgoVersion() string {
 }
 
 func (w *Worker) cluster(ctx context.Context, tx store.Tx, run store.Run, findings []model.Finding, items []store.Item) (ClusterStats, error) {
-	stats := ClusterStats{Verdicts: map[dedup.Verdict]int{}}
+	stats := ClusterStats{AlgoVersion: w.deduper.AlgoVersion(), Verdicts: map[dedup.Verdict]int{}}
 	fingerprints := groupFingerprints(items)
 	records := make(map[model.FindingID]dedup.Record, len(findings))
 	for _, finding := range findings {
