@@ -111,6 +111,8 @@ func newWorker(cfg config.Config, pool *pgxpool.Pool, log *slog.Logger) (*worker
 	reg := prometheus.NewRegistry()
 	reg.MustRegister(collectors.NewGoCollector(), collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 	m := metrics.New(reg)
+	findingStore := store.New(pool)
+	reg.MustRegister(metrics.NewBacklogCollector(findingStore))
 
 	w, err := worker.New(
 		worker.Config{
@@ -122,7 +124,7 @@ func newWorker(cfg config.Config, pool *pgxpool.Pool, log *slog.Logger) (*worker
 		worker.Deps{
 			Jobs:     m.WrapJobs(queue.New(db.New(pool)), time.Now),
 			Raw:      raw,
-			Store:    m.WrapStore(worker.NewStore(store.New(pool))),
+			Store:    m.WrapStore(worker.NewStore(findingStore)),
 			Adapters: registry,
 			Clock:    time.Now,
 			Log:      log,

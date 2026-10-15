@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -57,6 +58,11 @@ type statsRecord struct {
 	Error    string `json:"error,omitempty"`
 }
 
+type Backlog struct {
+	Runs      int
+	OldestAge time.Duration
+}
+
 func New(pool *pgxpool.Pool) *Store {
 	return &Store{pool: pool}
 }
@@ -80,6 +86,26 @@ func commit(ctx context.Context, tx pgx.Tx) error {
 		return fmt.Errorf("commit: %w", err)
 	}
 	return nil
+}
+
+func (s *Store) MarkPublished(ctx context.Context, tenant model.TenantID, id model.ImportRunID) (bool, error) {
+	runID, err := uuid.Parse(string(id))
+	if err != nil {
+		return false, fmt.Errorf("import run id: %w", err)
+	}
+	changed, err := db.New(s.pool).MarkImportRunPublished(ctx, db.MarkImportRunPublishedParams{TenantID: string(tenant), ID: runID})
+	if err != nil {
+		return false, fmt.Errorf("mark import run published: %w", err)
+	}
+	return changed > 0, nil
+}
+
+func (s *Store) Backlog(ctx context.Context) (Backlog, error) {
+	row, err := db.New(s.pool).UnpublishedImportRuns(ctx)
+	if err != nil {
+		return Backlog{}, fmt.Errorf("unpublished import runs: %w", err)
+	}
+	return Backlog{Runs: int(row.Runs), OldestAge: time.Duration(row.OldestAgeSeconds * float64(time.Second))}, nil
 }
 
 func (s *Store) FailRun(ctx context.Context, run Run, reason string) error {
