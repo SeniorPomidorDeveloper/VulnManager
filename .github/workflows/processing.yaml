@@ -22,3 +22,32 @@ jobs:
           cache-dependency-path: services/processing/go.mod
 
       - run: make ci
+
+  package:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: services/processing
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - uses: actions/setup-go@v5.4.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: services/processing/go.mod
+
+      - run: sudo apt-get install -y --no-install-recommends debhelper dpkg-dev fakeroot
+
+      - run: make deb
+
+      - run: make image
+
+      - run: make smoke
+
+      - if: always()
+        run: make smoke-clean
+
+      - uses: actions/upload-artifact@v4.6.0
+        with:
+          name: vulnmanager-processing-deb
+          path: services/processing/dist/*.deb
