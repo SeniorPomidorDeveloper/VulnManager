@@ -44,7 +44,11 @@ func newHandler(t *testing.T, err error) handler {
 	if regErr != nil {
 		t.Fatal(regErr)
 	}
-	w, workerErr := worker.New(failingStore{err: err}, registry)
+	stages, stagesErr := adapters.Dedup()
+	if stagesErr != nil {
+		t.Fatal(stagesErr)
+	}
+	w, workerErr := worker.New(failingStore{err: err}, registry, stages)
 	if workerErr != nil {
 		t.Fatal(workerErr)
 	}

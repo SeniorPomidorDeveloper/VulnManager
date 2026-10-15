@@ -4,7 +4,9 @@ import (
 	"fmt"
 
 	"vulnmanager/modules/model"
+	"vulnmanager/services/processing/internal/dedup"
 	"vulnmanager/services/processing/internal/fingerprint"
+	"vulnmanager/services/processing/internal/worker"
 )
 
 func strategies() map[model.ToolName][]fingerprint.Strategy {
@@ -34,4 +36,12 @@ func Builtin() (*fingerprint.Registry, error) {
 		}
 	}
 	return registry, nil
+}
+
+func Dedup() (worker.Dedup, error) {
+	scorer, err := dedup.DefaultByKind()
+	if err != nil {
+		return worker.Dedup{}, fmt.Errorf("scorer: %w", err)
+	}
+	return worker.Dedup{Blocker: dedup.ByLevel{}, Scorer: scorer, Clusterer: dedup.Constrained{}}, nil
 }
