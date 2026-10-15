@@ -24,6 +24,10 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
     uses: ./.github/workflows/model.yaml
 
+  processing:
+    if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
+    uses: ./.github/workflows/processing.yaml
+
   pipeline:
     if: github.event_name != 'pull_request' || github.event.label.name == 'full-ci'
     uses: ./.github/workflows/pipeline.yaml
