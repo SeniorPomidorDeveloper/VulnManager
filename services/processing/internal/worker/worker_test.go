@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"vulnmanager/modules/model"
+	"vulnmanager/services/processing/internal/dedup"
 	"vulnmanager/services/processing/internal/fingerprint"
 	"vulnmanager/services/processing/internal/store"
 	"vulnmanager/services/processing/internal/worker"
@@ -46,6 +47,30 @@ func (t *fakeTx) Findings(context.Context, store.Run) ([]model.Finding, error) {
 
 func (t *fakeTx) AddFingerprints(_ context.Context, _ store.Run, items []store.Item) error {
 	t.added = append(t.added, items...)
+	return nil
+}
+
+func (t *fakeTx) LockScope(context.Context, model.Scope) error {
+	return nil
+}
+
+func (t *fakeTx) Lookup(context.Context, model.Scope, []dedup.BlockKey) ([]dedup.Hit, error) {
+	return nil, nil
+}
+
+func (t *fakeTx) FindingsByID(context.Context, model.Scope, []model.FindingID) ([]model.Finding, error) {
+	return nil, nil
+}
+
+func (t *fakeTx) ClustersOf(context.Context, model.Scope, []model.FindingID) (map[model.FindingID]dedup.ClusterID, error) {
+	return nil, nil
+}
+
+func (t *fakeTx) CreateCluster(context.Context, model.Scope, string) (dedup.ClusterID, error) {
+	return "", nil
+}
+
+func (t *fakeTx) AddMembers(context.Context, model.Scope, string, []store.Member) error {
 	return nil
 }
 
