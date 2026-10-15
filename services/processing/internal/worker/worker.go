@@ -19,6 +19,7 @@ type Result struct {
 	Findings        int
 	Unfingerprinted int
 	Skipped         map[fingerprint.Level]int
+	Cluster         ClusterStats
 }
 
 type Store interface {
@@ -28,13 +29,14 @@ type Store interface {
 type Worker struct {
 	store    Store
 	registry *fingerprint.Registry
+	deduper  Dedup
 }
 
-func New(s Store, registry *fingerprint.Registry) (*Worker, error) {
-	if s == nil || registry == nil {
+func New(s Store, registry *fingerprint.Registry, deduper Dedup) (*Worker, error) {
+	if s == nil || registry == nil || !deduper.valid() {
 		return nil, ErrInvalidConfig
 	}
-	return &Worker{store: s, registry: registry}, nil
+	return &Worker{store: s, registry: registry, deduper: deduper}, nil
 }
 
 func (w *Worker) Handle(ctx context.Context, tenant model.TenantID, id model.ImportRunID) (Result, error) {
@@ -43,6 +45,9 @@ func (w *Worker) Handle(ctx context.Context, tenant model.TenantID, id model.Imp
 		run, err := tx.Run(ctx, tenant, id)
 		if err != nil {
 			return fmt.Errorf("run: %w", err)
+		}
+		if err := tx.LockScope(ctx, run.Scope); err != nil {
+			return fmt.Errorf("lock scope: %w", err)
 		}
 		set := w.registry.For(run.Tool)
 		fresh, err := tx.Begin(ctx, run, set.AlgoVersion())
@@ -60,6 +65,10 @@ func (w *Worker) Handle(ctx context.Context, tenant model.TenantID, id model.Imp
 		items := compute(set, findings, &result)
 		if err := tx.AddFingerprints(ctx, run, items); err != nil {
 			return fmt.Errorf("add fingerprints: %w", err)
+		}
+		result.Cluster, err = w.cluster(ctx, tx, run, findings, items)
+		if err != nil {
+			return fmt.Errorf("cluster: %w", err)
 		}
 		return nil
 	})

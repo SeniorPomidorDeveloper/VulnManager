@@ -50,7 +50,11 @@ func Run(log *slog.Logger) error {
 		return fmt.Errorf("adapters: %w", err)
 	}
 	processingStore := store.New(pool)
-	w, err := worker.New(processingStore, registry)
+	stages, err := adapters.Dedup()
+	if err != nil {
+		return fmt.Errorf("dedup: %w", err)
+	}
+	w, err := worker.New(processingStore, registry, stages)
 	if err != nil {
 		return fmt.Errorf("worker: %w", err)
 	}
