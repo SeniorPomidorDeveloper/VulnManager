@@ -30,21 +30,21 @@ func (s Identity) Fingerprint(finding model.Finding) (Fingerprint, bool) {
 		return Fingerprint{}, false
 	}
 	return digest(
-		s.Level(), s.Version(),
-		string(finding.Scope.Key()),
-		finding.Kind.String(),
-		string(finding.VulnID.Source),
-		finding.VulnID.Value,
+		s,
+		FindingField(finding.Scope.Key()),
+		FindingField(finding.Kind.String()),
+		FindingField(finding.VulnID.Source),
+		FindingField(finding.VulnID.Value),
 		componentKey(finding.Component),
-		locationOf(finding).path(),
+		FindingField(locationOf(finding).path()),
 	), true
 }
 
-func componentKey(component model.Component) string {
+func componentKey(component model.Component) FindingField {
 	if component.PURL != "" {
-		return string(component.PURL)
+		return FindingField(component.PURL)
 	}
-	return strings.Join([]string{
+	return FindingField(strings.Join([]string{
 		string(component.Type), component.Namespace, component.Name, component.Version,
-	}, "/")
+	}, "/"))
 }

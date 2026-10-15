@@ -26,9 +26,9 @@ func (s ToolUID) Fingerprint(finding model.Finding) (Fingerprint, bool) {
 		return Fingerprint{}, false
 	}
 	return digest(
-		s.Level(), s.Version(),
-		string(finding.Provenance.Tool),
-		string(finding.Scope.Key()),
-		string(finding.ToolFindingID),
+		s,
+		FindingField(finding.Provenance.Tool),
+		FindingField(finding.Scope.Key()),
+		FindingField(finding.ToolFindingID),
 	), true
 }

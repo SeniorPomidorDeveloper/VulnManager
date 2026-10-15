@@ -27,10 +27,10 @@ func (s Structural) Fingerprint(finding model.Finding) (Fingerprint, bool) {
 		return Fingerprint{}, false
 	}
 	return digest(
-		s.Level(), s.Version(),
-		string(finding.Scope.Key()),
-		string(finding.RuleID),
-		place.path(),
-		place.code(),
+		s,
+		FindingField(finding.Scope.Key()),
+		FindingField(finding.RuleID),
+		FindingField(place.path()),
+		FindingField(place.code()),
 	), true
 }
