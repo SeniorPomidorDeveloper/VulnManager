@@ -13,6 +13,7 @@ import (
 
 	"vulnmanager/modules/model"
 	"vulnmanager/services/processing/gen/db"
+	"vulnmanager/services/processing/internal/dedup"
 	"vulnmanager/services/processing/internal/fingerprint"
 )
 
@@ -42,6 +43,12 @@ type Tx interface {
 	Begin(ctx context.Context, run Run, algoVersion string) (bool, error)
 	Findings(ctx context.Context, run Run) ([]model.Finding, error)
 	AddFingerprints(ctx context.Context, run Run, items []Item) error
+	LockScope(ctx context.Context, scope model.Scope) error
+	Lookup(ctx context.Context, scope model.Scope, keys []dedup.BlockKey) ([]dedup.Hit, error)
+	FindingsByID(ctx context.Context, scope model.Scope, ids []model.FindingID) ([]model.Finding, error)
+	ClustersOf(ctx context.Context, scope model.Scope, ids []model.FindingID) (map[model.FindingID]dedup.ClusterID, error)
+	CreateCluster(ctx context.Context, scope model.Scope, algoVersion string) (dedup.ClusterID, error)
+	AddMembers(ctx context.Context, scope model.Scope, algoVersion string, members []Member) error
 }
 
 type Backlog struct {
@@ -179,6 +186,8 @@ func toFinding(run Run, row db.ListRunFindingsRow) (model.Finding, error) {
 		Scope:         run.Scope,
 		ToolFindingID: model.ToolFindingID(row.ToolFindingID),
 		Kind:          kind,
+		Severity:      severity(row.Severity),
+		CWE:           cwes(row.Cwe),
 		RuleID:        model.RuleID(row.RuleID.String),
 		VulnID:        vulnID(row.VulnSource, row.VulnID),
 		Component:     component(row),
@@ -205,4 +214,20 @@ func component(row db.ListRunFindingsRow) model.Component {
 		Name:      row.Name.String,
 		Version:   row.Version.String,
 	}
+}
+
+func severity(name string) model.Severity {
+	parsed, err := model.ParseSeverity(name)
+	if err != nil {
+		return model.SeverityUnknown
+	}
+	return parsed
+}
+
+func cwes(names []string) []model.CWEName {
+	result := make([]model.CWEName, 0, len(names))
+	for _, name := range names {
+		result = append(result, model.CWEName(name))
+	}
+	return result
 }

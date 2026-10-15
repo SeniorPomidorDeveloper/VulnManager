@@ -1,6 +1,7 @@
 package store
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/google/uuid"
@@ -8,6 +9,7 @@ import (
 
 	"vulnmanager/modules/model"
 	"vulnmanager/services/processing/gen/db"
+	"vulnmanager/services/processing/internal/dedup"
 )
 
 func text(value string) pgtype.Text {
@@ -60,6 +62,43 @@ func TestToFindingWithoutOptionalParts(t *testing.T) {
 
 func TestToFindingRejectsUnknownKind(t *testing.T) {
 	if _, err := toFinding(testRun(t), db.ListRunFindingsRow{ID: uuid.New(), Kind: "bogus"}); err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestToFindingReadsSeverityAndCWE(t *testing.T) {
+	got, err := toFinding(testRun(t), db.ListRunFindingsRow{
+		ID: uuid.New(), Kind: "sast", Severity: "high", Cwe: []string{"CWE-79", "CWE-89"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Severity != model.SeverityHigh || len(got.CWE) != 2 || got.CWE[1] != "CWE-89" {
+		t.Fatalf("got %+v", got)
+	}
+}
+
+func TestToFindingTreatsUnknownSeverityAsUnknown(t *testing.T) {
+	got, err := toFinding(testRun(t), db.ListRunFindingsRow{ID: uuid.New(), Kind: "sast", Severity: "weird"})
+	if err != nil || got.Severity != model.SeverityUnknown {
+		t.Fatalf("got %+v, %v", got, err)
+	}
+}
+
+func TestReasonRecordsKeepEveryReason(t *testing.T) {
+	got := reasonRecords([]dedup.MatchReason{
+		{Feature: dedup.FeatureVuln, Signal: dedup.SignalAgree, Points: 500},
+		{Feature: dedup.FeatureSeverity, Signal: dedup.SignalDisagree, Points: -50},
+	})
+
+	want := []reasonRecord{{"vuln", "agree", 500}, {"severity", "disagree", -50}}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
+}
+
+func TestParseIDsRejectsNonUUID(t *testing.T) {
+	if _, err := parseIDs([]model.FindingID{"not-a-uuid"}); err == nil {
 		t.Fatal("expected error")
 	}
 }
