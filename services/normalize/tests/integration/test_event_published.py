@@ -1,6 +1,12 @@
-from finding_sql import INSERT_RUN, MARK_PUBLISHED, UNPUBLISHED
+from finding_sql import (
+    FIND_UNPUBLISHED,
+    INSERT_RUN,
+    MARK_PUBLISHED,
+    UNPUBLISHED,
+)
 
 RUNNING = ('running',)
+REPORT = 'sha'
 
 
 def test_run_is_unpublished_until_marked(cursor, run_id):
@@ -31,3 +37,15 @@ def test_running_run_is_not_counted_or_marked(cursor):
 
     cursor.execute(UNPUBLISHED)
     assert cursor.fetchone()[0] == 0
+
+
+def test_lookup_finds_only_unpublished_run(cursor, run_id):
+    cursor.execute(FIND_UNPUBLISHED, (REPORT,))
+    assert cursor.fetchone() == (run_id,)
+
+    cursor.execute(FIND_UNPUBLISHED, ('another-report',))
+    assert cursor.fetchone() is None
+
+    cursor.execute(MARK_PUBLISHED, (run_id,))
+    cursor.execute(FIND_UNPUBLISHED, (REPORT,))
+    assert cursor.fetchone() is None

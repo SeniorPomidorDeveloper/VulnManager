@@ -1,6 +1,3 @@
-import json
-import uuid
-
 import client
 import pytest
 import settings
@@ -39,15 +36,9 @@ CVSS_SCORES = (
 )
 
 
-def unique_report():
-    report = json.loads(settings.CORPUS.read_text())
-    report['ReportID'] = str(uuid.uuid4())
-    return json.dumps(report).encode()
-
-
 @pytest.fixture(scope='module')
 def trivy_sha(database):
-    status, answer = client.send(unique_report(), TRIVY)
+    status, answer = client.send(client.unique_trivy_report(), TRIVY)
     assert status == ACCEPTED
     return client.completed(database, answer)
 

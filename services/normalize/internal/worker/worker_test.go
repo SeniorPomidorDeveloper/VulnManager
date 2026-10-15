@@ -43,11 +43,12 @@ type fakeTx struct {
 }
 
 type fakeStore struct {
-	tx         *fakeTx
-	failed     []string
-	published  []events.Event
-	marked     []model.ImportRunID
-	publishErr error
+	tx          *fakeTx
+	failed      []string
+	published   []events.Event
+	marked      []model.ImportRunID
+	publishErr  error
+	unpublished model.ImportRunID
 }
 
 func (j *fakeJobs) Claim(context.Context, uuid.UUID, queue.WorkerID, time.Duration) (queue.Job, queue.ClaimStatus, error) {
@@ -94,6 +95,10 @@ func (s *fakeStore) Publish(_ context.Context, event events.Event) error {
 	}
 	s.published = append(s.published, event)
 	return nil
+}
+
+func (s *fakeStore) UnpublishedRun(context.Context, store.Run) (model.ImportRunID, bool, error) {
+	return s.unpublished, s.unpublished != "", nil
 }
 
 func (s *fakeStore) MarkPublished(_ context.Context, _ model.TenantID, id model.ImportRunID) (bool, error) {
@@ -290,7 +295,7 @@ func TestHandle_FailedPublicationLeavesTheRunUnmarkedButTheJobDone(t *testing.T)
 	}
 }
 
-func TestHandle_AlreadyCompletedRunIsNotPublishedAgain(t *testing.T) {
+func TestHandle_AlreadyCompletedAndPublishedRunIsNotPublishedAgain(t *testing.T) {
 	job := testJob(1)
 	w, _, findings := newWorker(t, job, fakeRaw{body: sarifReport})
 	findings.tx.alreadyDone = true
@@ -301,5 +306,25 @@ func TestHandle_AlreadyCompletedRunIsNotPublishedAgain(t *testing.T) {
 
 	if len(findings.published) != 0 || len(findings.marked) != 0 {
 		t.Fatalf("published %v marked %v", findings.published, findings.marked)
+	}
+}
+
+func TestHandle_RedeliveredJobPublishesTheMissedEvent(t *testing.T) {
+	job := testJob(2)
+	w, jobs, findings := newWorker(t, job, fakeRaw{body: sarifReport})
+	findings.tx.alreadyDone = true
+	findings.unpublished = "run-7"
+
+	outcome, err := w.Handle(context.Background(), job.ID)
+
+	if err != nil || outcome.Action != ActionAck {
+		t.Fatalf("outcome=%+v err=%v", outcome, err)
+	}
+	want := events.Event{RunID: "run-7", Scope: job.Scope, Tool: job.Tool, ScanID: job.ScanID}
+	if len(findings.published) != 1 || findings.published[0] != want || len(findings.marked) != 1 || findings.marked[0] != "run-7" {
+		t.Fatalf("published %+v marked %v", findings.published, findings.marked)
+	}
+	if len(jobs.finished) != 1 || jobs.finished[0] != queue.StateDone {
+		t.Fatalf("finished %v", jobs.finished)
 	}
 }

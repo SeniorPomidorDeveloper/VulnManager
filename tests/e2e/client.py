@@ -1,4 +1,5 @@
 import json
+import uuid
 from urllib import request
 
 import settings
@@ -30,3 +31,9 @@ def completed(database, answer):
     sha256 = answer['sha256']
     waiting.until(lambda: fetch_one(database, COMPLETED_RUN, sha256))
     return sha256
+
+
+def unique_trivy_report():
+    report = json.loads(settings.CORPUS.read_text())
+    report['ReportID'] = str(uuid.uuid4())
+    return json.dumps(report).encode()
