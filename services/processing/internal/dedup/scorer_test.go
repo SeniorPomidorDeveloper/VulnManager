@@ -21,13 +21,18 @@ func sast(rule, path, code string, cwe ...model.CWEName) dedup.Record {
 	return dedup.Record{Kind: model.KindSAST, Rule: model.RuleID(rule), Path: path, Code: code, CWE: cwe}
 }
 
-func weighted(t *testing.T) dedup.Weighted {
+func weighted(t *testing.T) dedup.ByKind {
 	t.Helper()
-	scorer, err := dedup.DefaultWeighted()
+	scorer, err := dedup.DefaultByKind()
 	if err != nil {
 		t.Fatal(err)
 	}
 	return scorer
+}
+
+func ofKind(kind model.Kind, record dedup.Record) dedup.Record {
+	record.Kind = kind
+	return record
 }
 
 func TestWeightedVerdicts(t *testing.T) {
@@ -70,13 +75,47 @@ func TestWeightedNeverMergesAcrossKinds(t *testing.T) {
 }
 
 func TestWeightedClampsConfidenceToOne(t *testing.T) {
+	heavy := map[dedup.FeatureID]dedup.Weight{}
+	for _, feature := range dedup.DefaultFeatures() {
+		heavy[feature.ID()] = dedup.Weight{Agree: 900}
+	}
+	scorer, err := dedup.NewWeighted(dedup.DefaultFeatures(), heavy, dedup.DefaultThresholds())
+	if err != nil {
+		t.Fatal(err)
+	}
 	a := sca("CVE-1", "pkg:x@1", model.SeverityHigh)
-	a.Path = "go.mod"
 
-	got := weighted(t).Score(a, a)
+	got := scorer.Score(a, a)
 
-	if got.Confidence != 1 || len(got.Reasons) != 4 {
-		t.Fatalf("got %v", got.Confidence)
+	if got.Confidence != 1 || got.Verdict != dedup.VerdictMerge {
+		t.Fatalf("got %+v", got)
+	}
+}
+
+func TestByKindUsesProfileOfTheKind(t *testing.T) {
+	scorer := weighted(t)
+	check := dedup.Record{Rule: "CKV_1", Path: "main.tf", Code: "res"}
+
+	tests := map[model.Kind]dedup.Verdict{
+		model.KindIaC:    dedup.VerdictMerge,
+		model.KindSecret: dedup.VerdictMerge,
+		model.KindSAST:   dedup.VerdictMerge,
+		model.KindDAST:   dedup.VerdictMerge,
+	}
+	for kind, want := range tests {
+		t.Run(kind.String(), func(t *testing.T) {
+			if got := scorer.Score(ofKind(kind, check), ofKind(kind, check)); got.Verdict != want {
+				t.Fatalf("got %+v, want %s", got, want)
+			}
+		})
+	}
+
+	rulePath := dedup.Record{Rule: "CKV_1", Path: "main.tf"}
+	if got := scorer.Score(ofKind(model.KindIaC, rulePath), ofKind(model.KindIaC, rulePath)); got.Verdict != dedup.VerdictReview {
+		t.Fatalf("iac rule and path alone must stay in review: %+v", got)
+	}
+	if got := scorer.Score(ofKind(model.KindSAST, rulePath), ofKind(model.KindSAST, rulePath)); got.Verdict != dedup.VerdictSeparate {
+		t.Fatalf("sast rule and path alone must stay separate: %+v", got)
 	}
 }
 
