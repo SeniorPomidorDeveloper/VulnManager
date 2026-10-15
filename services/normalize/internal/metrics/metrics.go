@@ -109,6 +109,10 @@ func (s findingStore) FailRun(ctx context.Context, run store.Run, reason string)
 	return s.next.FailRun(ctx, run, reason)
 }
 
+func (s findingStore) UnpublishedRun(ctx context.Context, run store.Run) (model.ImportRunID, bool, error) {
+	return s.next.UnpublishedRun(ctx, run)
+}
+
 func (s findingStore) MarkPublished(ctx context.Context, tenant model.TenantID, id model.ImportRunID) (bool, error) {
 	return s.next.MarkPublished(ctx, tenant, id)
 }

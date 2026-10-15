@@ -100,6 +100,22 @@ func (s *Store) MarkPublished(ctx context.Context, tenant model.TenantID, id mod
 	return changed > 0, nil
 }
 
+func (s *Store) UnpublishedRun(ctx context.Context, run Run) (model.ImportRunID, bool, error) {
+	id, err := db.New(s.pool).UnpublishedImportRun(ctx, db.UnpublishedImportRunParams{
+		TenantID:  string(run.Scope.TenantID),
+		ScopeKey:  string(run.Scope.Key()),
+		ToolName:  string(run.Tool),
+		RawSha256: run.SHA256,
+	})
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "", false, nil
+	}
+	if err != nil {
+		return "", false, fmt.Errorf("unpublished import run: %w", err)
+	}
+	return model.ImportRunID(id.String()), true, nil
+}
+
 func (s *Store) Backlog(ctx context.Context) (Backlog, error) {
 	row, err := db.New(s.pool).UnpublishedImportRuns(ctx)
 	if err != nil {

@@ -71,3 +71,9 @@ UNPUBLISHED = (
     "FROM import_run WHERE status = 'completed' "
     'AND event_published_at IS NULL'
 )
+FIND_UNPUBLISHED = (
+    'SELECT id FROM import_run '
+    "WHERE tenant_id = 'acme' AND scope_key = 'scope' AND tool_name = 'trivy' "
+    "AND raw_sha256 = %s AND status = 'completed' "
+    'AND event_published_at IS NULL'
+)

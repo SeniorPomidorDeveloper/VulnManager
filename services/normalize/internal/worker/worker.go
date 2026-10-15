@@ -79,6 +79,7 @@ type FindingStore interface {
 	InTx(ctx context.Context, fn func(Tx) error) error
 	FailRun(ctx context.Context, run store.Run, reason string) error
 	MarkPublished(ctx context.Context, tenant model.TenantID, id model.ImportRunID) (bool, error)
+	UnpublishedRun(ctx context.Context, run store.Run) (model.ImportRunID, bool, error)
 }
 
 type Worker struct {
@@ -100,6 +101,10 @@ func (a storeAdapter) InTx(ctx context.Context, fn func(Tx) error) error {
 
 func (a storeAdapter) MarkPublished(ctx context.Context, tenant model.TenantID, id model.ImportRunID) (bool, error) {
 	return a.store.MarkPublished(ctx, tenant, id)
+}
+
+func (a storeAdapter) UnpublishedRun(ctx context.Context, run store.Run) (model.ImportRunID, bool, error) {
+	return a.store.UnpublishedRun(ctx, run)
 }
 
 func (a storeAdapter) FailRun(ctx context.Context, run store.Run, reason string) error {
@@ -168,6 +173,7 @@ func (w *Worker) process(ctx context.Context, job queue.Job, run store.Run) erro
 		return err
 	})
 	if errors.Is(err, store.ErrAlreadyCompleted) {
+		w.republish(ctx, job, run)
 		return nil
 	}
 	if err != nil {
@@ -175,6 +181,17 @@ func (w *Worker) process(ctx context.Context, job queue.Job, run store.Run) erro
 	}
 	w.publish(ctx, job, runID)
 	return nil
+}
+
+func (w *Worker) republish(ctx context.Context, job queue.Job, run store.Run) {
+	runID, found, err := w.deps.Store.UnpublishedRun(context.WithoutCancel(ctx), run)
+	if err != nil {
+		w.deps.Log.Warn("unpublished run lookup failed", "job", job.ID, "error", err)
+		return
+	}
+	if found {
+		w.publish(ctx, job, runID)
+	}
 }
 
 func (w *Worker) publish(ctx context.Context, job queue.Job, runID model.ImportRunID) {
