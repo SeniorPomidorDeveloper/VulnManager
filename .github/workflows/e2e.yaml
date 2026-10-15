@@ -19,6 +19,7 @@ jobs:
           cache-dependency-path: |
             services/ingest/go.mod
             services/normalize/go.mod
+            services/processing/go.mod
 
       - uses: actions/setup-python@v5.4.0
         with:
@@ -31,6 +32,9 @@ jobs:
 
       - run: make deb
         working-directory: services/normalize
+
+      - run: make deb
+        working-directory: services/processing
 
       - run: docker compose --profile core up -d --build --wait
 

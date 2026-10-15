@@ -1,6 +1,3 @@
-import json
-import uuid
-
 import client
 import pytest
 import settings
@@ -23,15 +20,9 @@ SNIPPETS = (
 )
 
 
-def unique_sarif():
-    report = json.loads(settings.SARIF_CORPUS.read_text())
-    report['properties'] = {'e2e': str(uuid.uuid4())}
-    return json.dumps(report).encode()
-
-
 @pytest.fixture(scope='module')
 def sarif_sha(database):
-    _, answer = client.send(unique_sarif(), SEMGREP)
+    _, answer = client.send(client.unique_sarif_report(), SEMGREP)
     return client.completed(database, answer)
 
 
