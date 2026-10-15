@@ -5,6 +5,11 @@ from urllib import request
 import settings
 import waiting
 
+PROCESSED = (
+    'SELECT p.algo_version FROM processing_run p '
+    'JOIN import_run r ON r.id = p.import_run_id '
+    'AND r.tenant_id = p.tenant_id WHERE r.raw_sha256 = %s'
+)
 COMPLETED_RUN = (
     'SELECT id FROM import_run '
     "WHERE raw_sha256 = %s AND status = 'completed'"
@@ -37,6 +42,12 @@ def completed(database, answer):
     sha256 = answer['sha256']
     waiting.until(lambda: fetch_one(database, COMPLETED_RUN, sha256))
     return sha256
+
+
+def processed(database, sha256):
+    return waiting.until(
+        lambda: fetch_one(database, PROCESSED, sha256),
+    )
 
 
 def unique_trivy_report():
