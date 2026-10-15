@@ -20,6 +20,7 @@ import (
 	"vulnmanager/services/processing/internal/adapters"
 	"vulnmanager/services/processing/internal/config"
 	"vulnmanager/services/processing/internal/consumer"
+	"vulnmanager/services/processing/internal/metrics"
 	"vulnmanager/services/processing/internal/store"
 	"vulnmanager/services/processing/internal/worker"
 )
@@ -48,13 +49,15 @@ func Run(log *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("adapters: %w", err)
 	}
-	w, err := worker.New(store.New(pool), registry)
+	processingStore := store.New(pool)
+	w, err := worker.New(processingStore, registry)
 	if err != nil {
 		return fmt.Errorf("worker: %w", err)
 	}
 
 	reg := prometheus.NewRegistry()
 	reg.MustRegister(collectors.NewGoCollector(), collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+	reg.MustRegister(metrics.NewBacklogCollector(processingStore))
 
 	srv := &http.Server{Addr: cfg.Addr, Handler: newMux(reg), ReadHeaderTimeout: readHeaderTimeout}
 	errCh := make(chan error, 1)
@@ -71,7 +74,7 @@ func Run(log *slog.Logger) error {
 			Prefetch:    cfg.Prefetch,
 			RetryDelay:  cfg.RetryDelay,
 			ConsumerTag: cfg.WorkerID,
-		}, handler{worker: w, log: log}, consumer.NewMetrics(reg), log).Run(ctx)
+		}, handler{worker: w, metrics: metrics.New(reg, registry.Has), log: log}, consumer.NewMetrics(reg), log).Run(ctx)
 	}()
 
 	log.Info("processing started", "addr", cfg.Addr, "worker", cfg.WorkerID)

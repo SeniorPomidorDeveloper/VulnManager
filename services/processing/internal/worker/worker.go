@@ -14,6 +14,7 @@ var ErrInvalidConfig = errors.New("worker: invalid config")
 
 type Result struct {
 	Tool            model.ToolName
+	AlgoVersion     string
 	Already         bool
 	Findings        int
 	Unfingerprinted int
@@ -48,7 +49,7 @@ func (w *Worker) Handle(ctx context.Context, tenant model.TenantID, id model.Imp
 		if err != nil {
 			return fmt.Errorf("begin: %w", err)
 		}
-		result = Result{Tool: run.Tool, Already: !fresh, Skipped: map[fingerprint.Level]int{}}
+		result = Result{Tool: run.Tool, AlgoVersion: set.AlgoVersion(), Already: !fresh, Skipped: map[fingerprint.Level]int{}}
 		if !fresh {
 			return nil
 		}
