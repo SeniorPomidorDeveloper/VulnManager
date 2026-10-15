@@ -60,3 +60,14 @@ INSERT_FINDING_RULE = (
     "VALUES ('acme', %s, 'scope', 'p', 'c', 'id', 'sast', 't', 'd', 'HIGH', "
     "'{}', '{}', 'semgrep@1', now(), %s)"
 )
+MARK_PUBLISHED = (
+    'UPDATE import_run SET event_published_at = now() '
+    "WHERE tenant_id = 'acme' AND id = %s AND status = 'completed' "
+    'AND event_published_at IS NULL'
+)
+UNPUBLISHED = (
+    'SELECT count(*), '
+    'COALESCE(EXTRACT(EPOCH FROM (now() - min(finished_at))), 0) '
+    "FROM import_run WHERE status = 'completed' "
+    'AND event_published_at IS NULL'
+)
