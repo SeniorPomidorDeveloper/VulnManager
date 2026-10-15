@@ -76,6 +76,9 @@ type sarifLocation struct {
 			StartColumn int `json:"startColumn"`
 			EndLine     int `json:"endLine"`
 			EndColumn   int `json:"endColumn"`
+			Snippet     struct {
+				Text string `json:"text"`
+			} `json:"snippet"`
 		} `json:"region"`
 	} `json:"physicalLocation"`
 }
@@ -86,6 +89,7 @@ type normalizedLocation struct {
 	StartColumn int    `json:"start_column,omitempty"`
 	EndLine     int    `json:"end_line,omitempty"`
 	EndColumn   int    `json:"end_column,omitempty"`
+	Snippet     string `json:"snippet,omitempty"`
 }
 
 func NewSARIF() SARIF {
@@ -242,6 +246,7 @@ func convertLocation(locations []sarifLocation) (normalizedLocation, model.Diagn
 		StartColumn: physical.Region.StartColumn,
 		EndLine:     physical.Region.EndLine,
 		EndColumn:   physical.Region.EndColumn,
+		Snippet:     physical.Region.Snippet.Text,
 	}, diagnostics
 }
 

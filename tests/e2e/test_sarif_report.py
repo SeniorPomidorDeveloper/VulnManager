@@ -11,6 +11,11 @@ RULES = (
     'JOIN import_run r ON r.id = f.import_run_id '
     'AND r.tenant_id = f.tenant_id WHERE r.raw_sha256 = %s'
 )
+SNIPPETS = (
+    'SELECT count(*), count(*) FILTER (WHERE f.location ? \'snippet\') '
+    'FROM finding f JOIN import_run r ON r.id = f.import_run_id '
+    'AND r.tenant_id = f.tenant_id WHERE r.raw_sha256 = %s'
+)
 
 
 def unique_sarif():
@@ -27,6 +32,13 @@ def sarif_sha(database):
 
 def test_sarif_findings_keep_the_rule_id(database, sarif_sha):
     assert client.fetch_one(database, RULES, sarif_sha) == (
+        settings.EXPECTED_SARIF_FINDINGS,
+        settings.EXPECTED_SARIF_FINDINGS,
+    )
+
+
+def test_sarif_findings_keep_the_code_snippet(database, sarif_sha):
+    assert client.fetch_one(database, SNIPPETS, sarif_sha) == (
         settings.EXPECTED_SARIF_FINDINGS,
         settings.EXPECTED_SARIF_FINDINGS,
     )
