@@ -12,6 +12,7 @@ import (
 
 	"vulnmanager/modules/model"
 	"vulnmanager/services/normalize/internal/adapters"
+	"vulnmanager/services/normalize/internal/events"
 	"vulnmanager/services/normalize/internal/normalizers"
 	"vulnmanager/services/normalize/internal/normalizers/blocks"
 	"vulnmanager/services/normalize/internal/parsers"
@@ -42,8 +43,11 @@ type fakeTx struct {
 }
 
 type fakeStore struct {
-	tx     *fakeTx
-	failed []string
+	tx         *fakeTx
+	failed     []string
+	published  []events.Event
+	marked     []model.ImportRunID
+	publishErr error
 }
 
 func (j *fakeJobs) Claim(context.Context, uuid.UUID, queue.WorkerID, time.Duration) (queue.Job, queue.ClaimStatus, error) {
@@ -84,6 +88,19 @@ func (s *fakeStore) InTx(_ context.Context, fn func(Tx) error) error {
 	return fn(s.tx)
 }
 
+func (s *fakeStore) Publish(_ context.Context, event events.Event) error {
+	if s.publishErr != nil {
+		return s.publishErr
+	}
+	s.published = append(s.published, event)
+	return nil
+}
+
+func (s *fakeStore) MarkPublished(_ context.Context, _ model.TenantID, id model.ImportRunID) (bool, error) {
+	s.marked = append(s.marked, id)
+	return true, nil
+}
+
 func (s *fakeStore) FailRun(_ context.Context, _ store.Run, reason string) error {
 	s.failed = append(s.failed, reason)
 	return nil
@@ -118,6 +135,7 @@ func newWorker(t *testing.T, job queue.Job, raw fakeRaw) (*Worker, *fakeJobs, *f
 			Raw:      raw,
 			Store:    findings,
 			Adapters: newAdapters(t),
+			Events:   findings,
 			Clock:    func() time.Time { return time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC) },
 		},
 	)
@@ -237,5 +255,51 @@ func TestHandle_BrokenReportFailsTheRun(t *testing.T) {
 func TestNew_RejectsIncompleteConfig(t *testing.T) {
 	if _, err := New(Config{}, Deps{}); !errors.Is(err, ErrInvalidConfig) {
 		t.Fatalf("got %v, want ErrInvalidConfig", err)
+	}
+}
+
+func TestHandle_PublishesImportCompletedAndMarksTheRun(t *testing.T) {
+	job := testJob(1)
+	w, _, findings := newWorker(t, job, fakeRaw{body: sarifReport})
+
+	if outcome, err := w.Handle(context.Background(), job.ID); err != nil || outcome.Action != ActionAck {
+		t.Fatalf("outcome=%+v err=%v", outcome, err)
+	}
+
+	want := events.Event{RunID: "run-1", Scope: job.Scope, Tool: job.Tool, ScanID: job.ScanID}
+	if len(findings.published) != 1 || findings.published[0] != want {
+		t.Fatalf("published %+v, want %+v", findings.published, want)
+	}
+	if len(findings.marked) != 1 || findings.marked[0] != "run-1" {
+		t.Fatalf("marked %v", findings.marked)
+	}
+}
+
+func TestHandle_FailedPublicationLeavesTheRunUnmarkedButTheJobDone(t *testing.T) {
+	job := testJob(1)
+	w, jobs, findings := newWorker(t, job, fakeRaw{body: sarifReport})
+	findings.publishErr = errors.New("broker down")
+
+	outcome, err := w.Handle(context.Background(), job.ID)
+
+	if err != nil || outcome.Action != ActionAck {
+		t.Fatalf("outcome=%+v err=%v", outcome, err)
+	}
+	if len(findings.marked) != 0 || len(jobs.finished) != 1 || jobs.finished[0] != queue.StateDone {
+		t.Fatalf("marked %v finished %v", findings.marked, jobs.finished)
+	}
+}
+
+func TestHandle_AlreadyCompletedRunIsNotPublishedAgain(t *testing.T) {
+	job := testJob(1)
+	w, _, findings := newWorker(t, job, fakeRaw{body: sarifReport})
+	findings.tx.alreadyDone = true
+
+	if _, err := w.Handle(context.Background(), job.ID); err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+
+	if len(findings.published) != 0 || len(findings.marked) != 0 {
+		t.Fatalf("published %v marked %v", findings.published, findings.marked)
 	}
 }

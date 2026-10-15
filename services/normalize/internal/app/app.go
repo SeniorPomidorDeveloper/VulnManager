@@ -21,6 +21,7 @@ import (
 	"vulnmanager/services/normalize/internal/adapters"
 	"vulnmanager/services/normalize/internal/config"
 	"vulnmanager/services/normalize/internal/consumer"
+	"vulnmanager/services/normalize/internal/events"
 	"vulnmanager/services/normalize/internal/metrics"
 	"vulnmanager/services/normalize/internal/queue"
 	"vulnmanager/services/normalize/internal/rawread"
@@ -48,7 +49,10 @@ func Run(log *slog.Logger) error {
 	}
 	defer pool.Close()
 
-	w, reg, err := newWorker(cfg, pool, log)
+	publisher, closePublisher := newPublisher(cfg)
+	defer closePublisher()
+
+	w, reg, err := newWorker(cfg, pool, log, publisher)
 	if err != nil {
 		return err
 	}
@@ -91,7 +95,17 @@ func Run(log *slog.Logger) error {
 	return nil
 }
 
-func newWorker(cfg config.Config, pool *pgxpool.Pool, log *slog.Logger) (*worker.Worker, *prometheus.Registry, error) {
+func newPublisher(cfg config.Config) (events.Publisher, func()) {
+	if cfg.Events == config.EventsNone {
+		return events.Disabled{}, func() {}
+	}
+	amqpPublisher := events.NewAMQPPublisher(events.Config{URL: events.URL(cfg.AMQPURL), Exchange: cfg.EventsExchange})
+	return amqpPublisher, func() { _ = amqpPublisher.Close() }
+}
+
+func newWorker(
+	cfg config.Config, pool *pgxpool.Pool, log *slog.Logger, publisher events.Publisher,
+) (*worker.Worker, *prometheus.Registry, error) {
 	raw, err := rawread.NewS3Reader(rawread.S3Config{
 		Endpoint:        cfg.S3Endpoint,
 		AccessKeyID:     cfg.S3AccessKey,
@@ -126,6 +140,7 @@ func newWorker(cfg config.Config, pool *pgxpool.Pool, log *slog.Logger) (*worker
 			Raw:      raw,
 			Store:    m.WrapStore(worker.NewStore(findingStore)),
 			Adapters: registry,
+			Events:   events.NewMetrics(reg).Wrap(publisher),
 			Clock:    time.Now,
 			Log:      log,
 		},

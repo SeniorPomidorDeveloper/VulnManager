@@ -109,6 +109,10 @@ func (s findingStore) FailRun(ctx context.Context, run store.Run, reason string)
 	return s.next.FailRun(ctx, run, reason)
 }
 
+func (s findingStore) MarkPublished(ctx context.Context, tenant model.TenantID, id model.ImportRunID) (bool, error) {
+	return s.next.MarkPublished(ctx, tenant, id)
+}
+
 func (t countingTx) CompleteRun(ctx context.Context, id model.ImportRunID, findings int) error {
 	if err := t.Tx.CompleteRun(ctx, id, findings); err != nil {
 		return err

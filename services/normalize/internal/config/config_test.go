@@ -30,6 +30,22 @@ func TestLoad_AppliesDefaults(t *testing.T) {
 	if cfg.Addr != ":8081" || cfg.WorkerID != "normalize" || cfg.Lease != 5*time.Minute || cfg.MaxAttempts != 5 {
 		t.Fatalf("unexpected defaults: %+v", cfg)
 	}
+	if cfg.Events != "amqp" || cfg.EventsExchange != "vulnmanager.import.completed" {
+		t.Fatalf("unexpected event defaults: %+v", cfg)
+	}
+}
+
+func TestLoad_EventsModeCanBeDisabledButNotMisspelled(t *testing.T) {
+	values := validEnv()
+	values["NORMALIZE_EVENTS"] = "none"
+	if cfg, err := Load(env(values)); err != nil || cfg.Events != "none" {
+		t.Fatalf("events = %q, err = %v", cfg.Events, err)
+	}
+
+	values["NORMALIZE_EVENTS"] = "kafka"
+	if _, err := Load(env(values)); err == nil || !strings.Contains(err.Error(), "NORMALIZE_EVENTS") {
+		t.Fatalf("err = %v", err)
+	}
 }
 
 func TestLoad_WorkerIDFallsBackToHostname(t *testing.T) {
