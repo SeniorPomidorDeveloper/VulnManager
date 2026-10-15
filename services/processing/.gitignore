@@ -4,3 +4,10 @@
 *.test
 *.out
 coverage.*
+/debian/.debhelper/
+/debian/vulnmanager-processing/
+/debian/files
+/debian/*.substvars
+/debian/*.debhelper
+/debian/*.debhelper.log
+/debian/debhelper-build-stamp
