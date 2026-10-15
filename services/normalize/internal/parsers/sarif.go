@@ -54,6 +54,7 @@ type sarifRule struct {
 	} `json:"defaultConfiguration"`
 	Properties struct {
 		SecuritySeverity json.RawMessage `json:"security-severity"`
+		Tags             []string        `json:"tags"`
 	} `json:"properties"`
 }
 
@@ -152,6 +153,8 @@ func convertResult(raw json.RawMessage, rules []sarifRule) RawFinding {
 		Description:   result.Message.Text,
 		SeverityRaw:   severity(result, rule),
 		ScannerScore:  securityScore(rule.Properties.SecuritySeverity),
+		RuleID:        ruleID(result, rule),
+		CWEs:          cweList(rule.Properties.Tags),
 		Location:      location.json(),
 		Raw:           raw,
 		Diagnostics:   diagnostics,
@@ -168,6 +171,13 @@ func lookupRule(result sarifResult, rules []sarifRule) sarifRule {
 		}
 	}
 	return sarifRule{}
+}
+
+func ruleID(result sarifResult, rule sarifRule) model.RuleID {
+	if result.RuleID != "" {
+		return model.RuleID(result.RuleID)
+	}
+	return model.RuleID(rule.ID)
 }
 
 func securityScore(raw json.RawMessage) *model.Score {

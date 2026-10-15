@@ -49,3 +49,14 @@ INSERT_RATING = (
     'version, vector, score) '
     "VALUES ('acme', %s, %s, %s, %s, %s, %s)"
 )
+INSERT_CWE = (
+    'INSERT INTO finding_cwe (tenant_id, finding_id, cwe) '
+    "VALUES ('acme', %s, %s)"
+)
+INSERT_FINDING_RULE = (
+    'INSERT INTO finding (tenant_id, import_run_id, scope_key, product_id, '
+    'context_id, tool_finding_id, kind, title, description, severity_raw, '
+    'raw, provenance, algo_version, detected_at, rule_id) '
+    "VALUES ('acme', %s, 'scope', 'p', 'c', 'id', 'sast', 't', 'd', 'HIGH', "
+    "'{}', '{}', 'semgrep@1', now(), %s)"
+)

@@ -48,3 +48,11 @@ func TestSecurityScore(t *testing.T) {
 		})
 	}
 }
+
+func TestCWEList_KeepsOnlyCWEEntries(t *testing.T) {
+	got := cweList([]string{"security", "CWE-79: XSS", "external/cwe/cwe-089", "owasp-a1"})
+	want := []model.CWERaw{"CWE-79: XSS", "external/cwe/cwe-089"}
+	if !slices.Equal(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+}

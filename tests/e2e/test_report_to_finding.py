@@ -1,15 +1,12 @@
 import json
-from urllib import request
 import uuid
 
+import client
+import pytest
 import settings
-import waiting
 
 ACCEPTED = 202
-COMPLETED_RUN = (
-    'SELECT id FROM import_run '
-    "WHERE raw_sha256 = %s AND status = 'completed'"
-)
+TRIVY = 'trivy'
 FINDINGS = (
     'SELECT count(*) FROM finding f JOIN import_run r '
     'ON r.id = f.import_run_id AND r.tenant_id = f.tenant_id '
@@ -19,6 +16,13 @@ COMPONENTS = (
     'SELECT count(f.component_id), count(DISTINCT f.component_id) '
     'FROM finding f JOIN import_run r '
     'ON r.id = f.import_run_id AND r.tenant_id = f.tenant_id '
+    'WHERE r.raw_sha256 = %s'
+)
+CWES = (
+    'SELECT count(*), count(DISTINCT c.finding_id) FROM finding_cwe c '
+    'JOIN finding f ON f.id = c.finding_id AND f.tenant_id = c.tenant_id '
+    'JOIN import_run r ON r.id = f.import_run_id '
+    'AND r.tenant_id = f.tenant_id '
     'WHERE r.raw_sha256 = %s'
 )
 CVSS_SCORES = (
@@ -36,50 +40,35 @@ def unique_report():
     return json.dumps(report).encode()
 
 
-def send(body):
-    upload = request.Request(
-        f'{settings.INGEST_URL}/api/v1/reports',
-        data=body,
-        headers={'X-Tool': 'trivy', 'X-Scope': 'e2e/main'},
-    )
-    with request.urlopen(upload) as response:
-        return response.status, json.load(response)
-
-
-def fetch_one(database, query, sha256):
-    with database.cursor() as cursor:
-        cursor.execute(query, (sha256,))
-        return cursor.fetchone()
-
-
-def test_trivy_report_becomes_findings(database):
-    status, answer = send(unique_report())
+@pytest.fixture(scope='module')
+def trivy_sha(database):
+    status, answer = client.send(unique_report(), TRIVY)
     assert status == ACCEPTED
+    return client.completed(database, answer)
 
-    sha256 = answer['sha256']
-    waiting.until(lambda: fetch_one(database, COMPLETED_RUN, sha256))
-    assert fetch_one(database, FINDINGS, sha256) == (
+
+def test_trivy_report_becomes_findings(database, trivy_sha):
+    assert client.fetch_one(database, FINDINGS, trivy_sha) == (
         settings.EXPECTED_FINDINGS,
     )
 
 
-def test_trivy_findings_share_components(database):
-    _, answer = send(unique_report())
-
-    sha256 = answer['sha256']
-    waiting.until(lambda: fetch_one(database, COMPLETED_RUN, sha256))
-    assert fetch_one(database, COMPONENTS, sha256) == (
+def test_trivy_findings_share_components(database, trivy_sha):
+    assert client.fetch_one(database, COMPONENTS, trivy_sha) == (
         settings.EXPECTED_FINDINGS,
         settings.EXPECTED_COMPONENTS,
     )
 
 
-def test_trivy_findings_keep_cvss_per_source(database):
-    _, answer = send(unique_report())
-
-    sha256 = answer['sha256']
-    waiting.until(lambda: fetch_one(database, COMPLETED_RUN, sha256))
-    assert fetch_one(database, CVSS_SCORES, sha256) == (
+def test_trivy_findings_keep_cvss_per_source(database, trivy_sha):
+    assert client.fetch_one(database, CVSS_SCORES, trivy_sha) == (
         settings.EXPECTED_CVSS_ROWS,
         settings.EXPECTED_CVSS_FINDINGS,
+    )
+
+
+def test_trivy_findings_keep_normalized_cwe(database, trivy_sha):
+    assert client.fetch_one(database, CWES, trivy_sha) == (
+        settings.EXPECTED_CWE_ROWS,
+        settings.EXPECTED_CWE_FINDINGS,
     )

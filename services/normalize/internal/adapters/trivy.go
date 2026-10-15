@@ -11,6 +11,6 @@ func trivy() (Adapter, error) {
 		blocks.CVSSSources("nvd", "ghsa", "redhat", "bitnami"),
 		blocks.SeverityFromCVSS, blocks.SeverityFromLabel,
 	)
-	normalizer := blocks.Compose(blocks.CVSS, blocks.Severity(severity), blocks.VulnID, blocks.Component, blocks.Path("target"))
+	normalizer := blocks.Compose(blocks.CVSS, blocks.Severity(severity), blocks.VulnID, blocks.Component, blocks.CWE, blocks.Path("target"))
 	return adapterOf(parsers.NewTrivy(), normalizer)()
 }
