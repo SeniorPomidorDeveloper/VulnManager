@@ -6,6 +6,7 @@ SQLC ?= go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1
 ci: fmt tidy lint build test
 
 generate:
+	$(MAKE) -C ../../api generate
 	$(SQLC) generate
 
 fmt:
