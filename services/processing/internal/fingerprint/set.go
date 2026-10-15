@@ -30,6 +30,14 @@ func NewSet(strategies ...Strategy) (Set, error) {
 	return Set{strategies: append([]Strategy(nil), strategies...)}, nil
 }
 
+func (s Set) Levels() []Level {
+	levels := make([]Level, 0, len(s.strategies))
+	for _, strategy := range s.strategies {
+		levels = append(levels, strategy.Level())
+	}
+	return levels
+}
+
 func (s Set) AlgoVersion() string {
 	parts := make([]string, 0, len(s.strategies))
 	for _, strategy := range s.strategies {
