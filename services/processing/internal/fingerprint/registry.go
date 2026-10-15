@@ -32,3 +32,8 @@ func (r *Registry) For(tool model.ToolName) Set {
 	}
 	return r.fallback
 }
+
+func (r *Registry) Has(tool model.ToolName) bool {
+	_, ok := r.byTool[tool]
+	return ok
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -15,7 +16,10 @@ import (
 	"vulnmanager/services/processing/internal/fingerprint"
 )
 
-const statusCompleted = "completed"
+const (
+	statusCompleted = "completed"
+	backlogWindow   = 7 * 24 * time.Hour
+)
 
 var (
 	ErrRunNotFound     = errors.New("store: import run not found")
@@ -40,6 +44,11 @@ type Tx interface {
 	AddFingerprints(ctx context.Context, run Run, items []Item) error
 }
 
+type Backlog struct {
+	Runs      int
+	OldestAge time.Duration
+}
+
 type Store struct {
 	pool *pgxpool.Pool
 }
@@ -50,6 +59,14 @@ type tx struct {
 
 func New(pool *pgxpool.Pool) *Store {
 	return &Store{pool: pool}
+}
+
+func (s *Store) Backlog(ctx context.Context) (Backlog, error) {
+	row, err := db.New(s.pool).UnprocessedImportRuns(ctx, backlogWindow.Seconds())
+	if err != nil {
+		return Backlog{}, fmt.Errorf("unprocessed import runs: %w", err)
+	}
+	return Backlog{Runs: int(row.Runs), OldestAge: time.Duration(row.OldestAgeSeconds * float64(time.Second))}, nil
 }
 
 func (s *Store) InTx(ctx context.Context, fn func(Tx) error) error {

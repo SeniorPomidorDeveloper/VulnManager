@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"testing"
+	"time"
 
 	"vulnmanager/modules/model"
 	"vulnmanager/services/processing/internal/adapters"
@@ -15,6 +16,10 @@ import (
 )
 
 var errDown = errors.New("db down")
+
+type noMetrics struct{}
+
+func (noMetrics) Record(worker.Result, time.Duration, error) {}
 
 type failingTx struct {
 	store.Tx
@@ -43,7 +48,7 @@ func newHandler(t *testing.T, err error) handler {
 	if workerErr != nil {
 		t.Fatal(workerErr)
 	}
-	return handler{worker: w, log: slog.New(slog.NewTextHandler(io.Discard, nil))}
+	return handler{worker: w, metrics: noMetrics{}, log: slog.New(slog.NewTextHandler(io.Discard, nil))}
 }
 
 func TestHandlerMarksMissingRunAsPermanent(t *testing.T) {
