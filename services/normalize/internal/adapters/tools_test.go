@@ -29,7 +29,7 @@ func TestToolNormalizers(t *testing.T) {
 			model.VulnID{Source: "cve", Value: "CVE-2026-3449"},
 			"pkg:npm/%40scope/pkg@1",
 			`{"target":"package-lock.json"}`,
-			"cvss@1+severity@2(cvss>label;cvss=nvd,ghsa,redhat,bitnami)+vulnid@1+component@1+path@1",
+			"cvss@1+severity@2(cvss>label;cvss=nvd,ghsa,redhat,bitnami)+vulnid@1+component@1+cwe@1+path@1",
 		},
 		{
 			"semgrep", semgrep,
@@ -37,7 +37,7 @@ func TestToolNormalizers(t *testing.T) {
 			model.SeverityCritical,
 			model.VulnID{},
 			"", `{"uri":"a.go"}`,
-			"severity@2(score>label)+path@1",
+			"severity@2(score>label)+cwe@1+path@1",
 		},
 		{
 			"generic", generic,

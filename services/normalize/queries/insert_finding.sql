@@ -2,7 +2,7 @@
 INSERT INTO finding (
     tenant_id, import_run_id, scope_key, product_id, context_id, tool_finding_id, kind, title,
     description, severity_raw, severity, vuln_source, vuln_id, component_id, location, raw, provenance,
-    algo_version, diagnostics, detected_at
+    algo_version, diagnostics, detected_at, rule_id
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
 RETURNING id;

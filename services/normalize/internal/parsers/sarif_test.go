@@ -204,3 +204,14 @@ func TestSARIF_SecuritySeverityBecomesTheScannerScore(t *testing.T) {
 		t.Fatalf("scores %v", got)
 	}
 }
+
+func TestSARIF_RuleIDAndCWETagsComeFromTheRule(t *testing.T) {
+	doc := `{"version":"2.1.0","runs":[{"tool":{"driver":{"rules":[
+		{"id":"r1","properties":{"tags":["security","CWE-89: SQL injection","external/cwe/cwe-079"]}}]}},"results":[
+		{"ruleId":"r1","ruleIndex":0,"message":{"text":"a"}},
+		{"message":{"text":"b"}}]}]}`
+	found := parseSARIF(t, doc)
+	if len(found) != 2 || found[0].RuleID != "r1" || len(found[0].CWEs) != 2 || found[1].RuleID != "" {
+		t.Fatalf("found %+v", found)
+	}
+}

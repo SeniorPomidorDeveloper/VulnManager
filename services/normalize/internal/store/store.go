@@ -189,11 +189,29 @@ func (t *Tx) AddFinding(ctx context.Context, finding model.Finding) error {
 		AlgoVersion:   finding.AlgoVersion,
 		Diagnostics:   diagnostics,
 		DetectedAt:    finding.DetectedAt,
+		RuleID:        pgtype.Text{String: string(finding.RuleID), Valid: finding.RuleID != ""},
 	})
 	if err != nil {
 		return fmt.Errorf("insert finding: %w", err)
 	}
-	return t.addRatings(ctx, finding.Scope.TenantID, findingID, ratingsOf(finding))
+	if err := t.addRatings(ctx, finding.Scope.TenantID, findingID, ratingsOf(finding)); err != nil {
+		return err
+	}
+	return t.addCWEs(ctx, finding.Scope.TenantID, findingID, finding.CWE)
+}
+
+func (t *Tx) addCWEs(ctx context.Context, tenant model.TenantID, findingID uuid.UUID, list []model.CWEName) error {
+	for _, cwe := range list {
+		err := t.queries.InsertFindingCWE(ctx, db.InsertFindingCWEParams{
+			TenantID:  string(tenant),
+			FindingID: findingID,
+			Cwe:       string(cwe),
+		})
+		if err != nil {
+			return fmt.Errorf("insert finding cwe: %w", err)
+		}
+	}
+	return nil
 }
 
 type rating struct {

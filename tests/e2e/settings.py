@@ -11,6 +11,13 @@ CORPUS = (
     pathlib.Path(__file__).resolve().parents[2]
     / 'testdata/corpus/trivy/0.75.0/juice-shop.json'
 )
+SARIF_CORPUS = (
+    pathlib.Path(__file__).resolve().parents[2]
+    / 'testdata/corpus/semgrep/1.180.0/juice-shop.sarif'
+)
+EXPECTED_SARIF_FINDINGS = 33
+EXPECTED_CWE_ROWS = 86
+EXPECTED_CWE_FINDINGS = 59
 EXPECTED_FINDINGS = 69
 EXPECTED_COMPONENTS = 25
 EXPECTED_CVSS_ROWS = 177

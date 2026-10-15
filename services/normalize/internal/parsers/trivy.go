@@ -42,13 +42,14 @@ type trivyResult struct {
 }
 
 type trivyVulnerability struct {
-	VulnerabilityID  string `json:"VulnerabilityID"`
-	PkgName          string `json:"PkgName"`
-	InstalledVersion string `json:"InstalledVersion"`
-	FixedVersion     string `json:"FixedVersion"`
-	Severity         string `json:"Severity"`
-	Title            string `json:"Title"`
-	Description      string `json:"Description"`
+	VulnerabilityID  string   `json:"VulnerabilityID"`
+	PkgName          string   `json:"PkgName"`
+	InstalledVersion string   `json:"InstalledVersion"`
+	FixedVersion     string   `json:"FixedVersion"`
+	Severity         string   `json:"Severity"`
+	Title            string   `json:"Title"`
+	Description      string   `json:"Description"`
+	CweIDs           []string `json:"CweIDs"`
 
 	CVSS          map[string]trivyCVSS `json:"CVSS"`
 	PkgIdentifier struct {
@@ -166,7 +167,18 @@ func convertVulnerability(raw json.RawMessage, target, packageType string) RawFi
 		Raw:         raw,
 
 		CVSSVectors: trivyCVSSCandidates(vulnerability.CVSS),
+		CWEs:        cweList(vulnerability.CweIDs),
 	}
+}
+
+func cweList(entries []string) []model.CWERaw {
+	var list []model.CWERaw
+	for _, entry := range entries {
+		if strings.Contains(strings.ToLower(entry), "cwe") {
+			list = append(list, model.CWERaw(entry))
+		}
+	}
+	return list
 }
 
 func trivyCVSSCandidates(sources map[string]trivyCVSS) []model.CVSSCandidate {

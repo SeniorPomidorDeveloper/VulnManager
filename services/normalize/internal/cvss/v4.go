@@ -7,6 +7,7 @@ package cvss
 import (
 	"fmt"
 	"math"
+	"slices"
 	"strings"
 )
 
@@ -113,7 +114,7 @@ func parseV4(vector, body string) (Result, error) {
 
 func validValueV4(key, value string) bool {
 	if key == "U" {
-		return contains(urgencyV4, value)
+		return slices.Contains(urgencyV4, value)
 	}
 	allowed, known := valuesV4[key]
 	return known && len(value) == 1 && strings.Contains(allowed, value)
@@ -122,20 +123,11 @@ func validValueV4(key, value string) bool {
 func (p metricsV4) canonical() string {
 	pairs := []string{prefixV3 + string(V40)}
 	for _, key := range orderV4 {
-		if value, ok := p[key]; ok && value != unsetMetric && !contains(supplementalV4, key) || contains(requiredV4, key) {
+		if value, ok := p[key]; ok && value != unsetMetric && !slices.Contains(supplementalV4, key) || slices.Contains(requiredV4, key) {
 			pairs = append(pairs, key+":"+value)
 		}
 	}
 	return strings.Join(pairs, "/")
-}
-
-func contains(list []string, item string) bool {
-	for _, entry := range list {
-		if entry == item {
-			return true
-		}
-	}
-	return false
 }
 
 func (p metricsV4) metric(name string) string {
