@@ -35,7 +35,9 @@ type sarifLog struct {
 type sarifRun struct {
 	Tool struct {
 		Driver struct {
-			Rules []sarifRule `json:"rules"`
+			Version         string      `json:"version"`
+			SemanticVersion string      `json:"semanticVersion"`
+			Rules           []sarifRule `json:"rules"`
 		} `json:"driver"`
 	} `json:"tool"`
 	Results []json.RawMessage `json:"results"`
@@ -122,6 +124,7 @@ func (SARIF) Parse(ctx context.Context, r io.Reader, _ ScanMeta) iter.Seq2[RawFi
 					return
 				}
 				finding := convertResult(raw, run.Tool.Driver.Rules)
+				finding.ToolVersion = driverVersion(run.Tool.Driver.Version, run.Tool.Driver.SemanticVersion)
 				if log.Version != sarifSpecVersion {
 					finding.Diagnostics = finding.Diagnostics.Append(
 						model.DiagLevelWarn, codeSARIFVersion, "unexpected sarif version "+log.Version,
@@ -175,6 +178,13 @@ func lookupRule(result sarifResult, rules []sarifRule) sarifRule {
 		}
 	}
 	return sarifRule{}
+}
+
+func driverVersion(version, semantic string) model.ToolVersion {
+	if version != "" {
+		return model.ToolVersion(version)
+	}
+	return model.ToolVersion(semantic)
 }
 
 func ruleID(result sarifResult, rule sarifRule) model.RuleID {

@@ -29,8 +29,11 @@ const (
 type Trivy struct{}
 
 type trivyReport struct {
-	SchemaVersion int           `json:"SchemaVersion"`
-	Results       []trivyResult `json:"Results"`
+	SchemaVersion int `json:"SchemaVersion"`
+	Trivy         struct {
+		Version string `json:"Version"`
+	} `json:"Trivy"`
+	Results []trivyResult `json:"Results"`
 }
 
 type trivyResult struct {
@@ -101,6 +104,7 @@ func (Trivy) Parse(ctx context.Context, r io.Reader, _ ScanMeta) iter.Seq2[RawFi
 					yield(RawFinding{}, err)
 					return
 				}
+				finding.ToolVersion = model.ToolVersion(report.Trivy.Version)
 				if report.SchemaVersion != trivySchemaVersion {
 					finding.Diagnostics = finding.Diagnostics.Append(
 						model.DiagLevelWarn, codeTrivySchema, fmt.Sprintf("unexpected schema version %d", report.SchemaVersion),

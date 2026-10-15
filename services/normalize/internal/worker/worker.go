@@ -194,7 +194,7 @@ func (w *Worker) write(
 			CWERaw:        raw.CWEs,
 			Location:      raw.Location,
 			Raw:           raw.Raw,
-			Provenance:    model.Provenance{Tool: job.Tool, ScanID: job.ScanID},
+			Provenance:    model.Provenance{Tool: job.Tool, ToolVersion: raw.ToolVersion, ScanID: job.ScanID},
 			AlgoVersion:   algoVersion,
 			DetectedAt:    detectedAt,
 			Diagnostics:   slices.Concat(raw.Diagnostics, resolution.Diagnostics),

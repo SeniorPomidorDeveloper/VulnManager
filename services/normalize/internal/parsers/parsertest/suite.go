@@ -40,6 +40,7 @@ type goldenFinding struct {
 	PURLRaw       string          `json:"purl_raw,omitempty"`
 	CVSSRaw       []goldenCVSS    `json:"cvss_raw,omitempty"`
 	ScannerScore  *float64        `json:"scanner_score,omitempty"`
+	ToolVersion   string          `json:"tool_version,omitempty"`
 	RuleID        string          `json:"rule_id,omitempty"`
 	CWEs          []string        `json:"cwes,omitempty"`
 	Location      json.RawMessage `json:"location"`
@@ -136,6 +137,7 @@ func checkGolden(t *testing.T, path string, found []parsers.RawFinding) {
 			PURLRaw:       string(finding.PURLRaw),
 			CVSSRaw:       goldenCVSSList(finding.CVSSVectors),
 			ScannerScore:  scoreValue(finding.ScannerScore),
+			ToolVersion:   string(finding.ToolVersion),
 			RuleID:        string(finding.RuleID),
 			CWEs:          cweStrings(finding.CWEs),
 			Location:      finding.Location,
