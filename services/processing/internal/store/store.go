@@ -1,0 +1,191 @@
+package store
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
+
+	"vulnmanager/modules/model"
+	"vulnmanager/services/processing/gen/db"
+	"vulnmanager/services/processing/internal/fingerprint"
+)
+
+const statusCompleted = "completed"
+
+var (
+	ErrRunNotFound     = errors.New("store: import run not found")
+	ErrRunNotCompleted = errors.New("store: import run is not completed")
+)
+
+type Run struct {
+	ID    model.ImportRunID
+	Scope model.Scope
+	Tool  model.ToolName
+}
+
+type Item struct {
+	Finding     model.FindingID
+	Fingerprint fingerprint.Fingerprint
+}
+
+type Tx interface {
+	Run(ctx context.Context, tenant model.TenantID, id model.ImportRunID) (Run, error)
+	Begin(ctx context.Context, run Run, algoVersion string) (bool, error)
+	Findings(ctx context.Context, run Run) ([]model.Finding, error)
+	AddFingerprints(ctx context.Context, run Run, items []Item) error
+}
+
+type Store struct {
+	pool *pgxpool.Pool
+}
+
+type tx struct {
+	queries *db.Queries
+}
+
+func New(pool *pgxpool.Pool) *Store {
+	return &Store{pool: pool}
+}
+
+func (s *Store) InTx(ctx context.Context, fn func(Tx) error) error {
+	pgxTx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin: %w", err)
+	}
+	defer func() { _ = pgxTx.Rollback(ctx) }()
+
+	if err := fn(tx{queries: db.New(pgxTx)}); err != nil {
+		return err
+	}
+	if err := pgxTx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit: %w", err)
+	}
+	return nil
+}
+
+func (t tx) Run(ctx context.Context, tenant model.TenantID, id model.ImportRunID) (Run, error) {
+	runID, err := uuid.Parse(string(id))
+	if err != nil {
+		return Run{}, fmt.Errorf("import run id: %w", err)
+	}
+	row, err := t.queries.GetImportRun(ctx, db.GetImportRunParams{TenantID: string(tenant), ID: runID})
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Run{}, ErrRunNotFound
+	}
+	if err != nil {
+		return Run{}, fmt.Errorf("get import run: %w", err)
+	}
+	if row.Status != statusCompleted {
+		return Run{}, ErrRunNotCompleted
+	}
+	scope, err := model.NewScope(tenant, model.ProductID(row.ProductID), model.ContextID(row.ContextID))
+	if err != nil {
+		return Run{}, fmt.Errorf("scope: %w", err)
+	}
+	return Run{ID: id, Scope: scope, Tool: model.ToolName(row.ToolName)}, nil
+}
+
+func (t tx) Begin(ctx context.Context, run Run, algoVersion string) (bool, error) {
+	runID, err := uuid.Parse(string(run.ID))
+	if err != nil {
+		return false, fmt.Errorf("import run id: %w", err)
+	}
+	started, err := t.queries.StartProcessingRun(ctx, db.StartProcessingRunParams{
+		TenantID:    string(run.Scope.TenantID),
+		ImportRunID: runID,
+		AlgoVersion: algoVersion,
+	})
+	if err != nil {
+		return false, fmt.Errorf("start processing run: %w", err)
+	}
+	return started > 0, nil
+}
+
+func (t tx) Findings(ctx context.Context, run Run) ([]model.Finding, error) {
+	runID, err := uuid.Parse(string(run.ID))
+	if err != nil {
+		return nil, fmt.Errorf("import run id: %w", err)
+	}
+	rows, err := t.queries.ListRunFindings(ctx, db.ListRunFindingsParams{
+		TenantID: string(run.Scope.TenantID), ImportRunID: runID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("list run findings: %w", err)
+	}
+	findings := make([]model.Finding, 0, len(rows))
+	for _, row := range rows {
+		finding, err := toFinding(run, row)
+		if err != nil {
+			return nil, err
+		}
+		findings = append(findings, finding)
+	}
+	return findings, nil
+}
+
+func (t tx) AddFingerprints(ctx context.Context, run Run, items []Item) error {
+	params := make([]db.CopyFindingFingerprintsParams, 0, len(items))
+	for _, item := range items {
+		findingID, err := uuid.Parse(string(item.Finding))
+		if err != nil {
+			return fmt.Errorf("finding id: %w", err)
+		}
+		params = append(params, db.CopyFindingFingerprintsParams{
+			TenantID:  string(run.Scope.TenantID),
+			FindingID: findingID,
+			ScopeKey:  string(run.Scope.Key()),
+			Level:     string(item.Fingerprint.Level),
+			Strategy:  string(item.Fingerprint.Strategy),
+			Version:   int32(item.Fingerprint.Version),
+			Value:     string(item.Fingerprint.Value),
+		})
+	}
+	if _, err := t.queries.CopyFindingFingerprints(ctx, params); err != nil {
+		return fmt.Errorf("copy finding fingerprints: %w", err)
+	}
+	return nil
+}
+
+func toFinding(run Run, row db.ListRunFindingsRow) (model.Finding, error) {
+	kind, err := model.ParseKind(row.Kind)
+	if err != nil {
+		return model.Finding{}, fmt.Errorf("finding %s kind %q: %w", row.ID, row.Kind, err)
+	}
+	return model.Finding{
+		ID:            model.FindingID(row.ID.String()),
+		ImportRunID:   run.ID,
+		Scope:         run.Scope,
+		ToolFindingID: model.ToolFindingID(row.ToolFindingID),
+		Kind:          kind,
+		RuleID:        model.RuleID(row.RuleID.String),
+		VulnID:        vulnID(row.VulnSource, row.VulnID),
+		Component:     component(row),
+		Location:      row.Location,
+		Provenance:    model.Provenance{Tool: run.Tool},
+	}, nil
+}
+
+func vulnID(source, value pgtype.Text) model.VulnID {
+	if !value.Valid {
+		return model.VulnID{}
+	}
+	return model.VulnID{Source: model.VulnSource(source.String), Value: value.String}
+}
+
+func component(row db.ListRunFindingsRow) model.Component {
+	if !row.Purl.Valid {
+		return model.Component{}
+	}
+	return model.Component{
+		PURL:      model.PURL(row.Purl.String),
+		Type:      model.ComponentType(row.ComponentType.String),
+		Namespace: row.Namespace.String,
+		Name:      row.Name.String,
+		Version:   row.Version.String,
+	}
+}

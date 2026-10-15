@@ -10,10 +10,11 @@ import (
 )
 
 type (
-	StrategyID string
-	Version    int
-	Level      string
-	Value      string
+	StrategyID   string
+	Version      int
+	Level        string
+	Value        string
+	FindingField string
 )
 
 const (
@@ -28,8 +29,10 @@ const (
 )
 
 type Fingerprint struct {
-	Level Level
-	Value Value
+	Level    Level
+	Strategy StrategyID
+	Version  Version
+	Value    Value
 }
 
 type Strategy interface {
@@ -39,15 +42,15 @@ type Strategy interface {
 	Fingerprint(finding model.Finding) (Fingerprint, bool)
 }
 
-func digest(level Level, version Version, parts ...string) Fingerprint {
+func digest(strategy Strategy, fields ...FindingField) Fingerprint {
 	hash := sha256.New()
-	for _, part := range parts {
-		hash.Write([]byte(strconv.Itoa(len(part))))
+	for _, field := range fields {
+		hash.Write([]byte(strconv.Itoa(len(field))))
 		hash.Write([]byte(separator))
-		hash.Write([]byte(part))
+		hash.Write([]byte(field))
 	}
 	value := strings.Join([]string{
-		"v" + strconv.Itoa(int(version)), string(level), algorithm, hex.EncodeToString(hash.Sum(nil)),
+		"v" + strconv.Itoa(int(strategy.Version())), string(strategy.Level()), algorithm, hex.EncodeToString(hash.Sum(nil)),
 	}, separator)
-	return Fingerprint{Level: level, Value: Value(value)}
+	return Fingerprint{Level: strategy.Level(), Strategy: strategy.ID(), Version: strategy.Version(), Value: Value(value)}
 }
