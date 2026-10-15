@@ -11,7 +11,8 @@
       "start_line": 305,
       "start_column": 75,
       "end_line": 305,
-      "end_column": 88
+      "end_column": 88,
+      "snippet": "    for (let i = 0; i \u003c length; i++) { text += possible.charAt(Math.floor(Math.random() * possible.length)) }"
     },
     "diagnostics": []
   },
@@ -27,7 +28,8 @@
       "start_line": 323,
       "start_column": 50,
       "end_line": 323,
-      "end_column": 63
+      "end_column": 63,
+      "snippet": "        quantity: product.quantity ?? Math.floor(Math.random() * 70 + 30),"
     },
     "diagnostics": []
   },
@@ -43,7 +45,8 @@
       "start_line": 381,
       "start_column": 49,
       "end_line": 381,
-      "end_column": 62
+      "end_column": 62,
+      "snippet": "    product.price = product.price ?? Math.floor(Math.random() * 9 + 1)"
     },
     "diagnostics": []
   },
@@ -59,7 +62,8 @@
       "start_line": 756,
       "start_column": 24,
       "end_line": 756,
-      "end_column": 37
+      "end_column": 37,
+      "snippet": "      eta: Math.floor((Math.random() * 5) + 1).toString(),"
     },
     "diagnostics": []
   },
@@ -75,7 +79,8 @@
       "start_line": 17,
       "start_column": 70,
       "end_line": 17,
-      "end_column": 83
+      "end_column": 83,
+      "snippet": "    const random8 = Array.from({ length: 8 }, () =\u003e chars[Math.floor(Math.random() * chars.length)]).join('')"
     },
     "diagnostics": []
   },
@@ -91,7 +96,8 @@
       "start_line": 67,
       "start_column": 56,
       "end_line": 67,
-      "end_column": 69
+      "end_column": 69,
+      "snippet": "        const chosen = availableSuggestions[Math.floor(Math.random() * availableSuggestions.length)]"
     },
     "diagnostics": []
   },
@@ -107,7 +113,8 @@
       "start_line": 120,
       "start_column": 49,
       "end_line": 120,
-      "end_column": 62
+      "end_column": 62,
+      "snippet": "      .map((fix, index) =\u003e ({ fix, index, sort: Math.random() }))"
     },
     "diagnostics": []
   },
@@ -123,7 +130,8 @@
       "start_line": 310,
       "start_column": 16,
       "end_line": 310,
-      "end_column": 63
+      "end_column": 63,
+      "snippet": "\t\t\tvar color = /^rgb\\((\\d+), ?(\\d+), ?(\\d+)\\)$/i.exec( style );"
     },
     "diagnostics": []
   },
@@ -139,7 +147,8 @@
       "start_line": 324,
       "start_column": 16,
       "end_line": 324,
-      "end_column": 69
+      "end_column": 69,
+      "snippet": "\t\t\tvar color = /^rgb\\((\\d+)\\%, ?(\\d+)\\%, ?(\\d+)\\%\\)$/i.exec( style );"
     },
     "diagnostics": []
   },
@@ -155,7 +164,8 @@
       "start_line": 338,
       "start_column": 16,
       "end_line": 338,
-      "end_column": 50
+      "end_column": 50,
+      "snippet": "\t\t\tvar color = /^\\#([0-9a-f]{6})$/i.exec( style );"
     },
     "diagnostics": []
   },
@@ -171,7 +181,8 @@
       "start_line": 350,
       "start_column": 16,
       "end_line": 350,
-      "end_column": 67
+      "end_column": 67,
+      "snippet": "\t\t\tvar color = /^\\#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec( style );"
     },
     "diagnostics": []
   },
@@ -187,7 +198,8 @@
       "start_line": 6359,
       "start_column": 42,
       "end_line": 6359,
-      "end_column": 55
+      "end_column": 55,
+      "snippet": "\t\t\t\t\tif (rnd \u003c= 0x02) rnd = 0x2000000 + (Math.random()*0x1000000)|0;"
     },
     "diagnostics": []
   },
@@ -203,7 +215,8 @@
       "start_line": 6426,
       "start_column": 20,
       "end_line": 6426,
-      "end_column": 33
+      "end_column": 33,
+      "snippet": "\t\treturn ( 65280 * Math.random() + 255 * Math.random() ) / 65535;"
     },
     "diagnostics": []
   },
@@ -219,7 +232,8 @@
       "start_line": 6426,
       "start_column": 42,
       "end_line": 6426,
-      "end_column": 55
+      "end_column": 55,
+      "snippet": "\t\treturn ( 65280 * Math.random() + 255 * Math.random() ) / 65535;"
     },
     "diagnostics": []
   },
@@ -235,7 +249,8 @@
       "start_line": 6434,
       "start_column": 28,
       "end_line": 6434,
-      "end_column": 41
+      "end_column": 41,
+      "snippet": "\t\treturn low + Math.floor( Math.random() * ( high - low + 1 ) );"
     },
     "diagnostics": []
   },
@@ -251,7 +266,8 @@
       "start_line": 6442,
       "start_column": 16,
       "end_line": 6442,
-      "end_column": 29
+      "end_column": 29,
+      "snippet": "\t\treturn low + Math.random() * ( high - low );"
     },
     "diagnostics": []
   },
@@ -267,7 +283,8 @@
       "start_line": 6450,
       "start_column": 26,
       "end_line": 6450,
-      "end_column": 39
+      "end_column": 39,
+      "snippet": "\t\treturn range * ( 0.5 - Math.random() );"
     },
     "diagnostics": []
   },
@@ -283,7 +300,8 @@
       "start_line": 15504,
       "start_column": 97,
       "end_line": 15504,
-      "end_column": 110
+      "end_column": 110,
+      "snippet": "\tthis.material = material !== undefined ? material : new THREE.ParticleSystemMaterial( { color: Math.random() * 0xffffff } );"
     },
     "diagnostics": []
   },
@@ -299,7 +317,8 @@
       "start_line": 15534,
       "start_column": 92,
       "end_line": 15534,
-      "end_column": 105
+      "end_column": 105,
+      "snippet": "\tthis.material = material !== undefined ? material : new THREE.LineBasicMaterial( { color: Math.random() * 0xffffff } );"
     },
     "diagnostics": []
   },
@@ -315,7 +334,8 @@
       "start_line": 15567,
       "start_column": 92,
       "end_line": 15567,
-      "end_column": 105
+      "end_column": 105,
+      "snippet": "\tthis.material = material !== undefined ? material : new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff } );"
     },
     "diagnostics": []
   },
@@ -331,7 +351,8 @@
       "start_line": 77,
       "start_column": 9,
       "end_line": 77,
-      "end_column": 82
+      "end_column": 82,
+      "snippet": "    if (new RegExp(`vuln-code-snippet vuln-line.*${challengeKey}`).exec(lines[i]) != null) {"
     },
     "diagnostics": []
   },
@@ -347,7 +368,8 @@
       "start_line": 79,
       "start_column": 16,
       "end_line": 79,
-      "end_column": 92
+      "end_column": 92,
+      "snippet": "    } else if (new RegExp(`vuln-code-snippet neutral-line.*${challengeKey}`).exec(lines[i]) != null) {"
     },
     "diagnostics": []
   },
@@ -363,7 +385,8 @@
       "start_line": 41,
       "start_column": 39,
       "end_line": 41,
-      "end_column": 63
+      "end_column": 63,
+      "snippet": "export const hash = (data: string) =\u003e crypto.createHash('md5').update(data).digest('hex')"
     },
     "diagnostics": []
   },
@@ -379,7 +402,8 @@
       "start_line": 53,
       "start_column": 56,
       "end_line": 53,
-      "end_column": 69
+      "end_column": 69,
+      "snippet": "export const denyAll = () =\u003e expressJwt({ secret: '' + Math.random() } as any)"
     },
     "diagnostics": []
   },
@@ -395,7 +419,8 @@
       "start_line": 54,
       "start_column": 41,
       "end_line": 54,
-      "end_column": 108
+      "end_column": 108,
+      "snippet": "export const authorize = (user = {}) =\u003e jwt.sign(user, privateKey, { expiresIn: '6h', algorithm: 'RS256' })"
     },
     "diagnostics": []
   },
@@ -411,7 +436,8 @@
       "start_line": 14,
       "start_column": 35,
       "end_line": 14,
-      "end_column": 48
+      "end_column": 48,
+      "snippet": "    const firstTerm = Math.floor((Math.random() * 10) + 1)"
     },
     "diagnostics": []
   },
@@ -427,7 +453,8 @@
       "start_line": 15,
       "start_column": 36,
       "end_line": 15,
-      "end_column": 49
+      "end_column": 49,
+      "snippet": "    const secondTerm = Math.floor((Math.random() * 10) + 1)"
     },
     "diagnostics": []
   },
@@ -443,7 +470,8 @@
       "start_line": 16,
       "start_column": 35,
       "end_line": 16,
-      "end_column": 48
+      "end_column": 48,
+      "snippet": "    const thirdTerm = Math.floor((Math.random() * 10) + 1)"
     },
     "diagnostics": []
   },
@@ -459,7 +487,8 @@
       "start_line": 18,
       "start_column": 49,
       "end_line": 18,
-      "end_column": 62
+      "end_column": 62,
+      "snippet": "    const firstOperator = operators[Math.floor((Math.random() * 3))]"
     },
     "diagnostics": []
   },
@@ -475,7 +504,8 @@
       "start_line": 19,
       "start_column": 50,
       "end_line": 19,
-      "end_column": 63
+      "end_column": 63,
+      "snippet": "    const secondOperator = operators[Math.floor((Math.random() * 3))]"
     },
     "diagnostics": []
   },
@@ -491,7 +521,8 @@
       "start_line": 22,
       "start_column": 20,
       "end_line": 22,
-      "end_column": 36
+      "end_column": 36,
+      "snippet": "    const answer = eval(expression).toString() // eslint-disable-line no-eval"
     },
     "diagnostics": []
   },
@@ -507,7 +538,8 @@
       "start_line": 65,
       "start_column": 22,
       "end_line": 65,
-      "end_column": 32
+      "end_column": 32,
+      "snippet": "          username = eval(code) // eslint-disable-line no-eval"
     },
     "diagnostics": []
   },
@@ -523,7 +555,8 @@
       "start_line": 121,
       "start_column": 16,
       "end_line": 121,
-      "end_column": 40
+      "end_column": 40,
+      "snippet": "  const hash = crypto.createHash('md5').update(content).digest('hex')"
     },
     "diagnostics": []
   }

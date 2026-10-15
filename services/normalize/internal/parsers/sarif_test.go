@@ -215,3 +215,17 @@ func TestSARIF_RuleIDAndCWETagsComeFromTheRule(t *testing.T) {
 		t.Fatalf("found %+v", found)
 	}
 }
+
+func TestSARIF_SnippetIsKeptInTheLocation(t *testing.T) {
+	doc := `{"version":"2.1.0","runs":[{"results":[
+		{"ruleId":"a","message":{"text":"1"},"locations":[{"physicalLocation":{
+			"artifactLocation":{"uri":"a.go"},
+			"region":{"startLine":3,"snippet":{"text":"x := Math.random()"}}}}]},
+		{"ruleId":"b","message":{"text":"2"},"locations":[{"physicalLocation":{
+			"artifactLocation":{"uri":"b.go"},"region":{"startLine":4}}}]}]}]}`
+	found := parseSARIF(t, doc)
+	if len(found) != 2 || !strings.Contains(string(found[0].Location), `"snippet":"x := Math.random()"`) ||
+		strings.Contains(string(found[1].Location), "snippet") {
+		t.Fatalf("locations %s | %s", found[0].Location, found[1].Location)
+	}
+}
