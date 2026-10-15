@@ -31,3 +31,8 @@ func locationOf(finding model.Finding) location {
 	}
 	return decoded
 }
+
+func PlaceOf(finding model.Finding) (path, code string) {
+	place := locationOf(finding)
+	return place.path(), place.code()
+}
