@@ -13,11 +13,14 @@ import (
 
 	"vulnmanager/modules/model"
 	"vulnmanager/services/normalize/internal/adapters"
+	"vulnmanager/services/normalize/internal/events"
 	"vulnmanager/services/normalize/internal/normalizers"
 	"vulnmanager/services/normalize/internal/parsers"
 	"vulnmanager/services/normalize/internal/queue"
 	"vulnmanager/services/normalize/internal/store"
 )
+
+const publishTimeout = 10 * time.Second
 
 var ErrInvalidConfig = errors.New("worker: invalid config")
 
@@ -52,6 +55,7 @@ type Deps struct {
 	Raw      RawReader
 	Store    FindingStore
 	Adapters *adapters.Registry
+	Events   events.Publisher
 	Clock    func() time.Time
 	Log      *slog.Logger
 }
@@ -74,6 +78,7 @@ type Tx interface {
 type FindingStore interface {
 	InTx(ctx context.Context, fn func(Tx) error) error
 	FailRun(ctx context.Context, run store.Run, reason string) error
+	MarkPublished(ctx context.Context, tenant model.TenantID, id model.ImportRunID) (bool, error)
 }
 
 type Worker struct {
@@ -93,6 +98,10 @@ func (a storeAdapter) InTx(ctx context.Context, fn func(Tx) error) error {
 	return a.store.InTx(ctx, func(tx *store.Tx) error { return fn(tx) })
 }
 
+func (a storeAdapter) MarkPublished(ctx context.Context, tenant model.TenantID, id model.ImportRunID) (bool, error) {
+	return a.store.MarkPublished(ctx, tenant, id)
+}
+
 func (a storeAdapter) FailRun(ctx context.Context, run store.Run, reason string) error {
 	return a.store.FailRun(ctx, run, reason)
 }
@@ -103,7 +112,7 @@ func (c Config) valid() bool {
 }
 
 func (d Deps) valid() bool {
-	return d.Jobs != nil && d.Raw != nil && d.Store != nil && d.Adapters != nil && d.Clock != nil
+	return d.Jobs != nil && d.Raw != nil && d.Store != nil && d.Adapters != nil && d.Events != nil && d.Clock != nil
 }
 
 func New(cfg Config, deps Deps) (*Worker, error) {
@@ -153,22 +162,41 @@ func (w *Worker) process(ctx context.Context, job queue.Job, run store.Run) erro
 	resolution := w.deps.Adapters.Resolve(job.Tool)
 	meta := parsers.ScanMeta{Tool: job.Tool, ScanID: job.ScanID}
 
-	err = w.deps.Store.InTx(ctx, func(tx Tx) error {
-		return w.write(ctx, tx, job, run, resolution, object, meta)
+	var runID model.ImportRunID
+	err = w.deps.Store.InTx(ctx, func(tx Tx) (err error) {
+		runID, err = w.write(ctx, tx, job, run, resolution, object, meta)
+		return err
 	})
 	if errors.Is(err, store.ErrAlreadyCompleted) {
 		return nil
 	}
-	return err
+	if err != nil {
+		return err
+	}
+	w.publish(ctx, job, runID)
+	return nil
+}
+
+func (w *Worker) publish(ctx context.Context, job queue.Job, runID model.ImportRunID) {
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), publishTimeout)
+	defer cancel()
+	event := events.Event{RunID: runID, Scope: job.Scope, Tool: job.Tool, ScanID: job.ScanID}
+	if err := w.deps.Events.Publish(ctx, event); err != nil {
+		w.deps.Log.Warn("import.completed not published", "job", job.ID, "run", runID, "error", err)
+		return
+	}
+	if _, err := w.deps.Store.MarkPublished(ctx, job.Scope.TenantID, runID); err != nil {
+		w.deps.Log.Warn("published import.completed not marked", "job", job.ID, "run", runID, "error", err)
+	}
 }
 
 func (w *Worker) write(
 	ctx context.Context, tx Tx, job queue.Job, run store.Run,
 	resolution adapters.Resolution, reader io.Reader, meta parsers.ScanMeta,
-) error {
+) (model.ImportRunID, error) {
 	runID, err := tx.StartRun(ctx, run)
 	if err != nil {
-		return err
+		return "", err
 	}
 	parser, normalizer := resolution.Adapter.Parser, resolution.Adapter.Normalizer
 	algoVersion := algoVersion(parser, normalizer)
@@ -176,7 +204,7 @@ func (w *Worker) write(
 	count := 0
 	for raw, err := range parser.Parse(ctx, reader, meta) {
 		if err != nil {
-			return fmt.Errorf("parse: %w", err)
+			return "", fmt.Errorf("parse: %w", err)
 		}
 		finding := model.Finding{
 			ImportRunID:   runID,
@@ -200,14 +228,14 @@ func (w *Worker) write(
 			Diagnostics:   slices.Concat(raw.Diagnostics, resolution.Diagnostics),
 		}
 		if err := normalizer.Normalize(ctx, &finding); err != nil {
-			return fmt.Errorf("normalize: %w", err)
+			return "", fmt.Errorf("normalize: %w", err)
 		}
 		if err := tx.AddFinding(ctx, finding); err != nil {
-			return err
+			return "", err
 		}
 		count++
 	}
-	return tx.CompleteRun(ctx, runID, count)
+	return runID, tx.CompleteRun(ctx, runID, count)
 }
 
 func algoVersion(parser parsers.Parser, normalizer normalizers.Normalizer) string {

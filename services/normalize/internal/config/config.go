@@ -7,11 +7,15 @@ import (
 	"time"
 
 	"vulnmanager/services/normalize/internal/consumer"
+	"vulnmanager/services/normalize/internal/events"
 	"vulnmanager/services/normalize/internal/queue"
 	"vulnmanager/services/normalize/internal/rawread"
 )
 
 const (
+	EventsAMQP = "amqp"
+	EventsNone = "none"
+
 	defaultAddr        = ":8081"
 	defaultWorkerID    = "normalize"
 	defaultLease       = 5 * time.Minute
@@ -19,6 +23,7 @@ const (
 	defaultMaxAttempts = 5
 	defaultPrefetch    = 4
 	defaultExchange    = "vulnmanager.report.received"
+	defaultEventsOut   = "vulnmanager.import.completed"
 	defaultQueue       = "vulnmanager.normalize.report_received"
 )
 
@@ -37,6 +42,9 @@ type Config struct {
 	AMQPExchange consumer.ExchangeName
 	AMQPQueue    consumer.QueueName
 	Prefetch     int
+
+	Events         string
+	EventsExchange events.ExchangeName
 
 	Lease       time.Duration
 	RetryDelay  time.Duration
@@ -58,6 +66,9 @@ func Load(getenv func(string) string) (Config, error) {
 		AMQPURL:      consumer.URL(getenv("NORMALIZE_AMQP_URL")),
 		AMQPExchange: consumer.ExchangeName(withDefault(getenv("NORMALIZE_AMQP_EXCHANGE"), defaultExchange)),
 		AMQPQueue:    consumer.QueueName(withDefault(getenv("NORMALIZE_AMQP_QUEUE"), defaultQueue)),
+
+		Events:         withDefault(getenv("NORMALIZE_EVENTS"), EventsAMQP),
+		EventsExchange: events.ExchangeName(withDefault(getenv("NORMALIZE_EVENTS_EXCHANGE"), defaultEventsOut)),
 	}
 
 	errs := requireAll(map[string]string{
@@ -82,6 +93,10 @@ func Load(getenv func(string) string) (Config, error) {
 			errs = append(errs, fmt.Errorf("%s: %w", field.name, err))
 		}
 		*field.target = value
+	}
+
+	if cfg.Events != EventsAMQP && cfg.Events != EventsNone {
+		errs = append(errs, fmt.Errorf("NORMALIZE_EVENTS: unknown mode %q", cfg.Events))
 	}
 
 	if raw := getenv("NORMALIZE_MAX_ATTEMPTS"); raw != "" {

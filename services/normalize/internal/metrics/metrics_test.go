@@ -47,6 +47,10 @@ func (s stubStore) InTx(_ context.Context, fn func(worker.Tx) error) error {
 	return s.err
 }
 
+func (stubStore) MarkPublished(context.Context, model.TenantID, model.ImportRunID) (bool, error) {
+	return true, nil
+}
+
 func (stubStore) FailRun(context.Context, store.Run, string) error {
 	return nil
 }
