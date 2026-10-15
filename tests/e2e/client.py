@@ -27,6 +27,12 @@ def fetch_one(database, query, sha256):
         return cursor.fetchone()
 
 
+def fetch_all(database, query, sha256):
+    with database.cursor() as cursor:
+        cursor.execute(query, (sha256,))
+        return cursor.fetchall()
+
+
 def completed(database, answer):
     sha256 = answer['sha256']
     waiting.until(lambda: fetch_one(database, COMPLETED_RUN, sha256))
@@ -36,4 +42,10 @@ def completed(database, answer):
 def unique_trivy_report():
     report = json.loads(settings.CORPUS.read_text())
     report['ReportID'] = str(uuid.uuid4())
+    return json.dumps(report).encode()
+
+
+def unique_sarif_report():
+    report = json.loads(settings.SARIF_CORPUS.read_text())
+    report['properties'] = {'e2e': str(uuid.uuid4())}
     return json.dumps(report).encode()

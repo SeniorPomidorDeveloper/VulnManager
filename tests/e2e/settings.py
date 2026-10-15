@@ -1,11 +1,6 @@
 import os
 import pathlib
 
-RABBIT_API = os.environ.get('E2E_RABBIT_API', 'http://127.0.0.1:15672/api')
-RABBIT_USER = os.environ.get('E2E_RABBIT_USER', 'vulnmanager')
-RABBIT_PASSWORD = os.environ.get(
-    'E2E_RABBIT_PASSWORD', 'vulnmanager-local-dev',
-)
 INGEST_URL = os.environ.get('E2E_INGEST_URL', 'http://127.0.0.1:8080')
 DATABASE_DSN = os.environ.get(
     'E2E_DATABASE_DSN',
@@ -29,5 +24,7 @@ EXPECTED_FINDINGS = 69
 EXPECTED_COMPONENTS = 25
 EXPECTED_CVSS_ROWS = 177
 EXPECTED_CVSS_FINDINGS = 63
+TRIVY_ALGO = 'tool-uid@1+identity@1'
+SEMGREP_ALGO = 'tool-uid@1+structural@1'
 WAIT_SECONDS = 60
 POLL_SECONDS = 0.5
