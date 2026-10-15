@@ -75,6 +75,8 @@ func NewWeighted(features []Feature, weights map[FeatureID]Weight, thresholds Th
 	return Weighted{features: features, weights: weights, thresholds: thresholds}, nil
 }
 
+// TODO: веса и пороги стартовые, подобраны без данных. Их нужно откалибровать
+// на размеченном корпусе через bench/ и менять только вместе с версией скорера.
 func DefaultWeights() map[FeatureID]Weight {
 	return map[FeatureID]Weight{
 		FeatureVuln:      {Agree: 500, Disagree: -400},
