@@ -32,6 +32,7 @@ import (
 const (
 	shutdownTimeout   = 10 * time.Second
 	readHeaderTimeout = 10 * time.Second
+	poolReserve       = 4
 )
 
 func Run(log *slog.Logger) error {
@@ -43,7 +44,12 @@ func Run(log *slog.Logger) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	pool, err := pgxpool.New(ctx, cfg.DatabaseURL)
+	poolConfig, err := pgxpool.ParseConfig(cfg.DatabaseURL)
+	if err != nil {
+		return fmt.Errorf("postgres config: %w", err)
+	}
+	poolConfig.MaxConns = max(poolConfig.MaxConns, int32(2*cfg.Prefetch+poolReserve))
+	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
 	if err != nil {
 		return fmt.Errorf("postgres: %w", err)
 	}

@@ -3,8 +3,8 @@ import time
 import settings
 
 
-def until(check):
-    deadline = time.monotonic() + settings.WAIT_SECONDS
+def until(check, timeout=None):
+    deadline = time.monotonic() + (timeout or settings.WAIT_SECONDS)
     while time.monotonic() < deadline:
         found = check()
         if found:

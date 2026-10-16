@@ -17,11 +17,15 @@ import (
 )
 
 const (
-	schemeCVSS    = "cvss"
-	schemeScanner = "scanner"
+	componentAttempts = 3
+	schemeCVSS        = "cvss"
+	schemeScanner     = "scanner"
 )
 
-var ErrAlreadyCompleted = errors.New("store: report is already processed")
+var (
+	ErrAlreadyCompleted = errors.New("store: report is already processed")
+	ErrComponentRace    = errors.New("store: component was created concurrently and is not visible yet")
+)
 
 type Store struct {
 	pool *pgxpool.Pool
@@ -29,6 +33,7 @@ type Store struct {
 
 type Tx struct {
 	queries    *db.Queries
+	shared     *db.Queries
 	components map[string]uuid.UUID
 }
 
@@ -75,7 +80,7 @@ func (s *Store) InTx(ctx context.Context, fn func(*Tx) error) error {
 	defer func() { _ = tx.Rollback(ctx) }()
 
 	queries := db.New(tx)
-	if err := fn(&Tx{queries: queries, components: map[string]uuid.UUID{}}); err != nil {
+	if err := fn(&Tx{queries: queries, shared: db.New(s.pool), components: map[string]uuid.UUID{}}); err != nil {
 		return err
 	}
 	return commit(ctx, tx)
@@ -177,7 +182,7 @@ func (t *Tx) componentID(ctx context.Context, tenant model.TenantID, component m
 	if id, cached := t.components[key]; cached {
 		return pgtype.UUID{Bytes: id, Valid: true}, nil
 	}
-	id, err := t.queries.UpsertComponent(ctx, db.UpsertComponentParams{
+	id, err := t.getOrCreateComponent(ctx, db.GetOrCreateComponentParams{
 		TenantID:  string(tenant),
 		Purl:      string(component.PURL),
 		Type:      string(component.Type),
@@ -186,10 +191,20 @@ func (t *Tx) componentID(ctx context.Context, tenant model.TenantID, component m
 		Version:   component.Version,
 	})
 	if err != nil {
-		return pgtype.UUID{}, fmt.Errorf("upsert component: %w", err)
+		return pgtype.UUID{}, fmt.Errorf("component: %w", err)
 	}
 	t.components[key] = id
 	return pgtype.UUID{Bytes: id, Valid: true}, nil
+}
+
+func (t *Tx) getOrCreateComponent(ctx context.Context, params db.GetOrCreateComponentParams) (uuid.UUID, error) {
+	for range componentAttempts {
+		id, err := t.shared.GetOrCreateComponent(ctx, params)
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return id, err
+		}
+	}
+	return uuid.UUID{}, ErrComponentRace
 }
 
 func (t *Tx) AddFinding(ctx context.Context, finding model.Finding) error {
