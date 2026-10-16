@@ -26,6 +26,7 @@ const (
 	FeatureRule      FeatureID = "rule"
 	FeatureCWE       FeatureID = "cwe"
 	FeatureSeverity  FeatureID = "severity"
+	FeatureToolUID   FeatureID = "tool-uid"
 )
 
 type Feature interface {
@@ -62,6 +63,7 @@ func DefaultFeatures() []Feature {
 		valuesFeature{FeatureRule, func(r Record) []string { return present(string(r.Rule)) }},
 		valuesFeature{FeatureCWE, cweValues},
 		valuesFeature{FeatureSeverity, severityValues},
+		valuesFeature{FeatureToolUID, func(r Record) []string { return present(r.ToolUID) }},
 	}
 }
 

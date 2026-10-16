@@ -13,6 +13,8 @@ import (
 	"vulnmanager/services/processing/internal/fingerprint"
 )
 
+const lookupChunk = 5000
+
 type Member struct {
 	Finding    model.FindingID
 	Cluster    dedup.ClusterID
@@ -34,22 +36,25 @@ func (t tx) LockScope(ctx context.Context, scope model.Scope) error {
 }
 
 func (t tx) Lookup(ctx context.Context, scope model.Scope, keys []dedup.BlockKey) ([]dedup.Hit, error) {
-	levels := make([]string, 0, len(keys))
-	values := make([]string, 0, len(keys))
-	for _, key := range keys {
-		levels = append(levels, string(key.Level))
-		values = append(values, string(key.Value))
-	}
-	rows, err := t.queries.LookupFingerprints(ctx, db.LookupFingerprintsParams{
-		TenantID: string(scope.TenantID), ScopeKey: string(scope.Key()), Levels: levels, Values: values,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("lookup fingerprints: %w", err)
-	}
-	hits := make([]dedup.Hit, 0, len(rows))
-	for _, row := range rows {
-		key := dedup.BlockKey{Level: fingerprint.Level(row.Level), Value: fingerprint.Value(row.Value)}
-		hits = append(hits, dedup.Hit{Finding: model.FindingID(row.FindingID.String()), Key: key})
+	hits := make([]dedup.Hit, 0, len(keys))
+	for start := 0; start < len(keys); start += lookupChunk {
+		chunk := keys[start:min(start+lookupChunk, len(keys))]
+		levels := make([]string, 0, len(chunk))
+		values := make([]string, 0, len(chunk))
+		for _, key := range chunk {
+			levels = append(levels, string(key.Level))
+			values = append(values, string(key.Value))
+		}
+		rows, err := t.queries.LookupFingerprints(ctx, db.LookupFingerprintsParams{
+			TenantID: string(scope.TenantID), ScopeKey: string(scope.Key()), Levels: levels, Values: values,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("lookup fingerprints: %w", err)
+		}
+		for _, row := range rows {
+			key := dedup.BlockKey{Level: fingerprint.Level(row.Level), Value: fingerprint.Value(row.Value)}
+			hits = append(hits, dedup.Hit{Finding: model.FindingID(row.FindingID.String()), Key: key})
+		}
 	}
 	return hits, nil
 }

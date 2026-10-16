@@ -102,3 +102,15 @@ func TestParseIDsRejectsNonUUID(t *testing.T) {
 		t.Fatal("expected error")
 	}
 }
+
+func TestToFindingPrefersRecordedTool(t *testing.T) {
+	run := testRun(t)
+	got, err := toFinding(run, db.ListRunFindingsRow{ID: uuid.New(), Kind: "sast", Tool: "semgrep"})
+	if err != nil || got.Provenance.Tool != "semgrep" {
+		t.Fatalf("got %+v, %v", got, err)
+	}
+	fallback, err := toFinding(run, db.ListRunFindingsRow{ID: uuid.New(), Kind: "sast"})
+	if err != nil || fallback.Provenance.Tool != run.Tool {
+		t.Fatalf("got %+v, %v", fallback, err)
+	}
+}

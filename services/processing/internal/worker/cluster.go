@@ -77,27 +77,27 @@ func (w *Worker) candidates(
 	ctx context.Context, tx store.Tx, run store.Run, findings []model.Finding,
 	fingerprints map[model.FindingID][]fingerprint.Fingerprint, records map[model.FindingID]dedup.Record,
 ) (subjects []model.FindingID, found map[model.FindingID][]dedup.Candidate, foreign []model.FindingID, err error) {
-	found = map[model.FindingID][]dedup.Candidate{}
-	foreignSet := map[model.FindingID]struct{}{}
+	var batch []dedup.Subject
 	for _, finding := range findings {
 		if len(fingerprints[finding.ID]) == 0 {
 			continue
 		}
-		subject := dedup.Subject{Finding: finding.ID, Scope: run.Scope, Fingerprints: fingerprints[finding.ID]}
-		candidates, err := dedup.Find(ctx, w.deduper.Blocker, tx, subject)
-		if err != nil {
-			return nil, nil, nil, fmt.Errorf("candidates of %s: %w", finding.ID, err)
-		}
 		subjects = append(subjects, finding.ID)
-		found[finding.ID] = candidates
+		batch = append(batch, dedup.Subject{Finding: finding.ID, Scope: run.Scope, Fingerprints: fingerprints[finding.ID]})
+	}
+	found, err = dedup.FindMany(ctx, w.deduper.Blocker, tx, run.Scope, batch)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("candidates: %w", err)
+	}
+	foreignSet := map[model.FindingID]struct{}{}
+	for _, candidates := range found {
 		for _, candidate := range candidates {
 			if _, own := records[candidate.Finding]; !own {
 				foreignSet[candidate.Finding] = struct{}{}
 			}
 		}
 	}
-	foreign = slices.Sorted(maps.Keys(foreignSet))
-	return subjects, found, foreign, nil
+	return subjects, found, slices.Sorted(maps.Keys(foreignSet)), nil
 }
 
 func (w *Worker) score(

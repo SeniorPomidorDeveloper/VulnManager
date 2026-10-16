@@ -4,7 +4,7 @@ import "vulnmanager/modules/model"
 
 const (
 	byKindID      ScorerID = "by-kind"
-	byKindVersion Version  = 1
+	byKindVersion Version  = 2
 )
 
 type ByKind struct {
@@ -71,6 +71,7 @@ func dependencyWeights() map[FeatureID]Weight {
 		FeaturePath:      {Agree: 100},
 		FeatureCWE:       {Agree: 50},
 		FeatureSeverity:  {Disagree: -50},
+		FeatureToolUID:   {Agree: 800},
 	}
 }
 
@@ -81,6 +82,7 @@ func codeWeights() map[FeatureID]Weight {
 		FeatureCode:     {Agree: 400, Disagree: -100},
 		FeatureCWE:      {Agree: 50},
 		FeatureSeverity: {Disagree: -50},
+		FeatureToolUID:  {Agree: 800},
 	}
 }
 
@@ -90,6 +92,7 @@ func secretWeights() map[FeatureID]Weight {
 		FeaturePath:     {Agree: 300},
 		FeatureCode:     {Agree: 300, Disagree: -100},
 		FeatureSeverity: {Disagree: -50},
+		FeatureToolUID:  {Agree: 800},
 	}
 }
 
@@ -100,5 +103,6 @@ func iacWeights() map[FeatureID]Weight {
 		FeatureCode:     {Agree: 250, Disagree: -100},
 		FeatureCWE:      {Agree: 50},
 		FeatureSeverity: {Disagree: -50},
+		FeatureToolUID:  {Agree: 800},
 	}
 }

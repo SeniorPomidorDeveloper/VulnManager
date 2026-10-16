@@ -1,4 +1,8 @@
 -- name: LookupFingerprints :many
-SELECT finding_id, level, value
-FROM finding_fingerprint
-WHERE tenant_id = $1 AND scope_key = $2 AND level = ANY(sqlc.arg(levels)::text[]) AND value = ANY(sqlc.arg(values)::text[]);
+WITH k AS (
+    SELECT unnest(sqlc.arg(levels)::text[]) AS level, unnest(sqlc.arg(values)::text[]) AS value
+)
+SELECT ff.finding_id, ff.level, ff.value
+FROM k
+JOIN finding_fingerprint ff ON ff.level = k.level AND ff.value = k.value
+WHERE ff.tenant_id = sqlc.arg(tenant_id)::text AND ff.scope_key = sqlc.arg(scope_key)::text;

@@ -83,7 +83,11 @@ func (s *Store) InTx(ctx context.Context, fn func(Tx) error) error {
 	}
 	defer func() { _ = pgxTx.Rollback(ctx) }()
 
-	if err := fn(tx{queries: db.New(pgxTx)}); err != nil {
+	queries := db.New(pgxTx)
+	if err := queries.UseCustomPlans(ctx); err != nil {
+		return fmt.Errorf("custom plans: %w", err)
+	}
+	if err := fn(tx{queries: queries}); err != nil {
 		return err
 	}
 	if err := pgxTx.Commit(ctx); err != nil {
@@ -192,7 +196,7 @@ func toFinding(run Run, row db.ListRunFindingsRow) (model.Finding, error) {
 		VulnID:        vulnID(row.VulnSource, row.VulnID),
 		Component:     component(row),
 		Location:      row.Location,
-		Provenance:    model.Provenance{Tool: run.Tool},
+		Provenance:    model.Provenance{Tool: toolOf(run, row.Tool)},
 	}, nil
 }
 
@@ -230,4 +234,11 @@ func cwes(names []string) []model.CWEName {
 		result = append(result, model.CWEName(name))
 	}
 	return result
+}
+
+func toolOf(run Run, recorded string) model.ToolName {
+	if recorded != "" {
+		return model.ToolName(recorded)
+	}
+	return run.Tool
 }

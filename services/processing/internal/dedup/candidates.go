@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"context"
 	"fmt"
+	"maps"
 	"slices"
 
 	"vulnmanager/modules/model"
@@ -22,6 +23,41 @@ func Find(ctx context.Context, blocker Blocker, index Index, subject Subject) ([
 		return nil, fmt.Errorf("lookup: %w", err)
 	}
 	return group(hits, subject.Finding), nil
+}
+
+func FindMany(ctx context.Context, blocker Blocker, index Index, scope model.Scope, subjects []Subject) (map[model.FindingID][]Candidate, error) {
+	if scope.TenantID.IsEmpty() {
+		return nil, model.ErrEmptyTenant
+	}
+	keysOf := make(map[model.FindingID][]BlockKey, len(subjects))
+	unique := map[BlockKey]struct{}{}
+	for _, subject := range subjects {
+		keys := blocker.Keys(subject)
+		keysOf[subject.Finding] = keys
+		for _, key := range keys {
+			unique[key] = struct{}{}
+		}
+	}
+	if len(unique) == 0 {
+		return map[model.FindingID][]Candidate{}, nil
+	}
+	hits, err := index.Lookup(ctx, scope, slices.SortedFunc(maps.Keys(unique), compareKeys))
+	if err != nil {
+		return nil, fmt.Errorf("lookup: %w", err)
+	}
+	byKey := make(map[BlockKey][]Hit, len(unique))
+	for _, hit := range hits {
+		byKey[hit.Key] = append(byKey[hit.Key], hit)
+	}
+	found := make(map[model.FindingID][]Candidate, len(subjects))
+	for _, subject := range subjects {
+		var own []Hit
+		for _, key := range keysOf[subject.Finding] {
+			own = append(own, byKey[key]...)
+		}
+		found[subject.Finding] = group(own, subject.Finding)
+	}
+	return found, nil
 }
 
 func group(hits []Hit, self model.FindingID) []Candidate {
