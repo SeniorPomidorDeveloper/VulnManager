@@ -151,3 +151,26 @@ func TestNewWeightedRejectsBrokenConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestSameToolUIDMergesWithoutAnySnippet(t *testing.T) {
+	a := sast("r", "a.go", "")
+	a.ToolUID = "v1:l0:sha256:aa"
+	b := a
+
+	for _, kind := range []model.Kind{model.KindSAST, model.KindSCA, model.KindIaC, model.KindSecret, model.KindDAST} {
+		got := weighted(t).Score(ofKind(kind, a), ofKind(kind, b))
+		if got.Verdict != dedup.VerdictMerge {
+			t.Fatalf("%s: got %+v", kind, got)
+		}
+	}
+}
+
+func TestDifferentToolUIDDoesNotBlockOtherEvidence(t *testing.T) {
+	a := sast("r", "a.go", "x")
+	b := sast("r", "a.go", "x")
+	a.ToolUID, b.ToolUID = "v1:l0:sha256:aa", "v1:l0:sha256:bb"
+
+	if got := weighted(t).Score(a, b); got.Verdict != dedup.VerdictMerge {
+		t.Fatalf("got %+v", got)
+	}
+}

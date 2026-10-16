@@ -1,5 +1,5 @@
 -- name: ListRunFindings :many
-SELECT f.id, f.tool_finding_id, f.kind, f.severity, f.rule_id, f.vuln_source, f.vuln_id, f.location,
+SELECT f.id, f.tool_finding_id, COALESCE(f.provenance->>'tool', '')::text AS tool, f.kind, f.severity, f.rule_id, f.vuln_source, f.vuln_id, f.location,
        c.purl, c.type AS component_type, c.namespace, c.name, c.version,
        COALESCE((
            SELECT array_agg(w.cwe ORDER BY w.cwe) FROM finding_cwe w

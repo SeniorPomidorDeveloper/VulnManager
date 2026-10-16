@@ -21,7 +21,7 @@ const (
 	FeatureKind FeatureID = "kind"
 
 	weightedID      ScorerID = "weighted"
-	weightedVersion Version  = 1
+	weightedVersion Version  = 2
 
 	maxPoints Points = 1000
 )
@@ -86,6 +86,7 @@ func DefaultWeights() map[FeatureID]Weight {
 		FeatureRule:      {Agree: 250},
 		FeatureCWE:       {Agree: 50},
 		FeatureSeverity:  {Disagree: -50},
+		FeatureToolUID:   {Agree: 800},
 	}
 }
 

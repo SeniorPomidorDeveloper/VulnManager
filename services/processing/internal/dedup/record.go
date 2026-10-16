@@ -15,10 +15,12 @@ type Record struct {
 	CWE       []model.CWEName
 	Path      string
 	Code      string
+	ToolUID   string
 }
 
 func RecordOf(finding model.Finding) Record {
 	path, code := fingerprint.PlaceOf(finding)
+	uid, _ := fingerprint.ToolUID{}.Fingerprint(finding)
 	return Record{
 		Finding:   finding.ID,
 		Kind:      finding.Kind,
@@ -29,5 +31,6 @@ func RecordOf(finding model.Finding) Record {
 		CWE:       finding.CWE,
 		Path:      path,
 		Code:      code,
+		ToolUID:   string(uid.Value),
 	}
 }
