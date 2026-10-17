@@ -16,11 +16,11 @@ COMPLETED_RUN = (
 )
 
 
-def send(body, tool):
+def send(body, tool, scope='e2e/main'):
     upload = request.Request(
         f'{settings.INGEST_URL}/api/v1/reports',
         data=body,
-        headers={'X-Tool': tool, 'X-Scope': 'e2e/main'},
+        headers={'X-Tool': tool, 'X-Scope': scope},
     )
     with request.urlopen(upload) as response:
         return response.status, json.load(response)
