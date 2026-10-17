@@ -8,9 +8,10 @@ import (
 )
 
 type location struct {
-	URI     string `json:"uri"`
-	Target  string `json:"target"`
-	Snippet string `json:"snippet"`
+	URI       string `json:"uri"`
+	Target    string `json:"target"`
+	Snippet   string `json:"snippet"`
+	StartLine int    `json:"start_line"`
 }
 
 func (l location) path() string {
@@ -35,4 +36,8 @@ func locationOf(finding model.Finding) location {
 func PlaceOf(finding model.Finding) (path, code string) {
 	place := locationOf(finding)
 	return place.path(), place.code()
+}
+
+func LineOf(finding model.Finding) int {
+	return max(locationOf(finding).StartLine, 0)
 }

@@ -229,3 +229,24 @@ func TestRegistry(t *testing.T) {
 		t.Fatalf("got %q", got)
 	}
 }
+
+func TestLineOf(t *testing.T) {
+	tests := map[string]struct {
+		location string
+		want     int
+	}{
+		"line given":   {`{"uri":"a.go","start_line":42}`, 42},
+		"line missing": {`{"uri":"a.go"}`, 0},
+		"negative":     {`{"uri":"a.go","start_line":-3}`, 0},
+		"broken json":  {`{`, 0},
+		"no location":  {``, 0},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			finding := model.Finding{Location: json.RawMessage(tc.location)}
+			if got := fingerprint.LineOf(finding); got != tc.want {
+				t.Fatalf("got %d, want %d", got, tc.want)
+			}
+		})
+	}
+}
