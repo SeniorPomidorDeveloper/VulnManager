@@ -119,6 +119,46 @@ func TestByKindUsesProfileOfTheKind(t *testing.T) {
 	}
 }
 
+func onLine(record dedup.Record, line int) dedup.Record {
+	record.Line = line
+	return record
+}
+
+func TestByKindSeparatesOtherLinesOfSameCode(t *testing.T) {
+	check := dedup.Record{Rule: "CKV_1", Path: "main.tf", Code: "res", CWE: []model.CWEName{"CWE-89"}}
+	tests := []struct {
+		name        string
+		left, right int
+		want        dedup.Verdict
+	}{
+		{"same line", 17, 17, dedup.VerdictMerge},
+		{"other line", 17, 32, dedup.VerdictSeparate},
+		{"line unknown on one side", 17, 0, dedup.VerdictMerge},
+		{"line unknown on both sides", 0, 0, dedup.VerdictMerge},
+	}
+	scorer := weighted(t)
+	for _, kind := range []model.Kind{model.KindSAST, model.KindSecret, model.KindIaC} {
+		for _, tc := range tests {
+			t.Run(kind.String()+"/"+tc.name, func(t *testing.T) {
+				a, b := onLine(ofKind(kind, check), tc.left), onLine(ofKind(kind, check), tc.right)
+				if got := scorer.Score(a, b); got.Verdict != tc.want {
+					t.Fatalf("got %s (%.2f) %+v, want %s", got.Verdict, got.Confidence, got.Reasons, tc.want)
+				}
+			})
+		}
+	}
+}
+
+func TestLineDoesNotAffectDependencies(t *testing.T) {
+	a, b := sca("CVE-1", "pkg:x@1", model.SeverityHigh), sca("CVE-1", "pkg:x@1", model.SeverityHigh)
+
+	got := weighted(t).Score(onLine(a, 10), onLine(b, 20))
+
+	if got.Verdict != dedup.VerdictMerge {
+		t.Fatalf("got %+v", got)
+	}
+}
+
 func TestWeightedContract(t *testing.T) {
 	deduptest.RunScorerSuite(t, weighted(t), []deduptest.Pair{
 		{Name: "identical sca", A: sca("CVE-1", "pkg:x@1", model.SeverityHigh), B: sca("CVE-1", "pkg:x@1", model.SeverityHigh)},

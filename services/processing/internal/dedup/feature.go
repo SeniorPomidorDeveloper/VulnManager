@@ -2,6 +2,7 @@ package dedup
 
 import (
 	"slices"
+	"strconv"
 	"strings"
 
 	"vulnmanager/modules/model"
@@ -23,6 +24,7 @@ const (
 	FeatureComponent FeatureID = "component"
 	FeaturePath      FeatureID = "path"
 	FeatureCode      FeatureID = "code"
+	FeatureLine      FeatureID = "line"
 	FeatureRule      FeatureID = "rule"
 	FeatureCWE       FeatureID = "cwe"
 	FeatureSeverity  FeatureID = "severity"
@@ -60,6 +62,7 @@ func DefaultFeatures() []Feature {
 		valuesFeature{FeatureComponent, componentValues},
 		valuesFeature{FeaturePath, func(r Record) []string { return present(r.Path) }},
 		valuesFeature{FeatureCode, func(r Record) []string { return present(r.Code) }},
+		valuesFeature{FeatureLine, lineValues},
 		valuesFeature{FeatureRule, func(r Record) []string { return present(string(r.Rule)) }},
 		valuesFeature{FeatureCWE, cweValues},
 		valuesFeature{FeatureSeverity, severityValues},
@@ -72,6 +75,13 @@ func present(value string) []string {
 		return nil
 	}
 	return []string{value}
+}
+
+func lineValues(r Record) []string {
+	if r.Line <= 0 {
+		return nil
+	}
+	return []string{strconv.Itoa(r.Line)}
 }
 
 func vulnValues(r Record) []string {
