@@ -1,0 +1,38 @@
+x-hosts: &hosts
+  network_mode: host
+  extra_hosts:
+    - "postgres:127.0.0.1"
+    - "rabbitmq:127.0.0.1"
+    - "garage:127.0.0.1"
+
+services:
+  postgres:
+    <<: *hosts
+    ports: !reset []
+  rabbitmq:
+    <<: *hosts
+    ports: !reset []
+  garage:
+    <<: *hosts
+    ports: !reset []
+  migrate:
+    <<: *hosts
+  seed-ingest:
+    <<: *hosts
+  ingest:
+    <<: *hosts
+    ports: !reset []
+    environment:
+      INGEST_ADDR: ":18080"
+    healthcheck:
+      test: !override
+        - CMD
+        - bash
+        - -c
+        - exec 3<>/dev/tcp/127.0.0.1/18080 && printf 'GET /ping HTTP/1.0\r\n\r\n' >&3 && grep -q ok <&3
+  normalize:
+    <<: *hosts
+    ports: !reset []
+  processing:
+    <<: *hosts
+    ports: !reset []

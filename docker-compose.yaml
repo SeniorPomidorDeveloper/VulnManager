@@ -108,6 +108,8 @@ services:
         condition: service_completed_successfully
       garage:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     env_file:
       - deploy/local/ingest.env
     environment:
