@@ -134,3 +134,36 @@ func TestBlockingStaysLinearOnLargeScope(t *testing.T) {
 		t.Fatalf("took %s, budget %s", took, linearBudget)
 	}
 }
+
+func TestFindManyMatchesFindForEverySubject(t *testing.T) {
+	blocker := dedup.ByLevel{}
+	index := deduptest.NewMemoryIndex()
+	subjects := []dedup.Subject{
+		subject(t, "f1", "a", "b"), subject(t, "f2", "x", "b"), subject(t, "f3", "a", "z"), subject(t, "f4", "q", "r"),
+	}
+	for _, item := range subjects {
+		index.Add(item.Scope, item.Finding, blocker.Keys(item))
+	}
+
+	many, err := dedup.FindMany(context.Background(), blocker, index, scope(t, "product"), subjects)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, item := range subjects {
+		one, err := dedup.Find(context.Background(), blocker, index, item)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(many[item.Finding], one) {
+			t.Fatalf("%s: many=%+v one=%+v", item.Finding, many[item.Finding], one)
+		}
+	}
+}
+
+func TestFindManyRequiresTenant(t *testing.T) {
+	_, err := dedup.FindMany(context.Background(), dedup.ByLevel{}, deduptest.NewMemoryIndex(), model.Scope{}, nil)
+	if !errors.Is(err, model.ErrEmptyTenant) {
+		t.Fatalf("got %v", err)
+	}
+}
