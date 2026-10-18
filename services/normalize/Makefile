@@ -2,7 +2,7 @@ GOFUMPT ?= go run mvdan.cc/gofumpt@v0.7.0
 GOLANGCI ?= go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.6
 SQLC ?= go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1
 
-.PHONY: build binary deb image smoke smoke-clean generate fmt tidy lint lint-py test integration ci
+.PHONY: build binary deb package image smoke smoke-clean generate fmt tidy lint lint-py test integration ci
 ci: fmt tidy lint build test
 
 generate:
@@ -32,9 +32,13 @@ IMAGE ?= vulnmanager/normalize:$(VERSION)
 binary: generate
 	CGO_ENABLED=0 go build -trimpath -ldflags '-s -w -X main.version=$(VERSION)' -o bin/normalize .
 
-deb: binary
+deb: binary package
+
+package:
 	mkdir -p dist
-	fakeroot debian/rules binary
+	dpkg-buildpackage -b -uc -us -d
+	mv ../$(DEB) dist/
+	rm -f ../vulnmanager-normalize_$(VERSION)_amd64.buildinfo ../vulnmanager-normalize_$(VERSION)_amd64.changes
 
 image:
 	docker build -f Dockerfile --build-arg DEB=$(DEB) -t $(IMAGE) dist

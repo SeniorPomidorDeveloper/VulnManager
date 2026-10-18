@@ -25,7 +25,7 @@ jobs:
         with:
           python-version: "3.12.8"
 
-      - run: sudo apt-get install -y --no-install-recommends debhelper dpkg-dev fakeroot
+      - run: sudo apt-get install -y --no-install-recommends debhelper dpkg-dev
 
       - run: make deb
         working-directory: services/ingest
