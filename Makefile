@@ -7,7 +7,7 @@ GODOCKER = docker run --rm --network host -v $(CURDIR):/src -w /src/$(1) -u $$(i
 VERSION ?= 0.0.1
 IMAGE = docker build --network host -f services/$(1)/Dockerfile --build-arg DEB=vulnmanager-$(1)_$(VERSION)_amd64.deb -t vulnmanager/$(1):$(VERSION) services/$(1)/dist
 DEBUILD_IMAGE ?= vulnmanager/debuild:24.04
-DEBUILD = docker run --rm -v $(CURDIR)/services/$(1):/w -u $$(id -u):$$(id -g) -e HOME=/tmp -w /w $(DEBUILD_IMAGE) sh -c 'debian/rules clean && fakeroot debian/rules binary'
+DEBUILD = docker run --rm -v $(CURDIR)/services/$(1):/w/src -u $$(id -u):$$(id -g) -e HOME=/tmp -w /w/src $(DEBUILD_IMAGE) make package
 
 .PHONY: help go-cache debuild-image deb deb-ingest deb-normalize deb-processing image image-ingest image-normalize image-processing build up infra down clean logs ps test test-modules test-services e2e
 
