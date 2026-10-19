@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -63,7 +64,7 @@ func run(log *slog.Logger) error {
 	reg.MustRegister(collectors.NewGoCollector(), collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 	metrics := ingesthttp.NewMetrics(reg)
 
-	publisher, closePublisher, err := newPublisher(cfg, reg)
+	publisher, closePublisher, err := newPublisher(cfg, reg, log)
 	if err != nil {
 		return fmt.Errorf("events: %w", err)
 	}
@@ -77,12 +78,14 @@ func run(log *slog.Logger) error {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /ping", func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = w.Write([]byte("ok"))
+		if _, err := w.Write([]byte("ok")); err != nil {
+			log.Warn("cannot write ping response", "error", err)
+		}
 	})
 	mux.Handle("GET /metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 	api.HandlerWithOptions(handler, api.StdHTTPServerOptions{
 		BaseRouter:       mux,
-		ErrorHandlerFunc: ingesthttp.InvalidRequest,
+		ErrorHandlerFunc: ingesthttp.InvalidRequest(log),
 		Middlewares:      []api.MiddlewareFunc{ingesthttp.StaticTenant(model.TenantID(cfg.Tenant))},
 	})
 
@@ -110,18 +113,19 @@ func run(log *slog.Logger) error {
 	return nil
 }
 
-func newPublisher(cfg config.Config, reg prometheus.Registerer) (jobs.Publisher, func(), error) {
+func newPublisher(cfg config.Config, reg prometheus.Registerer, log *slog.Logger) (jobs.Publisher, func(), error) {
 	if cfg.Events == config.EventsNone {
 		return events.Disabled{}, func() {}, nil
 	}
 	amqpPublisher, err := events.NewAMQPPublisher(events.Config{
 		URL:      events.URL(cfg.AMQPURL),
 		Exchange: events.ExchangeName(cfg.AMQPExchange),
+		Log:      log,
 	})
 	if err != nil {
 		return nil, nil, err
 	}
-	return events.NewMetrics(reg).Wrap(amqpPublisher), func() { _ = amqpPublisher.Close() }, nil
+	return events.NewMetrics(reg).Wrap(amqpPublisher), closeWith(log, amqpPublisher), nil
 }
 
 func newRawWriter(cfg config.Config, pool *pgxpool.Pool) (jobs.RawWriter, error) {
@@ -135,4 +139,12 @@ func newRawWriter(cfg config.Config, pool *pgxpool.Pool) (jobs.RawWriter, error)
 		UseSSL:          cfg.S3SSL,
 		Bucket:          cfg.S3Bucket,
 	})
+}
+
+func closeWith(log *slog.Logger, c io.Closer) func() {
+	return func() {
+		if err := c.Close(); err != nil {
+			log.Warn("cannot close publisher", "error", err)
+		}
+	}
 }

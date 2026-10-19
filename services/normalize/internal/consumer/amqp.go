@@ -119,7 +119,9 @@ func (s *session) startWorkers(ctx context.Context, deliveries <-chan amqp.Deliv
 func (s *session) waitStop(ctx context.Context, closed <-chan *amqp.Error, inFlight *sync.WaitGroup) error {
 	select {
 	case <-ctx.Done():
-		_ = s.consume.Cancel(s.consumer.cfg.ConsumerTag, false)
+		if err := s.consume.Cancel(s.consumer.cfg.ConsumerTag, false); err != nil {
+			s.consumer.log.Warn("cannot cancel consumer", "error", err)
+		}
 		inFlight.Wait()
 		return nil
 	case closeErr := <-closed:
@@ -138,10 +140,14 @@ func (s *session) settle(ctx context.Context, delivery amqp.Delivery) {
 	if err := s.moveFor(ctx, verdict, delivery); err != nil {
 		s.consumer.metrics.failures.WithLabelValues(string(verdict)).Inc()
 		s.consumer.log.Error("cannot move message, returning it to the queue", "verdict", verdict, "error", err)
-		_ = delivery.Nack(false, true)
+		if err := delivery.Nack(false, true); err != nil {
+			s.consumer.log.Error("cannot nack message", "error", err)
+		}
 		return
 	}
-	_ = delivery.Ack(false)
+	if err := delivery.Ack(false); err != nil {
+		s.consumer.log.Error("cannot ack message", "error", err)
+	}
 }
 
 func (s *session) moveFor(ctx context.Context, verdict Verdict, delivery amqp.Delivery) error {
@@ -247,5 +253,7 @@ func (c *Consumer) deadQueue() QueueName {
 }
 
 func (s *session) close() {
-	_ = s.conn.Close()
+	if err := s.conn.Close(); err != nil && !errors.Is(err, amqp.ErrClosed) {
+		s.consumer.log.Warn("cannot close broker connection", "error", err)
+	}
 }

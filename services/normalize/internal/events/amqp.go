@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"sync"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -24,6 +25,7 @@ var (
 type Config struct {
 	URL      URL
 	Exchange ExchangeName
+	Log      *slog.Logger
 }
 
 type AMQPPublisher struct {
@@ -99,15 +101,15 @@ func (p *AMQPPublisher) connect() error {
 	}
 	channel, err := conn.Channel()
 	if err != nil {
-		_ = conn.Close()
+		p.closeConn(conn)
 		return fmt.Errorf("open channel: %w", err)
 	}
 	if err := channel.ExchangeDeclare(string(p.cfg.Exchange), exchangeKind, true, false, false, false, nil); err != nil {
-		_ = conn.Close()
+		p.closeConn(conn)
 		return fmt.Errorf("declare exchange: %w", err)
 	}
 	if err := channel.Confirm(false); err != nil {
-		_ = conn.Close()
+		p.closeConn(conn)
 		return fmt.Errorf("enable confirms: %w", err)
 	}
 	p.conn, p.channel = conn, channel
@@ -117,7 +119,13 @@ func (p *AMQPPublisher) connect() error {
 
 func (p *AMQPPublisher) dropChannel() {
 	if p.conn != nil {
-		_ = p.conn.Close()
+		p.closeConn(p.conn)
 	}
 	p.conn, p.channel, p.returns = nil, nil, nil
+}
+
+func (p *AMQPPublisher) closeConn(conn *amqp.Connection) {
+	if err := conn.Close(); err != nil && !errors.Is(err, amqp.ErrClosed) {
+		p.cfg.Log.Warn("cannot close broker connection", "error", err)
+	}
 }

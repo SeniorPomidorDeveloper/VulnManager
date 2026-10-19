@@ -72,12 +72,16 @@ func New(pool *pgxpool.Pool) *Store {
 	return &Store{pool: pool}
 }
 
-func (s *Store) InTx(ctx context.Context, fn func(*Tx) error) error {
+func (s *Store) InTx(ctx context.Context, fn func(*Tx) error) (err error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin: %w", err)
 	}
-	defer func() { _ = tx.Rollback(ctx) }()
+	defer func() {
+		if rbErr := tx.Rollback(ctx); rbErr != nil && !errors.Is(rbErr, pgx.ErrTxClosed) {
+			err = errors.Join(err, fmt.Errorf("rollback: %w", rbErr))
+		}
+	}()
 
 	queries := db.New(tx)
 	if err := fn(&Tx{queries: queries, shared: db.New(s.pool), components: map[string]uuid.UUID{}}); err != nil {
