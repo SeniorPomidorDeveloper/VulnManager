@@ -10,6 +10,9 @@ import spec_check
 pytest_plugins = [
     'testsuite.pytest_plugin',
     'testsuite.databases.pgsql.pytest_plugin',
+    'testsuite.databases.rabbitmq.pytest_plugin',
+    'fixtures_rabbit',
+    'fixtures_events',
 ]
 
 SESSION = 'session'
@@ -39,7 +42,7 @@ def seeded_tenant(pgsql):
 
 
 @pytest.fixture(scope=SESSION)
-async def service_daemon(create_daemon_scope, app_database_url):
+async def service_daemon(create_daemon_scope, app_database_url, amqp_url):
     async with create_daemon_scope(
         args=[str(settings.BINARY)],
         env={
@@ -47,7 +50,7 @@ async def service_daemon(create_daemon_scope, app_database_url):
             'INGEST_DATABASE_URL': app_database_url,
             'INGEST_TENANT': settings.TENANT,
             'INGEST_RAWSTORE': 'pg',
-            'INGEST_EVENTS': 'none',
+            'INGEST_AMQP_URL': amqp_url,
         },
         ping_url=settings.PING_URL,
     ) as scope:

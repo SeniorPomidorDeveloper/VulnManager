@@ -38,6 +38,12 @@ def jobs(pgsql, database):
     return cursor.fetchall()
 
 
+def job_ids(pgsql, database):
+    cursor = pgsql[database].cursor()
+    cursor.execute('SELECT id FROM ingest_job ORDER BY created_at')
+    return [str(row[0]) for row in cursor.fetchall()]
+
+
 def blob_count(pgsql, database):
     cursor = pgsql[database].cursor()
     cursor.execute('SELECT count(*) FROM raw_blob')

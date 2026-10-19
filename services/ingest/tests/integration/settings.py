@@ -14,3 +14,6 @@ PING_URL = f'{BASE_URL}ping'
 DATABASE = 'vulnmanager'
 TENANT = 'acme'
 TENANT_LIMIT = 1000
+
+EXCHANGE = 'vulnmanager.report.received'
+EXCHANGE_BINDING_WEIGHT = '1'
