@@ -1,0 +1,10 @@
+yandex-taxi-testsuite[postgresql-binary,rabbitmq]==0.4.11
+pytest==8.3.4
+pytest-asyncio==0.25.2
+pytest-aiohttp==1.1.0
+jsonschema==4.23.0
+PyYAML==6.0.2
+flake8==7.4.1
+flake8-bugbear==26.9.9
+wemake-python-styleguide==1.8.1
+sqlparse==0.6.0
