@@ -42,6 +42,8 @@ jobs:
         with:
           python-version: "3.12.8"
 
+      - run: sudo apt-get install -y --no-install-recommends rabbitmq-server
+
       - run: pip install -r tests/integration/requirements.txt
 
       - run: pip install --no-deps yandex-pgmigrate==1.0.13
@@ -76,8 +78,6 @@ jobs:
 
       - run: docker compose --profile core up -d --build --wait ingest
         working-directory: .
-        env:
-          INGEST_EVENTS: none
 
       - run: >-
           curl -fsS -X POST http://127.0.0.1:8080/api/v1/reports

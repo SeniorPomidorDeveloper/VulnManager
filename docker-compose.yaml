@@ -112,8 +112,6 @@ services:
         condition: service_healthy
     env_file:
       - deploy/local/ingest.env
-    environment:
-      INGEST_EVENTS: ${INGEST_EVENTS:-amqp}
     ports:
       - "${INGEST_PORT:-8080}:8080"
     healthcheck:

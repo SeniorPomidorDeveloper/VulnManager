@@ -11,6 +11,8 @@ from settings import DATABASE
     [
         ({}, (TOOL_HEADER,)),
         ({}, (SCOPE_HEADER,)),
+        ({TOOL_HEADER: 'BAD!'}, ()),
+        ({TOOL_HEADER: 'Trivy'}, ()),
         ({SCOPE_HEADER: '/context-only'}, ()),
     ],
 )

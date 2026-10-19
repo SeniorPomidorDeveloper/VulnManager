@@ -114,9 +114,6 @@ func run(log *slog.Logger) error {
 }
 
 func newPublisher(cfg config.Config, reg prometheus.Registerer, log *slog.Logger) (jobs.Publisher, func(), error) {
-	if cfg.Events == config.EventsNone {
-		return events.Disabled{}, func() {}, nil
-	}
 	amqpPublisher, err := events.NewAMQPPublisher(events.Config{
 		URL:      events.URL(cfg.AMQPURL),
 		Exchange: events.ExchangeName(cfg.AMQPExchange),

@@ -10,9 +10,6 @@ const (
 	RawStoreS3 = "s3"
 	RawStorePG = "pg"
 
-	EventsAMQP = "amqp"
-	EventsNone = "none"
-
 	defaultExchange = "vulnmanager.report.received"
 )
 
@@ -22,7 +19,6 @@ type Config struct {
 	Tenant      string
 	RawStore    string
 
-	Events       string
 	AMQPURL      string
 	AMQPExchange string
 
@@ -40,7 +36,6 @@ func Load(getenv func(string) string) (Config, error) {
 		Tenant:      getenv("INGEST_TENANT"),
 		RawStore:    withDefault(getenv("INGEST_RAWSTORE"), RawStoreS3),
 
-		Events:       withDefault(getenv("INGEST_EVENTS"), EventsAMQP),
 		AMQPURL:      getenv("INGEST_AMQP_URL"),
 		AMQPExchange: withDefault(getenv("INGEST_AMQP_EXCHANGE"), defaultExchange),
 		S3Endpoint:   getenv("INGEST_S3_ENDPOINT"),
@@ -72,14 +67,8 @@ func Load(getenv func(string) string) (Config, error) {
 		errs = append(errs, fmt.Errorf("INGEST_RAWSTORE: unknown profile %q", cfg.RawStore))
 	}
 
-	switch cfg.Events {
-	case EventsNone:
-	case EventsAMQP:
-		if cfg.AMQPURL == "" {
-			errs = append(errs, errors.New("INGEST_AMQP_URL is required for events amqp"))
-		}
-	default:
-		errs = append(errs, fmt.Errorf("INGEST_EVENTS: unknown mode %q", cfg.Events))
+	if cfg.AMQPURL == "" {
+		errs = append(errs, errors.New("INGEST_AMQP_URL is required"))
 	}
 
 	return cfg, errors.Join(errs...)
