@@ -8,10 +8,15 @@ import settings
 pytest_plugins = [
     'testsuite.pytest_plugin',
     'testsuite.databases.pgsql.pytest_plugin',
+    'testsuite.databases.rabbitmq.pytest_plugin',
+    'fixtures_rabbit',
+    'fixtures_service',
+    'fixtures_broker',
 ]
+SESSION = 'session'
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope=SESSION)
 def pgsql_local(pgsql_local_create):
     databases = discover.find_schemas(None, [settings.MIGRATIONS_DIR])
     return pgsql_local_create([databases[settings.DATABASE]])

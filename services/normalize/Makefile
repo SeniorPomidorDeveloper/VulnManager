@@ -51,7 +51,7 @@ smoke:
 smoke-clean:
 	docker rm -f vm-normalize-smoke
 
-integration:
+integration: binary
 	python3 -m pytest tests/integration
 
 lint-py:

@@ -1,4 +1,4 @@
-yandex-taxi-testsuite[postgresql-binary]==0.4.11
+yandex-taxi-testsuite[postgresql-binary,rabbitmq]==0.4.11
 pytest==8.3.4
 pytest-asyncio==0.25.2
 pytest-aiohttp==1.1.0

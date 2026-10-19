@@ -13,9 +13,6 @@ import (
 )
 
 const (
-	EventsAMQP = "amqp"
-	EventsNone = "none"
-
 	defaultAddr        = ":8081"
 	defaultWorkerID    = "normalize"
 	defaultLease       = 5 * time.Minute
@@ -43,7 +40,6 @@ type Config struct {
 	AMQPQueue    consumer.QueueName
 	Prefetch     int
 
-	Events         string
 	EventsExchange events.ExchangeName
 
 	Lease       time.Duration
@@ -67,7 +63,6 @@ func Load(getenv func(string) string) (Config, error) {
 		AMQPExchange: consumer.ExchangeName(withDefault(getenv("NORMALIZE_AMQP_EXCHANGE"), defaultExchange)),
 		AMQPQueue:    consumer.QueueName(withDefault(getenv("NORMALIZE_AMQP_QUEUE"), defaultQueue)),
 
-		Events:         withDefault(getenv("NORMALIZE_EVENTS"), EventsAMQP),
 		EventsExchange: events.ExchangeName(withDefault(getenv("NORMALIZE_EVENTS_EXCHANGE"), defaultEventsOut)),
 	}
 
@@ -93,10 +88,6 @@ func Load(getenv func(string) string) (Config, error) {
 			errs = append(errs, fmt.Errorf("%s: %w", field.name, err))
 		}
 		*field.target = value
-	}
-
-	if cfg.Events != EventsAMQP && cfg.Events != EventsNone {
-		errs = append(errs, fmt.Errorf("NORMALIZE_EVENTS: unknown mode %q", cfg.Events))
 	}
 
 	if raw := getenv("NORMALIZE_MAX_ATTEMPTS"); raw != "" {
