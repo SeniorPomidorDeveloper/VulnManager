@@ -2,9 +2,11 @@ GOFUMPT ?= go run mvdan.cc/gofumpt@v0.7.0
 GOLANGCI ?= go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.6
 SQLC ?= go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1
 RABBITMQ_IMAGE ?= rabbitmq:3.13.7-alpine
+COMPOSE ?= docker compose -f ../../docker-compose.yaml --profile core
+RABBIT_API ?= http://vulnmanager:vulnmanager-local-dev@127.0.0.1:15672/api
 OAPI ?= go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.4.1
 
-.PHONY: build binary deb package image smoke smoke-clean generate fmt tidy lint lint-py test integration ci
+.PHONY: build binary deb package image smoke smoke-clean compose-check compose-clean generate fmt tidy lint lint-py test integration ci
 ci: fmt tidy lint build test
 
 generate:
@@ -57,6 +59,15 @@ smoke:
 smoke-clean:
 	docker rm -f vm-ingest-smoke vm-ingest-smoke-rabbitmq
 	-docker network rm vm-ingest-smoke
+
+compose-check:
+	$(COMPOSE) up -d --build --wait ingest
+	curl -fsS -X PUT -H 'content-type: application/json' -d '{"durable":true}' $(RABBIT_API)/queues/%2F/ci-sink
+	curl -fsS -X POST -H 'content-type: application/json' -d '{"routing_key":"1"}' $(RABBIT_API)/bindings/%2F/e/vulnmanager.report.received/q/ci-sink
+	curl -fsS -X POST http://127.0.0.1:8080/api/v1/reports -H 'X-Tool: trivy' -H 'X-Scope: ci/main' --data-binary 'report'
+
+compose-clean:
+	$(COMPOSE) down -v
 
 integration: binary
 	python3 -m pytest tests/integration
