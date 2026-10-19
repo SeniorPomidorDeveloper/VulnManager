@@ -63,7 +63,7 @@ func Run(log *slog.Logger) error {
 	reg.MustRegister(collectors.NewGoCollector(), collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 	reg.MustRegister(metrics.NewBacklogCollector(processingStore))
 
-	srv := &http.Server{Addr: cfg.Addr, Handler: newMux(reg), ReadHeaderTimeout: readHeaderTimeout}
+	srv := &http.Server{Addr: cfg.Addr, Handler: newMux(reg, log), ReadHeaderTimeout: readHeaderTimeout}
 	errCh := make(chan error, 1)
 	go func() { errCh <- srv.ListenAndServe() }()
 
@@ -101,10 +101,12 @@ func Run(log *slog.Logger) error {
 	return nil
 }
 
-func newMux(reg *prometheus.Registry) *http.ServeMux {
+func newMux(reg *prometheus.Registry, log *slog.Logger) *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /ping", func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = w.Write([]byte("ok"))
+		if _, err := w.Write([]byte("ok")); err != nil {
+			log.Warn("cannot write ping response", "error", err)
+		}
 	})
 	mux.Handle("GET /metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 	return mux

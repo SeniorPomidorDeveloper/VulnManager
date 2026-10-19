@@ -55,7 +55,7 @@ func Run(log *slog.Logger) error {
 	}
 	defer pool.Close()
 
-	publisher, closePublisher := newPublisher(cfg)
+	publisher, closePublisher := newPublisher(cfg, log)
 	defer closePublisher()
 
 	w, reg, err := newWorker(cfg, pool, log, publisher)
@@ -63,7 +63,7 @@ func Run(log *slog.Logger) error {
 		return err
 	}
 
-	srv := &http.Server{Addr: cfg.Addr, Handler: newMux(reg), ReadHeaderTimeout: readHeaderTimeout}
+	srv := &http.Server{Addr: cfg.Addr, Handler: newMux(reg, log), ReadHeaderTimeout: readHeaderTimeout}
 	errCh := make(chan error, 1)
 	go func() { errCh <- srv.ListenAndServe() }()
 
@@ -101,12 +101,16 @@ func Run(log *slog.Logger) error {
 	return nil
 }
 
-func newPublisher(cfg config.Config) (events.Publisher, func()) {
+func newPublisher(cfg config.Config, log *slog.Logger) (events.Publisher, func()) {
 	if cfg.Events == config.EventsNone {
 		return events.Disabled{}, func() {}
 	}
-	amqpPublisher := events.NewAMQPPublisher(events.Config{URL: events.URL(cfg.AMQPURL), Exchange: cfg.EventsExchange})
-	return amqpPublisher, func() { _ = amqpPublisher.Close() }
+	amqpPublisher := events.NewAMQPPublisher(events.Config{URL: events.URL(cfg.AMQPURL), Exchange: cfg.EventsExchange, Log: log})
+	return amqpPublisher, func() {
+		if err := amqpPublisher.Close(); err != nil {
+			log.Warn("cannot close publisher", "error", err)
+		}
+	}
 }
 
 func newWorker(
@@ -157,10 +161,12 @@ func newWorker(
 	return w, reg, nil
 }
 
-func newMux(reg *prometheus.Registry) *http.ServeMux {
+func newMux(reg *prometheus.Registry, log *slog.Logger) *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /ping", func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = w.Write([]byte("ok"))
+		if _, err := w.Write([]byte("ok")); err != nil {
+			log.Warn("cannot write ping response", "error", err)
+		}
 	})
 	mux.Handle("GET /metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 	return mux

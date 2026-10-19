@@ -7,12 +7,15 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"vulnmanager/modules/model"
 	"vulnmanager/services/ingest/gen/api"
 	"vulnmanager/services/ingest/internal/jobs"
 )
+
+var toolNamePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]{0,63}$`)
 
 type Intake interface {
 	MaxReportBytes(ctx context.Context, tenantID model.TenantID) (int64, error)
@@ -70,6 +73,11 @@ func (h *Handler) IngestReport(w http.ResponseWriter, r *http.Request, params ap
 		fail(w, h.log, p)
 		return
 	}
+	tool, p := parseTool(params.XTool)
+	if p != nil {
+		fail(w, h.log, p)
+		return
+	}
 	body, p := h.readBody(ctx, w, r, tenantID)
 	if p != nil {
 		fail(w, h.log, p)
@@ -77,7 +85,7 @@ func (h *Handler) IngestReport(w http.ResponseWriter, r *http.Request, params ap
 	}
 	accepted, p := h.accept(ctx, jobs.Report{
 		Scope:  scope,
-		Tool:   model.ToolName(params.XTool),
+		Tool:   tool,
 		ScanID: h.scanID(params.XScanId),
 		Body:   body,
 	})
@@ -86,7 +94,7 @@ func (h *Handler) IngestReport(w http.ResponseWriter, r *http.Request, params ap
 		return
 	}
 
-	writeJSON(w, http.StatusAccepted, "application/json", api.ReportAccepted{
+	writeJSON(w, h.log, http.StatusAccepted, "application/json", api.ReportAccepted{
 		ScanId: string(accepted.ScanID),
 		Sha256: accepted.SHA256,
 	})
@@ -140,7 +148,7 @@ func fail(w http.ResponseWriter, log *slog.Logger, p *problem) {
 	if p.cause != nil {
 		log.Error("ingest failed", "op", p.op, "error", p.cause)
 	}
-	writeProblem(w, p.status, p.code, p.detail)
+	writeProblem(w, log, p.status, p.code, p.detail)
 }
 
 func parseScope(tenantID model.TenantID, header string) (model.Scope, *problem) {
@@ -152,8 +160,15 @@ func parseScope(tenantID model.TenantID, header string) (model.Scope, *problem) 
 	return scope, nil
 }
 
-func writeProblem(w http.ResponseWriter, status int, code, detail string) {
-	writeJSON(w, status, "application/problem+json", api.Problem{
+func parseTool(header string) (model.ToolName, *problem) {
+	if !toolNamePattern.MatchString(header) {
+		return "", badRequest("X-Tool must match " + toolNamePattern.String())
+	}
+	return model.ToolName(header), nil
+}
+
+func writeProblem(w http.ResponseWriter, log *slog.Logger, status int, code, detail string) {
+	writeJSON(w, log, status, "application/problem+json", api.Problem{
 		Type:   code,
 		Title:  http.StatusText(status),
 		Status: status,
@@ -161,12 +176,16 @@ func writeProblem(w http.ResponseWriter, status int, code, detail string) {
 	})
 }
 
-func writeJSON(w http.ResponseWriter, status int, contentType string, v any) {
+func writeJSON(w http.ResponseWriter, log *slog.Logger, status int, contentType string, v any) {
 	w.Header().Set("Content-Type", contentType)
 	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(v)
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		log.Warn("cannot write response", "error", err)
+	}
 }
 
-func InvalidRequest(w http.ResponseWriter, _ *http.Request, err error) {
-	writeProblem(w, http.StatusBadRequest, "bad_request", err.Error())
+func InvalidRequest(log *slog.Logger) func(http.ResponseWriter, *http.Request, error) {
+	return func(w http.ResponseWriter, _ *http.Request, err error) {
+		writeProblem(w, log, http.StatusBadRequest, "bad_request", err.Error())
+	}
 }

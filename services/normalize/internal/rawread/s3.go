@@ -53,8 +53,7 @@ func (r *S3Reader) Get(ctx context.Context, key model.RawKey) (io.ReadCloser, er
 		return nil, translate(err)
 	}
 	if _, err := object.Stat(); err != nil {
-		_ = object.Close()
-		return nil, translate(err)
+		return nil, errors.Join(translate(err), object.Close())
 	}
 	return object, nil
 }

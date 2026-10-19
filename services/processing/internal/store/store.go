@@ -76,12 +76,16 @@ func (s *Store) Backlog(ctx context.Context) (Backlog, error) {
 	return Backlog{Runs: int(row.Runs), OldestAge: time.Duration(row.OldestAgeSeconds * float64(time.Second))}, nil
 }
 
-func (s *Store) InTx(ctx context.Context, fn func(Tx) error) error {
+func (s *Store) InTx(ctx context.Context, fn func(Tx) error) (err error) {
 	pgxTx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin: %w", err)
 	}
-	defer func() { _ = pgxTx.Rollback(ctx) }()
+	defer func() {
+		if rbErr := pgxTx.Rollback(ctx); rbErr != nil && !errors.Is(rbErr, pgx.ErrTxClosed) {
+			err = errors.Join(err, fmt.Errorf("rollback: %w", rbErr))
+		}
+	}()
 
 	queries := db.New(pgxTx)
 	if err := queries.UseCustomPlans(ctx); err != nil {
