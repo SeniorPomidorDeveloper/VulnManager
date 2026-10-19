@@ -102,9 +102,6 @@ func Run(log *slog.Logger) error {
 }
 
 func newPublisher(cfg config.Config, log *slog.Logger) (events.Publisher, func()) {
-	if cfg.Events == config.EventsNone {
-		return events.Disabled{}, func() {}
-	}
 	amqpPublisher := events.NewAMQPPublisher(events.Config{URL: events.URL(cfg.AMQPURL), Exchange: cfg.EventsExchange, Log: log})
 	return amqpPublisher, func() {
 		if err := amqpPublisher.Close(); err != nil {

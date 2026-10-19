@@ -16,9 +16,3 @@ type Event struct {
 type Publisher interface {
 	Publish(ctx context.Context, event Event) error
 }
-
-type Disabled struct{}
-
-func (Disabled) Publish(context.Context, Event) error {
-	return nil
-}
