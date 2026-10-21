@@ -112,14 +112,29 @@ services:
         condition: service_healthy
     env_file:
       - deploy/local/ingest.env
-    ports:
-      - "${INGEST_PORT:-8080}:8080"
     healthcheck:
       test:
         - CMD
         - bash
         - -c
         - exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /ping HTTP/1.0\r\n\r\n' >&3 && grep -q ok <&3
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  nginx:
+    image: nginx:1.27.3-alpine
+    profiles: ["core", "full"]
+    restart: unless-stopped
+    depends_on:
+      ingest:
+        condition: service_healthy
+    ports:
+      - "${INGEST_PORT:-8080}:80"
+    volumes:
+      - ./deploy/local/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:80/ping"]
       interval: 5s
       timeout: 5s
       retries: 10

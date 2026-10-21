@@ -61,7 +61,7 @@ smoke-clean:
 	-docker network rm vm-ingest-smoke
 
 compose-check:
-	$(COMPOSE) up -d --build --wait ingest
+	$(COMPOSE) up -d --build --wait nginx
 	curl -fsS -X PUT -H 'content-type: application/json' -d '{"durable":true}' $(RABBIT_API)/queues/%2F/ci-sink
 	curl -fsS -X POST -H 'content-type: application/json' -d '{"routing_key":"1"}' $(RABBIT_API)/bindings/%2F/e/vulnmanager.report.received/q/ci-sink
 	curl -fsS -X POST http://127.0.0.1:8080/api/v1/reports -H 'X-Tool: trivy' -H 'X-Scope: ci/main' --data-binary 'report'

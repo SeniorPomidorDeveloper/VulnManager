@@ -8,7 +8,7 @@ VERSION ?= 0.0.1
 IMAGE = docker build -f services/$(1)/Dockerfile --build-arg DEB=vulnmanager-$(1)_$(VERSION)_amd64.deb -t vulnmanager/$(1):$(VERSION) services/$(1)/dist
 DEBUILD_IMAGE ?= vulnmanager/debuild:24.04
 E2E_IMAGE ?= vulnmanager/e2e:1
-E2E = docker run --rm --network $(PROJECT)_default -v $(CURDIR):/src -w /src/tests/e2e -u $$(id -u):$$(id -g) -e HOME=/tmp -e PYTHONDONTWRITEBYTECODE=1 -e E2E_INGEST_URL=http://ingest:8080 -e 'E2E_DATABASE_DSN=host=postgres dbname=vulnmanager user=vulnmanager password=vulnmanager-local-dev' $(E2E_IMAGE) sh -c "python -m flake8 . && python -m pytest -o cache_dir=/tmp/pytest"
+E2E = docker run --rm --network $(PROJECT)_default -v $(CURDIR):/src -w /src/tests/e2e -u $$(id -u):$$(id -g) -e HOME=/tmp -e PYTHONDONTWRITEBYTECODE=1 -e E2E_INGEST_URL=http://nginx -e 'E2E_DATABASE_DSN=host=postgres dbname=vulnmanager user=vulnmanager password=vulnmanager-local-dev' $(E2E_IMAGE) sh -c "python -m flake8 . && python -m pytest -o cache_dir=/tmp/pytest"
 DEBUILD = docker run --rm -v $(CURDIR)/services/$(1):/w/src -u $$(id -u):$$(id -g) -e HOME=/tmp -w /w/src $(DEBUILD_IMAGE) make package
 
 .PHONY: help go-cache debuild-image e2e-image deb deb-ingest deb-normalize deb-processing image image-ingest image-normalize image-processing build up infra down clean logs ps test test-modules test-services e2e
