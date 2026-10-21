@@ -173,38 +173,36 @@ func (w *Worker) process(ctx context.Context, job queue.Job, run store.Run) erro
 		return err
 	})
 	if errors.Is(err, store.ErrAlreadyCompleted) {
-		w.republish(ctx, job, run)
-		return nil
+		return w.republish(ctx, job, run)
 	}
 	if err != nil {
 		return err
 	}
-	w.publish(ctx, job, runID)
-	return nil
+	return w.publish(ctx, job, runID)
 }
 
-func (w *Worker) republish(ctx context.Context, job queue.Job, run store.Run) {
+func (w *Worker) republish(ctx context.Context, job queue.Job, run store.Run) error {
 	runID, found, err := w.deps.Store.UnpublishedRun(context.WithoutCancel(ctx), run)
 	if err != nil {
-		w.deps.Log.Warn("unpublished run lookup failed", "job", job.ID, "error", err)
-		return
+		return fmt.Errorf("unpublished run lookup: %w", err)
 	}
-	if found {
-		w.publish(ctx, job, runID)
+	if !found {
+		return nil
 	}
+	return w.publish(ctx, job, runID)
 }
 
-func (w *Worker) publish(ctx context.Context, job queue.Job, runID model.ImportRunID) {
+func (w *Worker) publish(ctx context.Context, job queue.Job, runID model.ImportRunID) error {
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), publishTimeout)
 	defer cancel()
 	event := events.Event{RunID: runID, Scope: job.Scope, Tool: job.Tool, ScanID: job.ScanID}
 	if err := w.deps.Events.Publish(ctx, event); err != nil {
-		w.deps.Log.Warn("import.completed not published", "job", job.ID, "run", runID, "error", err)
-		return
+		return fmt.Errorf("publish import.completed for run %s: %w", runID, err)
 	}
 	if _, err := w.deps.Store.MarkPublished(ctx, job.Scope.TenantID, runID); err != nil {
-		w.deps.Log.Warn("published import.completed not marked", "job", job.ID, "run", runID, "error", err)
+		return fmt.Errorf("mark run %s published: %w", runID, err)
 	}
+	return nil
 }
 
 func (w *Worker) write(

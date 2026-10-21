@@ -280,17 +280,17 @@ func TestHandle_PublishesImportCompletedAndMarksTheRun(t *testing.T) {
 	}
 }
 
-func TestHandle_FailedPublicationLeavesTheRunUnmarkedButTheJobDone(t *testing.T) {
+func TestHandle_FailedPublicationRetriesTheJob(t *testing.T) {
 	job := testJob(1)
 	w, jobs, findings := newWorker(t, job, fakeRaw{body: sarifReport})
 	findings.publishErr = errors.New("broker down")
 
 	outcome, err := w.Handle(context.Background(), job.ID)
 
-	if err != nil || outcome.Action != ActionAck {
+	if err != nil || outcome.Action != ActionRetry {
 		t.Fatalf("outcome=%+v err=%v", outcome, err)
 	}
-	if len(findings.marked) != 0 || len(jobs.finished) != 1 || jobs.finished[0] != queue.StateDone {
+	if len(findings.marked) != 0 || len(jobs.finished) != 1 || jobs.finished[0] != queue.StatePending {
 		t.Fatalf("marked %v finished %v", findings.marked, jobs.finished)
 	}
 }
