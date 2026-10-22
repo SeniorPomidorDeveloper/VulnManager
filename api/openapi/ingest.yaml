@@ -6,7 +6,8 @@ info:
   contact:
     name: VulnManager
 servers:
-  - url: /
+  - url: http://127.0.0.1:8080
+    description: Локальный стенд (`make up`); при другом `INGEST_PORT` поменяйте порт
 tags:
   - name: reports
     description: Приём отчётов
@@ -27,6 +28,7 @@ paths:
         - $ref: "#/components/parameters/ScanId"
       requestBody:
         required: true
+        description: Файл отчёта сканера как есть; в Postman — Body → binary → Select file.
         content:
           application/octet-stream:
             schema:
@@ -54,7 +56,7 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      description: Токен тенанта; тенант определяется по токену.
+      description: Токен тенанта; тенант определяется по токену. Сервис пока работает с одним тенантом из `INGEST_TENANT` и токен не проверяет.
   parameters:
     Tool:
       name: X-Tool
@@ -63,6 +65,7 @@ components:
       description: Имя инструмента, создавшего отчёт.
       schema:
         type: string
+        default: trivy
         pattern: "^[a-z0-9][a-z0-9._-]*$"
         maxLength: 64
     Scope:
@@ -72,13 +75,14 @@ components:
       description: Продукт и необязательный контекст внутри тенанта токена, `<product>[/<context>]`.
       schema:
         type: string
+        default: payments/prod
         pattern: "^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)?$"
         maxLength: 256
     ScanId:
       name: X-Scan-Id
       in: header
       required: false
-      description: Идентификатор скана; если не передан, назначается сервером.
+      description: Идентификатор скана; если не передан, назначается сервером; в Postman отключите этот заголовок, если он не нужен.
       schema:
         type: string
         maxLength: 128
