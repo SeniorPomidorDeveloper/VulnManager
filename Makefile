@@ -11,7 +11,7 @@ E2E_IMAGE ?= vulnmanager/e2e:1
 E2E = docker run --rm --network $(PROJECT)_default -v $(CURDIR):/src -w /src/tests/e2e -u $$(id -u):$$(id -g) -e HOME=/tmp -e PYTHONDONTWRITEBYTECODE=1 -e E2E_INGEST_URL=http://nginx -e 'E2E_DATABASE_DSN=host=postgres dbname=vulnmanager user=vulnmanager password=vulnmanager-local-dev' $(E2E_IMAGE) sh -c "python -m flake8 . && python -m pytest -o cache_dir=/tmp/pytest"
 DEBUILD = docker run --rm -v $(CURDIR)/services/$(1):/w/src -u $$(id -u):$$(id -g) -e HOME=/tmp -w /w/src $(DEBUILD_IMAGE) make package
 
-.PHONY: help go-cache debuild-image e2e-image deb deb-ingest deb-normalize deb-processing image image-ingest image-normalize image-processing build up infra down clean logs ps test test-modules test-services e2e
+.PHONY: help go-cache debuild-image e2e-image deb deb-ingest deb-normalize deb-processing image image-ingest image-normalize image-processing build up infra down clean db-clean logs ps test test-modules test-services e2e
 
 help:
 	@echo "deb       - собрать .deb всех сервисов"
@@ -21,6 +21,7 @@ help:
 	@echo "infra     - поднять только PostgreSQL, RabbitMQ и Garage"
 	@echo "down      - остановить стенд, данные сохраняются"
 	@echo "clean     - остановить стенд и удалить тома"
+	@echo "db-clean  - очистить данные в БД, схема и тенанты остаются (стенд должен быть поднят)"
 	@echo "logs      - логи сервисов (SERVICE=<имя> для одного)"
 	@echo "ps        - состояние контейнеров"
 	@echo "test      - юнит-тесты модулей и сервисов (make ci в каждом)"
@@ -73,6 +74,9 @@ down:
 
 clean:
 	$(COMPOSE) down -v
+
+db-clean:
+	$(COMPOSE) exec -T postgres sh -c 'psql -v ON_ERROR_STOP=1 -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"' < deploy/local/db-clean.sql
 
 logs:
 	$(COMPOSE) logs -f --tail=100 $(SERVICE)
