@@ -94,6 +94,7 @@ func TestTrivy_Degradation(t *testing.T) {
 		{name: "vulnerability is not an object", doc: trivyDoc(2, trivyResult("a", `"Vulnerabilities":["oops"]`)), wantCode: "invalid_vulnerability"},
 		{name: "unexpected schema", doc: trivyDoc(3, trivyResult("a", `"Vulnerabilities":[{"VulnerabilityID":"CVE-1"}]`)), wantCode: "trivy_schema_version"},
 		{name: "absolute target", doc: trivyDoc(2, trivyResult("/abs/package-lock.json", `"Vulnerabilities":[{"VulnerabilityID":"CVE-1"}]`)), wantCode: "absolute_path"},
+		{name: "not a trivy report", doc: `{"version":"2.1.0","runs":[]}`, wantCode: "unknown_format"},
 		{name: "secrets are not copied", doc: trivyDoc(2, trivyResult("a", `"Secrets":[{"Match":"AKIA-never-copied"}]`)), wantCode: "unsupported_section"},
 	}
 	for _, tc := range tests {

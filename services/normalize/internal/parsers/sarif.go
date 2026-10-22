@@ -117,6 +117,10 @@ func (SARIF) Parse(ctx context.Context, r io.Reader, _ ScanMeta) iter.Seq2[RawFi
 			yield(RawFinding{}, fmt.Errorf("decode sarif: %w", err))
 			return
 		}
+		if log.Version == "" {
+			yield(unrecognizedReport("report has no version, not a sarif log"), nil)
+			return
+		}
 		for _, run := range log.Runs {
 			for _, raw := range run.Results {
 				if err := ctx.Err(); err != nil {
