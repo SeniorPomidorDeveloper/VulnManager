@@ -98,6 +98,10 @@ func (Trivy) Parse(ctx context.Context, r io.Reader, _ ScanMeta) iter.Seq2[RawFi
 			yield(RawFinding{}, fmt.Errorf("decode trivy report: %w", err))
 			return
 		}
+		if report.SchemaVersion == 0 {
+			yield(unrecognizedReport("report has no SchemaVersion, not a trivy report"), nil)
+			return
+		}
 		for _, result := range report.Results {
 			for _, finding := range convertTrivyResult(result) {
 				if err := ctx.Err(); err != nil {

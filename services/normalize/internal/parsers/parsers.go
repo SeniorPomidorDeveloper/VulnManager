@@ -57,3 +57,14 @@ type Parser interface {
 	Capabilities() Capabilities
 	Parse(ctx context.Context, r io.Reader, meta ScanMeta) iter.Seq2[RawFinding, error]
 }
+
+func unrecognizedReport(message string) RawFinding {
+	return RawFinding{
+		Kind:  model.KindUnknown,
+		Title: "unparsed report",
+		Raw:   json.RawMessage("{}"),
+		Diagnostics: model.Diagnostics{}.Append(
+			model.DiagLevelWarn, codeUnknown, message,
+		),
+	}
+}

@@ -136,6 +136,7 @@ func TestSARIF_Degradation(t *testing.T) {
 		wantRaw  string
 	}{
 		{name: "result is not an object", doc: sarifDoc("2.1.0", "", `"oops"`), wantCode: "invalid_result", wantRaw: `"oops"`},
+		{name: "not a sarif log", doc: `{"SchemaVersion":2,"Results":[]}`, wantCode: "unknown_format", wantRaw: "{}"},
 		{name: "unexpected version", doc: sarifDoc("2.0.0", "", `{"message":{"text":"m"}}`), wantCode: "sarif_version"},
 	}
 	for _, tc := range tests {
